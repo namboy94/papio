@@ -30,10 +30,10 @@ if len(sys.argv) != 5:
     sys.exit(1) #stops program
 
 #Input files from sys.argv as easily readeable variables
-walletFile = sys.argv[1]
-assetFile = sys.argv[2]
-expenseFile = sys.argv[3]
-incomeFile = sys.argv[4]
+walletFile = upperDirectory + "/program/data/wallets.txt"
+assetFile = upperDirectory + "/program/data/assets.txt"
+expenseFile = upperDirectory + "/program/data/expenses.txt"
+incomeFile = upperDirectory + "/program/data/income.txt"
 dataFiles = [walletFile,assetFile,expenseFile,incomeFile]
 
 #List containing the wallets, and the unique assets wallet
