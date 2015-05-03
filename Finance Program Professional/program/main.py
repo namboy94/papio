@@ -25,10 +25,6 @@ from program.objects.Wallet import Wallet
 from program.parsers.FileParsers import walletParse, assetFileParser, incomeExpenseParser
 from program.parsers.UserinputParser import UserInputParser
 
-if len(sys.argv) != 5:
-    print "Invalid amount of command line parameters"
-    sys.exit(1) #stops program
-
 #Input files from sys.argv as easily readeable variables
 walletFile = upperDirectory + "/program/data/wallets.txt"
 assetFile = upperDirectory + "/program/data/assets.txt"
