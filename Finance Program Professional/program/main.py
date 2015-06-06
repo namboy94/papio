@@ -23,7 +23,8 @@ upperDirectory = sys.argv[0][:-lengthToCut]
 sys.path.append(upperDirectory)
 from program.objects.Wallet import Wallet
 from program.parsers.FileParsers import walletParse, assetFileParser, incomeExpenseParser
-from program.parsers.UserinputParser import UserInputParser
+#from program.parsers.UserinputParser import UserInputParser
+from program.utils.GUI import GUI
 
 #Input files from sys.argv as easily readeable variables
 walletFile = upperDirectory + "/program/data/wallets.txt"
@@ -42,5 +43,7 @@ assetFileParser(assetFile, assets)
 incomeExpenseParser(expenseFile, "expense", wallets)
 incomeExpenseParser(incomeFile, "income", wallets)
 
-inputParser = UserInputParser(wallets)
-inputParser.parseUserInput(assets, wallets,dataFiles)
+#inputParser = UserInputParser(wallets)
+#inputParser.parseUserInput(assets, wallets,dataFiles)
+gui = GUI(assets, wallets, dataFiles)
+gui.guiStart()
