@@ -21,6 +21,10 @@ This file is part of finance-manager.
     along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# imports
+import os
+import json
+
 
 class Account(object):
     """
@@ -31,7 +35,8 @@ class Account(object):
     def __init__(self, account_file_path):
         """
         Constructor method. It reads the information given in the stored account file.
-        @:param account_file_path - the path to the account file
+        If the file does not exist, a new account will be created at the specified location
+        @:param account_file_path - the path to the account file.
         @:return: void
         """
         # object variables
@@ -46,16 +51,38 @@ class Account(object):
 
     def __read_file__(self):
         """
-        Parses the account file and stores the information to the local variables
+        Parses the account file and stores the information to the local variables.
+        If the account file does not exist, a new account will be created
         :return: void
         """
-        # TODO Implement
-        print(self)
+        if os.path.isfile(self.account_file_path):
+            file = open(self.account_file_path, 'r')
+            data = json.load(file)
+            file.close()
+            print(data)
+        else:
+            self.save()
 
-    def __save__(self):
+    def save(self):
         """
         Saves the current state of the account to the account file
         :return: void
         """
         # TODO Implement
         print(self)
+
+"""
+Note: JSON Format will look like this:
+
+{
+"assets": [
+            {"desc": "decription", "date": "datestring"....},
+            {...},
+            {...}
+          ],
+"expenses":
+...
+...
+...
+}
+"""

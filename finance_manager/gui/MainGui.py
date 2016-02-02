@@ -22,15 +22,39 @@ This file is part of finance-manager.
 """
 
 # imports
-from finance_manager.gui.WelcomeGui import WelcomeGui
+from finance_manager.gui.GenericGtkGui import GenericGtkGui
+import sys
 
 
-def main():
+class MainGui(GenericGtkGui):
     """
-    The main method of the program
-    :return: void
+    Class that implements the Main GUI of the finance program
     """
-    WelcomeGui().start()
 
-if __name__ == '__main__':
-    main()
+    def __init__(self, account_name, account, parent):
+        """
+        Constructor that requires account details to function
+        :param account_name:
+        :param account:
+        :param parent:
+        :return: void
+        """
+        super.__init__(account_name, parent)
+        self.account = account
+
+    def lay_out(self):
+        """
+        Lays out all needed objects of the GUI
+        :return: void
+        """
+        # Todo implement
+        print(self)
+
+    def start(self):
+        """
+        Extends the functionality of GenericGtkGui's start method if needed
+        In this case, the program ends once the window is closed
+        :return: void
+        """
+        super(self).start()
+        sys.exit(0)

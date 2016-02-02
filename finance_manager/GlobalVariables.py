@@ -21,6 +21,7 @@ This file is part of finance-manager.
     along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+# imports
 import os
 import platform
 
@@ -34,6 +35,8 @@ class GlobalVariables(object):
 
     # OS independent
     home_dir = os.path.expanduser('~')
+    operating_system = ""
+    document_dir = ""
 
     # Linux Specific
     if platform.system() == "Linux":
@@ -44,3 +47,6 @@ class GlobalVariables(object):
     elif platform.system() == "Windows":
         operating_system = "windows"
         document_dir = os.path.join(home_dir, "Documents", "finance-manager")
+
+    # OS independent once more
+    account_dir = os.path.join(document_dir, "accounts")
