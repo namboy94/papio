@@ -20,3 +20,15 @@ This file is part of finance-manager.
     You should have received a copy of the GNU General Public License
     along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+
+def main():
+    """
+    The main method of the program
+    :return: void
+    """
+    # TODO Implement
+    print("")
+
+if __name__ == '__main__':
+    main()

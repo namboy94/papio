@@ -22,7 +22,7 @@ This file is part of finance-manager.
 """
 
 # imports
-from gui.GenericGtkGui import GenericGtkGui
+from finance_manager.gui.GenericGtkGui import GenericGtkGui
 # from gi.repository import Gtk
 
 
