@@ -1,3 +1,3 @@
-#Finance Manager
+# Finance Manager
 
 A program to manage basic private finances
