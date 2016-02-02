@@ -20,3 +20,27 @@ This file is part of finance-manager.
     You should have received a copy of the GNU General Public License
     along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+import os
+import platform
+
+
+class GlobalVariables(object):
+    """
+    Class that provides easy access to some system-wide default variables
+    """
+
+    # class variables
+
+    # OS independent
+    home_dir = os.path.expanduser('~')
+
+    # Linux Specific
+    if platform.system() == "Linux":
+        operating_system = "linux"
+        document_dir = os.path.join(home_dir, ".finance-manager")
+
+    # Windows Specific
+    elif platform.system() == "Windows":
+        operating_system = "windows"
+        document_dir = os.path.join(home_dir, "Documents", "finance-manager")
