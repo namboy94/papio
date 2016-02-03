@@ -78,12 +78,13 @@ class MainGui(GenericGtkGui):
         self.wallet_selector = GenericGtkGui.generate_combo_box(["all"] + self.account.get_wallet_names_as_list())
 
         # Lay out objects
-        self.grid.attach(self.expenses["scrollable"], 0, 0, 10, 10)
-        self.grid.attach(self.income["scrollable"], 0, 0, 10, 10)
-        self.grid.attach(self.assets["scrollable"], 0, 0, 10, 10)
-        self.grid.attach_next_to(self.income_button, self.assets["scrollable"], Gtk.PositionType.BOTTOM, 5, 5)
-        self.grid.attach_next_to(self.expense_button, self.income_button, Gtk.PositionType.BOTTOM, 5, 5)
-        self.grid.attach_next_to(self.asset_button, self.expense_button, Gtk.PositionType.BOTTOM, 5, 5)
+        self.grid.attach(self.expenses["scrollable"], 0, 5, 20, 10)
+        self.grid.attach(self.income["scrollable"], 0, 5, 20, 10)
+        self.grid.attach(self.assets["scrollable"], 0, 5, 20, 10)
+        self.grid.attach_next_to(self.income_button, self.assets["scrollable"], Gtk.PositionType.TOP, 5, 5)
+        self.grid.attach_next_to(self.expense_button, self.income_button, Gtk.PositionType.RIGHT, 5, 5)
+        self.grid.attach_next_to(self.asset_button, self.expense_button, Gtk.PositionType.RIGHT, 5, 5)
+        self.grid.attach_next_to(self.wallet_selector["combo_box"], self.asset_button, Gtk.PositionType.RIGHT, 5, 5)
 
         self.__fill_data__()
 

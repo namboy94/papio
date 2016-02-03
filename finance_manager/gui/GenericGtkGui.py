@@ -51,9 +51,9 @@ class GenericGtkGui(Gtk.Window):
         self.set_border_width(10)
 
         # Set up Grid Layout
-        self.grid = Gtk.Grid()
-        self.grid.set_column_homogeneous(True)
-        self.grid.set_row_homogeneous(True)
+        self.grid = Gtk.Grid(column_homogeneous=True,
+                             column_spacing=10,
+                             row_spacing=10)
         self.add(self.grid)
 
         # Delegated to the child classes
@@ -270,6 +270,8 @@ class GenericGtkGui(Gtk.Window):
         scrollable_treelist.add(tree_view)
         tree_selection = tree_view.get_selection()
         tree_selection.set_mode(Gtk.SelectionMode.MULTIPLE)
+        scrollable_treelist.set_hexpand(True)
+        scrollable_treelist.set_vexpand(True)
         return {"scrollable": scrollable_treelist, "selection": tree_selection, "list_store": list_store}
 
     @staticmethod
