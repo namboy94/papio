@@ -179,6 +179,17 @@ class Account(object):
                 income.append(income_tuple)
         return income
 
+    def get_all_assets_as_list(self):
+        """
+        Returns a list of tuples containing all assets
+        :return: the list of tuples
+        """
+        assets = []
+        for asset in self.account_assets:
+            asset_tuple = (asset["value"], asset["description"], asset["date"])
+            assets.append(asset_tuple)
+        return assets
+
     def add_expense(self, value, description, recipient, date, wallet_name):
         """
         Adds an expense to the account
@@ -271,3 +282,25 @@ class Account(object):
         """
         self.account_assets.append(asset)
         self.__add_asset_to_balance__(asset["value"])
+
+    def add_wallet_from_dict(self, wallet):
+        """
+        Adds a new wallet to the account
+        :param wallet: the wallet to add
+        :return: void
+        """
+        self.wallets.append(wallet)
+        self.__add_expense_or_income_to_balance__(wallet["balance"])
+
+    def add_wallet(self, wallet_name, wallet_balance, expenses, income):
+        """
+        Adds a new wallet to the account
+        :param wallet_name: the wallet's name
+        :param wallet_balance: the wallet's initial balance
+        :param expenses: the wallet's initial expenses
+        :param income: the wallet's initial income
+        :return: void
+        """
+        wallet = {"name": wallet_name, "balance": wallet_balance, "expenses": expenses, "income": income}
+        self.wallets.append(wallet)
+        self.__add_expense_or_income_to_balance__(wallet_balance)

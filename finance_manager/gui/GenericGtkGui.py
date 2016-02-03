@@ -31,20 +31,24 @@ class GenericGtkGui(Gtk.Window):
     abstract class from which other classes can inherit from.
     """
 
-    def __init__(self, title="Finance Manager", parent=None):
+    def __init__(self, title="Finance Manager", parent=None, hide_parent=True):
         """
         Constructor which initializes the GUI
         :param title: The window title. Defaults to "Finance Manager"
         :param parent: The parent GUI window, provided one wants this Window
                         to have a parent, otherwise it defaults to None
+        :param hide_parent: flag that determines if the parent GUI only freezes or is
+                        hidden while this window is open
         :return: void
         """
         # object variables
         self.grid = None
         self.window = None
         self.parent = None
+        self.hide_parent = False
 
         self.parent = parent
+        self.hide_parent = hide_parent
 
         # initialize GTK
         Gtk.Window.__init__(self, title=title)
@@ -73,13 +77,13 @@ class GenericGtkGui(Gtk.Window):
         it will be hidden during the mainloop and reappear at the end
         :return: void
         """
-        if self.parent:
+        if self.parent and self.hide_parent:
             self.parent.window.hide()
         self.window = self
         self.window.connect("delete-event", Gtk.main_quit)
         self.window.show_all()
         Gtk.main()
-        if self.parent:
+        if self.parent and self.hide_parent:
             self.parent.window.show_all()
 
     # Helper methods
