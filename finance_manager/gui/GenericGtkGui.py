@@ -194,30 +194,35 @@ class GenericGtkGui(Gtk.Window):
         return label
 
     @staticmethod
-    def generate_simple_button(button_text, command):
+    def generate_simple_button(button_text, command, *additional_args):
         """
         Generates a GTK Button
         :param button_text: the text to be displayed on the button
         :param command: the command to be executed when pressing this button
+        :param additional_args: additional arguments to be passed to the command
         :return: the Button object
         """
         button = Gtk.Button.new_with_label(button_text)
-        button.connect("clicked", command)
+        if len(additional_args) == 0:
+            button.connect("clicked", command)
+        else:
+            button.connect("clicked", command, additional_args)
         return button
 
     @staticmethod
-    def generate_text_entry(defaulttext="", command=None):
+    def generate_text_entry(defaulttext="", command=None, *additional_args):
         """
         Generates a GTK Text Entry
         :param defaulttext: The text to be displayed by default
         :param command: The command to be executed if the enter key is pressed when this
                         text entry is in focus.
+        :param additional_args: additional arguments to be passed to the command
         :return: the Entry object
         """
         entry = Gtk.Entry()
         entry.set_text(defaulttext)
         if command is not None:
-            entry.connect("key-press-event", GenericGtkGui.defaultEnterKey, command)
+            entry.connect("key-press-event", GenericGtkGui.defaultEnterKey, command, additional_args)
         return entry
 
     @staticmethod

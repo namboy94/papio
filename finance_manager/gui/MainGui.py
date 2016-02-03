@@ -23,6 +23,7 @@ This file is part of finance-manager.
 
 # imports
 from finance_manager.gui.GenericGtkGui import GenericGtkGui
+from gi.repository import Gtk
 import sys
 
 
@@ -42,7 +43,11 @@ class MainGui(GenericGtkGui):
         self.account = account
         self.expenses = None
         self.income = None
+        self.assets = None
         self.wallet_selector = None
+        self.income_button = None
+        self.expense_button = None
+        self.asset_button = None
         super().__init__(account_name, parent)
 
     def lay_out(self):
@@ -50,7 +55,6 @@ class MainGui(GenericGtkGui):
         Lays out all needed objects of the GUI
         :return: void
         """
-        # TODO Really create the GUI.
         # Create objects
         self.expenses = GenericGtkGui.generate_multi_list_box({"Value": (str,),
                                                                "Description": (str,),
@@ -62,11 +66,24 @@ class MainGui(GenericGtkGui):
                                                              "Source": (str,),
                                                              "Date": (str,),
                                                              "Wallet": (str,)})
+        self.assets = GenericGtkGui.generate_multi_list_box({"Value": (str,),
+                                                             "Description": (str,),
+                                                             "Date": (str,)})
+        self.income["scrollable"].set_visible(False)
+        self.expenses["scrollable"].set_visible(False)
+
+        self.income_button = GenericGtkGui.generate_simple_button("Income", self.__set_mode__, self.income)
+        self.expense_button = GenericGtkGui.generate_simple_button("Expenses", self.__set_mode__, self.expenses)
+        self.asset_button = GenericGtkGui.generate_simple_button("Assets", self.__set_mode__, self.assets)
         self.wallet_selector = GenericGtkGui.generate_combo_box(["all"] + self.account.get_wallet_names_as_list())
 
         # Lay out objects
         self.grid.attach(self.expenses["scrollable"], 0, 0, 10, 10)
-        self.grid.attach(self.income["scrollable"], 0, 10, 10, 10)
+        self.grid.attach(self.income["scrollable"], 0, 0, 10, 10)
+        self.grid.attach(self.assets["scrollable"], 0, 0, 10, 10)
+        self.grid.attach_next_to(self.income_button, self.assets["scrollable"], Gtk.PositionType.BOTTOM, 5, 5)
+        self.grid.attach_next_to(self.expense_button, self.income_button, Gtk.PositionType.BOTTOM, 5, 5)
+        self.grid.attach_next_to(self.asset_button, self.expense_button, Gtk.PositionType.BOTTOM, 5, 5)
 
         self.__fill_data__()
 
@@ -88,3 +105,16 @@ class MainGui(GenericGtkGui):
             self.expenses["list_store"].append(expense)
         for income in self.account.get_all_income_as_list():
             self.income["list_store"].append(income)
+
+    def __set_mode__(self, widget, widget_to_display):
+        """
+        Switches to a different view
+        :param widget: the button or text entry that initialized this command
+        :param widget_to_display: the widget to be displayed
+        :return:
+        """
+        if widget is not None:
+            self.income["scrollable"].set_visible(False)
+            self.expenses["scrollable"].set_visible(False)
+            self.assets["scrollable"].set_visible(False)
+            widget_to_display[0]["scrollable"].set_visible(True)
