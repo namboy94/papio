@@ -1,2 +1,0 @@
-push_to_pypi:
-  script: "python setup.py sdist upload"
