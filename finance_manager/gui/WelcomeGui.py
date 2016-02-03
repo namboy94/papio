@@ -110,11 +110,11 @@ class WelcomeGui(GenericGtkGui):
         :return: void
         """
         if widget is not None:
-            account_name = "from text box"
+            account_name = self.show_text_box("Please enter the name of the new Account:")
             account_file = os.path.join(GlobalVariables.account_dir, account_name)
             if os.path.isfile(account_file):
-                self.open_message_box("File exists", "This account already exists. Make sure to enter a name for the"
-                                                     "account that has not been used yet")
+                self.show_message_dialog("File exists", "This account already exists. Make sure to enter a name for the"
+                                                        "account that has not been used yet")
             else:
                 account = Account(account_file)
                 MainGui(account_name, account, self).start()

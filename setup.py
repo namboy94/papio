@@ -21,6 +21,7 @@ This file is part of finance-manager.
     along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+#imports
 from setuptools import setup
 
 

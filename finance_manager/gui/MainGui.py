@@ -39,23 +39,36 @@ class MainGui(GenericGtkGui):
         :param parent:
         :return: void
         """
+        self.account = account
         self.expenses = None
         self.income = None
+        self.wallet_selector = None
         super().__init__(account_name, parent)
-        self.account = account
 
     def lay_out(self):
         """
         Lays out all needed objects of the GUI
         :return: void
         """
+        # TODO Really create the GUI.
         # Create objects
-        self.expenses = GenericGtkGui.generate_multi_list_box({"Value": (int,), "Desc": (str,), "Date": (str,)})
-        self.income = GenericGtkGui.generate_multi_list_box({"Value": (int,), "Desc": (str,), "Date": (str,)})
+        self.expenses = GenericGtkGui.generate_multi_list_box({"Value": (str,),
+                                                               "Description": (str,),
+                                                               "Recipient": (str,),
+                                                               "Date": (str,),
+                                                               "Wallet": (str,)})
+        self.income = GenericGtkGui.generate_multi_list_box({"Value": (str,),
+                                                             "Description": (str,),
+                                                             "Source": (str,),
+                                                             "Date": (str,),
+                                                             "Wallet": (str,)})
+        self.wallet_selector = GenericGtkGui.generate_combo_box(["all"] + self.account.get_wallet_names_as_list())
 
         # Lay out objects
         self.grid.attach(self.expenses["scrollable"], 0, 0, 10, 10)
-        self.grid.attach(self.income["scrollable"], 10, 10, 10, 10)
+        self.grid.attach(self.income["scrollable"], 0, 10, 10, 10)
+
+        self.__fill_data__()
 
     def start(self):
         """
@@ -65,3 +78,13 @@ class MainGui(GenericGtkGui):
         """
         super(MainGui, self).start()
         sys.exit(0)
+
+    def __fill_data__(self):
+        """
+        Fills the data widgets with information of the loaded account
+        :return: void
+        """
+        for expense in self.account.get_all_expenses_as_list():
+            self.expenses["list_store"].append(expense)
+        for income in self.account.get_all_income_as_list():
+            self.income["list_store"].append(income)

@@ -71,10 +71,8 @@ class Account(object):
         :param json_data: the json data to be parsed
         :return: void
         """
-        self.account_assets = json_data["assets"]
-        self.account_expenses = json_data["expenses"]
-        self.account_income = json_data["income"]
         self.wallets = json_data["wallets"]
+        self.account_assets = json_data["assets"]
         for wallet in self.wallets:
             self.account_balance += int(wallet["balance"])
             self.account_balance_no_assets += int(wallet["balance"])
@@ -87,10 +85,43 @@ class Account(object):
         :return: void
         """
         json_dict = {"assets": self.account_assets,
-                     "income": self.account_income,
-                     "expenses": self.account_expenses,
                      "wallets": self.wallets}
         json_string = json.dumps(json_dict, indent=4)
         file = open(self.account_file_path, 'w')
         file.write(json_string)
         file.close()
+
+    def get_wallet_names_as_list(self):
+        """
+        Retrieves the names of all wallets
+        :return: a list of wallet names
+        """
+        wallet_names = []
+        for wallet in self.wallets:
+            wallet_names.append(wallet["name"])
+        return wallet_names
+
+    def get_all_expenses_as_list(self):
+        """
+        Returns a list of tuples containing all expenses
+        :return: the list of tuples
+        """
+        expenses = []
+        for wallet in self.wallets:
+            for expense in wallet["expenses"]:
+                expense_tuple = (expense["value"], expense["description"], expense["recipient"], expense["date"],
+                                 wallet["name"])
+                expenses.append(expense_tuple)
+        return expenses
+
+    def get_all_income_as_list(self):
+        """
+        Returns a list of tuples containing all income
+        :return: the list of tuples
+        """
+        income = []
+        for wallet in self.wallets:
+            for inc in wallet["income"]:
+                income_tuple = (inc["value"], inc["description"], inc["donor"], inc["date"], wallet["name"])
+                income.append(income_tuple)
+        return income
