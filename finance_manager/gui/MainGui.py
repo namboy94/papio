@@ -39,7 +39,7 @@ class MainGui(GenericGtkGui):
         :param parent:
         :return: void
         """
-        super.__init__(account_name, parent)
+        super().__init__(account_name, parent)
         self.account = account
 
     def lay_out(self):
@@ -56,5 +56,5 @@ class MainGui(GenericGtkGui):
         In this case, the program ends once the window is closed
         :return: void
         """
-        super(self).start()
+        super(MainGui, self).start()
         sys.exit(0)

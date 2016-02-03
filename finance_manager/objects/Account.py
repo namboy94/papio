@@ -42,9 +42,11 @@ class Account(object):
         # object variables
         self.account_file_path = ""
         self.account_balance = 0
+        self.account_balance_no_assets = 0
         self.account_assets = []
         self.account_expenses = []
         self.account_income = []
+        self.wallets = []
 
         self.account_file_path = account_file_path
         self.__read_file__()
@@ -59,30 +61,36 @@ class Account(object):
             file = open(self.account_file_path, 'r')
             data = json.load(file)
             file.close()
-            print(data)
+            self.__parse_json__(data)
         else:
             self.save()
+
+    def __parse_json__(self, json_data):
+        """
+        Parses the json data
+        :param json_data: the json data to be parsed
+        :return: void
+        """
+        self.account_assets = json_data["assets"]
+        self.account_expenses = json_data["expenses"]
+        self.account_income = json_data["income"]
+        self.wallets = json_data["wallets"]
+        for wallet in self.wallets:
+            self.account_balance += int(wallet["balance"])
+            self.account_balance_no_assets += int(wallet["balance"])
+        for asset in self.account_assets:
+            self.account_balance += int(asset["value"])
 
     def save(self):
         """
         Saves the current state of the account to the account file
         :return: void
         """
-        # TODO Implement
-        print(self)
-
-"""
-Note: JSON Format will look like this:
-
-{
-"assets": [
-            {"desc": "decription", "date": "datestring"....},
-            {...},
-            {...}
-          ],
-"expenses":
-...
-...
-...
-}
-"""
+        json_dict = {"assets": self.account_assets,
+                     "income": self.account_income,
+                     "expenses": self.account_expenses,
+                     "wallets": self.wallets}
+        json_string = json.dumps(json_dict, indent=4)
+        file = open(self.account_file_path, 'w')
+        file.write(json_string)
+        file.close()

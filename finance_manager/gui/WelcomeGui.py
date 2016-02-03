@@ -26,6 +26,7 @@ from finance_manager.gui.GenericGtkGui import GenericGtkGui
 from finance_manager.gui.MainGui import MainGui
 from finance_manager.GlobalVariables import GlobalVariables
 from finance_manager.objects.Account import Account
+from gi.repository import Gtk
 import os
 
 
@@ -42,11 +43,11 @@ class WelcomeGui(GenericGtkGui):
         :param title: the title of the GUI. Defaults to "Finance Manager"
         :return: void
         """
-        super().__init__(self, title)
         self.account_combo_box = None
         self.start_button = None
         self.load_button = None
         self.new_button = None
+        super().__init__(title)
 
     def lay_out(self):
         """
@@ -60,48 +61,60 @@ class WelcomeGui(GenericGtkGui):
         self.load_button = GenericGtkGui.generate_simple_button("Load", self.load_external)
         self.new_button = GenericGtkGui.generate_simple_button("New", self.load_new)
 
+        # Lay out objects
+        self.grid.attach(self.account_combo_box["combo_box"], 0, 0, 20, 10)
+        self.grid.attach_next_to(self.start_button, self.account_combo_box["combo_box"], Gtk.PositionType.RIGHT, 20, 10)
+        self.grid.attach_next_to(self.load_button, self.account_combo_box["combo_box"], Gtk.PositionType.BOTTOM, 20, 10)
+        self.grid.attach_next_to(self.new_button, self.load_button, Gtk.PositionType.RIGHT, 20, 10)
+
     def start(self):
         """
         Extends the functionality of GenericGtkGui's start method if needed
         :return: void
         """
-        super().start()
+        super(WelcomeGui, self).start()
 
-    def load_existing(self):
+    def load_existing(self, widget):
         """
         Loads an existing account and starts the main program
+        :param widget: the Button/Text Field which activated this command
         :return: void
         """
-        account_name = GenericGtkGui.get_current_selected_combo_box_option(self.account_combo_box)
-        account_file = os.path.join(GlobalVariables.account_dir, account_name)
-        account = Account(account_file)
-        MainGui(account_name, account, self)
+        if widget is not None:
+            account_name = GenericGtkGui.get_current_selected_combo_box_option(self.account_combo_box)
+            account_file = os.path.join(GlobalVariables.account_dir, account_name)
+            account = Account(account_file)
+            MainGui(account_name, account, self).start()
 
-    def load_external(self):
+    def load_external(self, widget):
         """
         Loads an external account from a file and starts the main program
+        :param widget: the Button/Text Field which activated this command
         :return: void
         """
-        account_file = self.show_file_chooser_dialog()
-        if account_file:
-            account_name = os.path.basename(account_file)
-            account = Account(account_file)
-            MainGui(account_name, account, self)
-        else:
-            self.open_message_box("No file selected", "No file was selected, please select a file, open an existing"
-                                                      "account or create a new account.")
+        if widget is not None:
+            account_file = str(self.show_file_chooser_dialog())
+            if account_file:
+                account_name = os.path.basename(account_file)
+                account = Account(account_file)
+                MainGui(account_name, account, self).start()
+            else:
+                self.show_message_dialog("No file selected", "No file was selected, please select a file, "
+                                                             "open an existing account or create a new account.")
 
-    def load_new(self):
+    def load_new(self, widget):
         """
         Creates a new account from user input and starts the main program.
         If the account already exists however, an error message is shown
+        :param widget: the Button/Text Field which activated this command
         :return: void
         """
-        account_name = "from text box"
-        account_file = os.path.join(GlobalVariables.account_dir, account_name)
-        if os.path.isfile(account_file):
-            self.open_message_box("File exists", "This account already exists. Make sure to enter a name for the"
-                                                 "account that has not been used yet")
-        else:
-            account = Account(account_file)
-            MainGui(account_name, account, self)
+        if widget is not None:
+            account_name = "from text box"
+            account_file = os.path.join(GlobalVariables.account_dir, account_name)
+            if os.path.isfile(account_file):
+                self.open_message_box("File exists", "This account already exists. Make sure to enter a name for the"
+                                                     "account that has not been used yet")
+            else:
+                account = Account(account_file)
+                MainGui(account_name, account, self).start()
