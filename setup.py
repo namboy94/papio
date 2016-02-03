@@ -35,7 +35,7 @@ def readme():
 
 
 setup(name='finance-manager',
-      version='0.1',
+      version='0.2',
       description='A personal finance manager program',
       long_description=readme(),
       classifiers=['Development Status :: 1 - Planning',
