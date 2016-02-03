@@ -39,6 +39,8 @@ class MainGui(GenericGtkGui):
         :param parent:
         :return: void
         """
+        self.expenses = None
+        self.income = None
         super().__init__(account_name, parent)
         self.account = account
 
@@ -47,8 +49,13 @@ class MainGui(GenericGtkGui):
         Lays out all needed objects of the GUI
         :return: void
         """
-        # Todo implement
-        print(self)
+        # Create objects
+        self.expenses = GenericGtkGui.generate_multi_list_box({"Value": (int,), "Desc": (str,), "Date": (str,)})
+        self.income = GenericGtkGui.generate_multi_list_box({"Value": (int,), "Desc": (str,), "Date": (str,)})
+
+        # Lay out objects
+        self.grid.attach(self.expenses["scrollable"], 0, 0, 10, 10)
+        self.grid.attach(self.income["scrollable"], 10, 10, 10, 10)
 
     def start(self):
         """

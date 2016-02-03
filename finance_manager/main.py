@@ -23,6 +23,8 @@ This file is part of finance-manager.
 
 # imports
 from finance_manager.gui.WelcomeGui import WelcomeGui
+from finance_manager.GlobalVariables import GlobalVariables
+import os
 
 
 def main():
@@ -30,6 +32,10 @@ def main():
     The main method of the program
     :return: void
     """
+    # Create working directories if they don't exist yet
+    if not os.path.isdir(GlobalVariables.account_dir):
+        os.makedirs(GlobalVariables.account_dir)
+
     WelcomeGui().start()
 
 if __name__ == '__main__':
