@@ -22,8 +22,12 @@ This file is part of finance-manager.
 """
 
 # imports
-from finance_manager.gui.WelcomeGui import WelcomeGui
-from finance_manager.GlobalVariables import GlobalVariables
+try:
+    from finance_manager.gui.WelcomeGui import WelcomeGui
+    from finance_manager.GlobalVariables import GlobalVariables
+except ImportError:
+    from gui.WelcomeGui import WelcomeGui
+    from GlobalVariables import GlobalVariables
 import os
 
 

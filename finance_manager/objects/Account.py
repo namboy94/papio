@@ -22,9 +22,12 @@ This file is part of finance-manager.
 """
 
 # imports
+try:
+    from finance_manager.utils.MoneyMath import MoneyMath
+except ImportError:
+    from utils.MoneyMath import MoneyMath
 import os
 import json
-from finance_manager.utils.MoneyMath import MoneyMath
 
 
 class Account(object):

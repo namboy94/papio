@@ -22,10 +22,17 @@ This file is part of finance-manager.
 """
 
 # imports
-from finance_manager.gui.GenericGtkGui import GenericGtkGui
-from finance_manager.gui.MainGui import MainGui
-from finance_manager.GlobalVariables import GlobalVariables
-from finance_manager.objects.Account import Account
+try:
+    from finance_manager.gui.GenericGtkGui import GenericGtkGui
+    from finance_manager.gui.MainGui import MainGui
+    from finance_manager.GlobalVariables import GlobalVariables
+    from finance_manager.objects.Account import Account
+except ImportError:
+    from gui.GenericGtkGui import GenericGtkGui
+    from gui.MainGui import MainGui
+    from GlobalVariables import GlobalVariables
+    from objects.Account import Account
+
 from gi.repository import Gtk
 import os
 
