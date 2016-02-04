@@ -269,14 +269,14 @@ class GenericGtkGui(Gtk.Window):
             renderer = Gtk.CellRendererText()
             column = Gtk.TreeViewColumn(column_title, renderer, text=i)
             tree_view.append_column(column)
-        scrollable_treelist = Gtk.ScrolledWindow()
-        scrollable_treelist.set_vexpand(True)
-        scrollable_treelist.add(tree_view)
+        scrollable_tree_list = Gtk.ScrolledWindow()
+        scrollable_tree_list.set_vexpand(True)
+        scrollable_tree_list.add(tree_view)
         tree_selection = tree_view.get_selection()
         tree_selection.set_mode(Gtk.SelectionMode.MULTIPLE)
-        scrollable_treelist.set_hexpand(True)
-        scrollable_treelist.set_vexpand(True)
-        return {"scrollable": scrollable_treelist, "selection": tree_selection, "list_store": list_store}
+        scrollable_tree_list.set_hexpand(True)
+        scrollable_tree_list.set_vexpand(True)
+        return {"scrollable": scrollable_tree_list, "selection": tree_selection, "list_store": list_store}
 
     @staticmethod
     def generate_radio_button(text):

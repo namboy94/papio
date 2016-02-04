@@ -23,34 +23,11 @@ This file is part of finance-manager.
 
 # imports
 try:
-    from finance_manager.gui.GenericGtkGui import GenericGtkGui
+    from finance_manager.gui.dialogs.GenericGtkDialog import GenericGtkDialog
+    from finance_manager.utils.MoneyMath import MoneyMath
+    from finance_manager.utils.DateManager import DateManager
 except ImportError:
-    from gui.GenericGtkGui import GenericGtkGui
-
-
-class AssetPrompt(GenericGtkGui):
-    """
-    Class that models an AssetPrompt Window
-    """
-
-    def __init__(self, parent):
-        """
-        Extends the functionality of GenericGtkGui's constructor
-        :param parent: the prompt's parent
-        :return: void
-        """
-        super().__init__("New Asset", parent, False)
-
-    def lay_out(self):
-        """
-        Lays out the window
-        :return: void
-        """
-        print()
-
-    def start(self):
-        """
-        Extends the functionality of GenericGtkGui's start method if needed
-        :return: void
-        """
-        print()
+    from gui.dialogs.GenericGtkDialog import GenericGtkDialog
+    from utils.MoneyMath import MoneyMath
+    from utils.DateManager import DateManager
+from gi.repository import Gtk

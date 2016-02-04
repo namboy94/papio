@@ -24,11 +24,14 @@ This file is part of finance-manager.
 # imports
 try:
     from finance_manager.gui.GenericGtkGui import GenericGtkGui
+    from finance_manager.gui.dialogs.WalletPromptDialog import WalletPromptDialog
 except ImportError:
     from gui.GenericGtkGui import GenericGtkGui
+    from gui.dialogs.WalletPromptDialog import WalletPromptDialog
+
+import sys
 
 from gi.repository import Gtk
-import sys
 
 
 class MainGui(GenericGtkGui):
@@ -122,12 +125,15 @@ class MainGui(GenericGtkGui):
         self.expenses["list_store"].clear()
         self.income["list_store"].clear()
         self.assets["list_store"].clear()
+        # self.wallet_selector["combo_box"].clear()
         for expense in self.account.get_all_expenses_as_list():
             self.expenses["list_store"].append(expense)
         for income in self.account.get_all_income_as_list():
             self.income["list_store"].append(income)
         for asset in self.account.get_all_assets_as_list():
             self.assets["list_store"].append(asset)
+        for wallet in self.account.get_wallet_names_as_list():
+            self.wallet_selector["list_store"].append([wallet])
 
     def __set_mode__(self, widget, widget_to_display):
         """
@@ -182,6 +188,8 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         if widget is not None:
-            wallet = {}  # TODO Implement the user prompt
-            self.account.add_wallet_from_dict(wallet)
-            self.__fill_data__()
+            wallet = WalletPromptDialog(self).start()
+            if wallet is not None:
+                self.account.add_wallet_from_dict(wallet)
+                self.account.save()
+                self.__fill_data__()

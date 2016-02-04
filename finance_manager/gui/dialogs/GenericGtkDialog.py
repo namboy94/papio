@@ -1,0 +1,80 @@
+# coding=utf-8
+"""
+Copyright 2016 Hermann Krumrey
+
+This file is part of finance-manager.
+
+    finance-manager is a program that offers simple basic finance management
+    to keep track of expenses and income.
+
+    finance-manager is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    finance-manager is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+# imports
+try:
+    from finance_manager.gui.GenericGtkGui import GenericGtkGui
+except ImportError:
+    from gui.GenericGtkGui import GenericGtkGui
+
+from gi.repository import Gtk
+
+
+class GenericGtkDialog(Gtk.Dialog):
+    """
+    A generic GTK Dialog wrapper
+    """
+
+    def __init__(self, parent):
+        """
+        Initializes the dialog
+        :param parent: the parent window of this dialog
+        :return: void
+        """
+        Gtk.Dialog.__init__(self, "My Dialog", parent, 0,
+                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.set_default_size(300, 200)
+        self.box = self.get_content_area()
+        self.grid = Gtk.Grid(column_homogeneous=True,
+                             column_spacing=1,
+                             row_spacing=1)
+        self.box.pack_start(self.grid, False, False, 1)
+        self.lay_out()
+
+    def lay_out(self):
+        """
+        Lays out the arrangement of the objects contained in this dialog
+        :return: void
+        """
+        raise NotImplementedError("lay_out method not implemented")
+
+    def start(self):
+        """
+        Starts the dialog
+        :return: the result type of the dialog
+        """
+        self.box.show_all()
+        return super(GenericGtkDialog, self).run()
+
+    def add_label_and_text(self, text, x_pos, y_pos, x_dim, y_dim):
+        """
+        Adds a label and a text to the bottom of the dialog
+        :param text: The text to be displayed on the label
+        :return: the text field object
+        """
+        label_object = GenericGtkGui.generate_label(text)
+        text_object = GenericGtkGui.generate_text_entry("")
+        self.grid.attach(label_object, x_pos, y_pos, int(x_dim / 2), y_dim)
+        self.grid.attach(text_object, x_pos + int(x_dim / 2), y_pos, int(x_dim / 2), y_dim)
+        return text_object
