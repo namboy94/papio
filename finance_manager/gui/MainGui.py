@@ -25,9 +25,11 @@ This file is part of finance-manager.
 try:
     from finance_manager.gui.GenericGtkGui import GenericGtkGui
     from finance_manager.gui.dialogs.WalletPromptDialog import WalletPromptDialog
+    from finance_manager.gui.dialogs.AssetPromptDialog import AssetPromptDialog
 except ImportError:
     from gui.GenericGtkGui import GenericGtkGui
     from gui.dialogs.WalletPromptDialog import WalletPromptDialog
+    from gui.dialogs.AssetPromptDialog import AssetPromptDialog
 
 import sys
 
@@ -177,9 +179,10 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         if widget is not None:
-            asset = {}  # TODO Implement the user prompt
-            self.account.add_asset_from_dict(asset)
-            self.__fill_data__()
+            asset = AssetPromptDialog(self).start()
+            if asset is not None:
+                self.account.add_asset_from_dict(asset)
+                self.__fill_data__()
 
     def __open_new_wallet_prompt__(self, widget):
         """

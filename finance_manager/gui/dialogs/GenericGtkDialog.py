@@ -24,8 +24,10 @@ This file is part of finance-manager.
 # imports
 try:
     from finance_manager.gui.GenericGtkGui import GenericGtkGui
+    from finance_manager.gui.widgets.DateSelector import DateSelector
 except ImportError:
     from gui.GenericGtkGui import GenericGtkGui
+    from gui.widgets.DateSelector import DateSelector
 
 from gi.repository import Gtk
 
@@ -71,6 +73,10 @@ class GenericGtkDialog(Gtk.Dialog):
         """
         Adds a label and a text to the bottom of the dialog
         :param text: The text to be displayed on the label
+        :param x_pos: the x position
+        :param y_pos: the y position
+        :param x_dim: the x size
+        :param y_dim: the y size
         :return: the text field object
         """
         label_object = GenericGtkGui.generate_label(text)
@@ -78,3 +84,16 @@ class GenericGtkDialog(Gtk.Dialog):
         self.grid.attach(label_object, x_pos, y_pos, int(x_dim / 2), y_dim)
         self.grid.attach(text_object, x_pos + int(x_dim / 2), y_pos, int(x_dim / 2), y_dim)
         return text_object
+
+    def add_date_widget(self, x_pos, y_pos, x_dim, y_dim):
+        """
+        Adds a date selector widget to the dialog
+        :param x_pos: the x position
+        :param y_pos: the y position
+        :param x_dim: the x size
+        :param y_dim: the y size
+        :return: the widget
+        """
+        widget = DateSelector(True)
+        self.grid.attach(widget, x_pos, y_pos, x_dim, y_dim)
+        return widget

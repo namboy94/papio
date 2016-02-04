@@ -49,15 +49,16 @@ class AssetPromptDialog(GenericGtkDialog):
         Lays out the window
         :return: void
         """
-        self.asset_name_text_field = self.add_label_and_text("Wallet Name:", 0, 0, 20, 10)
-        self.asset_value_text_field = self.add_label_and_text("Starting Value:", 0, 10, 20, 10)
+        self.asset_name_text_field = self.add_label_and_text("Asset Name:", 0, 0, 20, 10)
+        self.asset_value_text_field = self.add_label_and_text("Value:", 0, 10, 20, 10)
+        self.asset_date_widget = self.add_date_widget(0, 20, 20, 10)
 
     def start(self):
         """
         Extends the functionality of GenericGtkGui's start method if needed
         :return: void
         """
-        result = super(WalletPromptDialog, self).start()
+        result = super(AssetPromptDialog, self).start()
         return_value = None
         if result == Gtk.ResponseType.OK:
             return_value = self.__ok_button__()
@@ -66,9 +67,9 @@ class AssetPromptDialog(GenericGtkDialog):
 
     def __ok_button__(self):
         """
-        Generates a new wallet dictionary from the user's input.
+        Generates a new asset dictionary from the user's input.
         If an error is encountered, the user is notified
-        :return: the wallet if no errors were encountered, otherwise None
+        :return: the asset if no errors were encountered, otherwise None
         """
         valid_input, error = self.__check_input__()
         if valid_input:
