@@ -107,4 +107,4 @@ class DateSelector(Gtk.Grid):
             minute = "0"
             second = "0"
 
-        DateManager.get_time_as_date_string(year, month, day, hour, minute, second)
+        return DateManager.get_time_as_date_string(year, month, day, hour, minute, second)

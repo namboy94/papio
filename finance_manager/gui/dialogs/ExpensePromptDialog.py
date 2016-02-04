@@ -31,3 +31,90 @@ except ImportError:
     from utils.MoneyMath import MoneyMath
     from utils.DateManager import DateManager
 from gi.repository import Gtk
+
+
+class ExpensePromptDialog(GenericGtkDialog):
+    """
+    A class that models an Expense Prompt Dialog
+    """
+
+    def __init__(self, parent):
+        self.expense_description_text_field = None
+        self.expense_value_text_field = None
+        self.expense_recipient_text_field = None
+        self.expense_date_widget = None
+        super().__init__(parent)
+
+    def lay_out(self):
+        """
+        Lays out the window
+        :return: void
+        """
+        self.expense_description_text_field = self.add_label_and_text("Expense Description:", 0, 0, 20, 10)
+        self.expense_value_text_field = self.add_label_and_text("Value:", 0, 10, 20, 10)
+        self.expense_recipient_text_field = self.add_label_and_text("Recipient:", 0, 20, 20, 10)
+        self.expense_date_widget = self.add_date_widget(0, 30, 20, 10)
+        # TODO ADD WALLET
+
+    def start(self):
+        """
+        Extends the functionality of GenericGtkGui's start method if needed
+        :return: void
+        """
+        return_value = None
+        while return_value is None:
+            result = super(ExpensePromptDialog, self).start()
+            if result == Gtk.ResponseType.OK:
+                return_value = self.__ok_button__()
+            elif result == Gtk.ResponseType.CANCEL:
+                break
+        self.destroy()
+        return return_value
+
+    def __ok_button__(self):
+        """
+        Generates a new expense dictionary from the user's input.
+        If an error is encountered, the user is notified
+        :return: the expense if no errors were encountered, otherwise None
+        """
+        valid_input, error_main, error_sec = self.__check_input__()
+        if valid_input:
+            date = self.expense_date_widget.get_date_string()
+            description = self.expense_description_text_field.get_text()
+            value = self.expense_value_text_field.get_text()
+            recipient = self.expense_recipient_text_field.get_text()
+            expense = {"description": description,
+                       "value": value,
+                       "recipient": recipient,
+                       "date": date}
+            return expense
+        else:
+            self.parent.show_message_dialog(error_main, error_sec)
+            return None
+
+    def __check_input__(self):
+        """
+        Checks the input for errors and returns information about them if there are any.
+        :return: False, the error description if an error is found, otherwise True, True, True
+        """
+        description = self.expense_description_text_field.get_text()
+        value = self.expense_value_text_field.get_text()
+        recipient = self.expense_recipient_text_field.get_text()
+        if len(description) == 0:
+            return False, "Invalid Input", "Please enter a description"
+        elif len(recipient) == 0:
+            return False, "Invalid Input", "Please enter a recipient name"
+        else:
+            try:
+                d, c = MoneyMath.parse_money_string(value)
+                if d < 0:
+                    raise ValueError()
+            except ValueError:
+                return False, "Invalid Input", "Please enter a valid, positive money value"
+
+            try:
+                self.expense_date_widget.get_date_string()
+            except ValueError:
+                return False, "Invalid Input", "Sorry, this date is invalid"
+
+        return True, True, True

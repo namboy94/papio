@@ -26,10 +26,14 @@ try:
     from finance_manager.gui.GenericGtkGui import GenericGtkGui
     from finance_manager.gui.dialogs.WalletPromptDialog import WalletPromptDialog
     from finance_manager.gui.dialogs.AssetPromptDialog import AssetPromptDialog
+    from finance_manager.gui.dialogs.IncomePromptDialog import IncomePromptDialog
+    from finance_manager.gui.dialogs.ExpensePromptDialog import ExpensePromptDialog
 except ImportError:
     from gui.GenericGtkGui import GenericGtkGui
     from gui.dialogs.WalletPromptDialog import WalletPromptDialog
     from gui.dialogs.AssetPromptDialog import AssetPromptDialog
+    from gui.dialogs.IncomePromptDialog import IncomePromptDialog
+    from gui.dialogs.ExpensePromptDialog import ExpensePromptDialog
 
 import sys
 
@@ -117,6 +121,7 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         super(MainGui, self).start()
+        self.account.save()
         sys.exit(0)
 
     def __fill_data__(self):
@@ -127,7 +132,8 @@ class MainGui(GenericGtkGui):
         self.expenses["list_store"].clear()
         self.income["list_store"].clear()
         self.assets["list_store"].clear()
-        # self.wallet_selector["combo_box"].clear()
+        self.wallet_selector["list_store"].clear()
+        self.wallet_selector["list_store"].append(("All",))
         for expense in self.account.get_all_expenses_as_list():
             self.expenses["list_store"].append(expense)
         for income in self.account.get_all_income_as_list():
@@ -157,8 +163,9 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         if widget is not None:
-            expense, wallet_name = ({}, "")  # TODO Implement the user prompt
+            expense, wallet_name = ExpensePromptDialog(self).start()
             self.account.add_expense_from_dict(expense, wallet_name)
+            self.account.save()
             self.__fill_data__()
 
     def __open_new_income_prompt__(self, widget):
@@ -168,8 +175,9 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         if widget is not None:
-            income, wallet_name = ({}, "")  # TODO Implement the user prompt
+            income, wallet_name = IncomePromptDialog(self).start()
             self.account.add_income_from_dict(income, wallet_name)
+            self.account.save()
             self.__fill_data__()
 
     def __open_new_asset_prompt__(self, widget):
@@ -182,6 +190,7 @@ class MainGui(GenericGtkGui):
             asset = AssetPromptDialog(self).start()
             if asset is not None:
                 self.account.add_asset_from_dict(asset)
+                self.account.save()
                 self.__fill_data__()
 
     def __open_new_wallet_prompt__(self, widget):

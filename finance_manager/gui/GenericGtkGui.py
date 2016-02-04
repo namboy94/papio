@@ -260,9 +260,10 @@ class GenericGtkGui(Gtk.Window):
         """
         types = ()
         titles = []
-        for key in options:
-            types += options[key]
-            titles.append(key)
+        print(options)
+        for key in sorted(options.items()):
+            types += key[1]
+            titles.append(key[0])
         list_store = Gtk.ListStore(*types)
         tree_view = Gtk.TreeView.new_with_model(list_store.filter_new())
         for i, column_title in enumerate(titles):

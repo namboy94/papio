@@ -31,3 +31,89 @@ except ImportError:
     from utils.MoneyMath import MoneyMath
     from utils.DateManager import DateManager
 from gi.repository import Gtk
+
+
+class IncomePromptDialog(GenericGtkDialog):
+    """
+    A class that models an Income Prompt Dialog
+    """
+
+    def __init__(self, parent):
+        self.income_description_text_field = None
+        self.income_value_text_field = None
+        self.income_donor_text_field = None
+        self.income_date_widget = None
+        super().__init__(parent)
+
+    def lay_out(self):
+        """
+        Lays out the window
+        :return: void
+        """
+        self.income_description_text_field = self.add_label_and_text("Income Description:", 0, 0, 20, 10)
+        self.income_value_text_field = self.add_label_and_text("Value:", 0, 10, 20, 10)
+        self.income_donor_text_field = self.add_label_and_text("Donor:", 0, 20, 20, 10)
+        self.income_date_widget = self.add_date_widget(0, 30, 20, 10)
+
+    def start(self):
+        """
+        Extends the functionality of GenericGtkGui's start method if needed
+        :return: void
+        """
+        return_value = None
+        while return_value is None:
+            result = super(IncomePromptDialog, self).start()
+            if result == Gtk.ResponseType.OK:
+                return_value = self.__ok_button__()
+            elif result == Gtk.ResponseType.CANCEL:
+                break
+        self.destroy()
+        return return_value
+
+    def __ok_button__(self):
+        """
+        Generates a new income dictionary from the user's input.
+        If an error is encountered, the user is notified
+        :return: the asset if no errors were encountered, otherwise None
+        """
+        valid_input, error_main, error_sec = self.__check_input__()
+        if valid_input:
+            date = self.income_date_widget.get_date_string()
+            description = self.income_description_text_field.get_text()
+            value = self.income_value_text_field.get_text()
+            donor = self.income_donor_text_field.get_text()
+            income = {"description": description,
+                       "value": value,
+                       "donor": donor,
+                       "date": date}
+            return income
+        else:
+            self.parent.show_message_dialog(error_main, error_sec)
+            return None
+
+    def __check_input__(self):
+        """
+        Checks the input for errors and returns information about them if there are any.
+        :return: False, the error description if an error is found, otherwise True, True, True
+        """
+        description = self.income_description_text_field.get_text()
+        value = self.income_value_text_field.get_text()
+        donor = self.income_donor_text_field.get_text()
+        if len(description) == 0:
+            return False, "Invalid Input", "Please enter a description"
+        elif len(donor) == 0:
+            return False, "Invalid Input", "Please enter a recipient name"
+        else:
+            try:
+                d, c = MoneyMath.parse_money_string(value)
+                if d < 0:
+                    raise ValueError()
+            except ValueError:
+                return False, "Invalid Input", "Please enter a valid, positive money value"
+
+            try:
+                self.income_date_widget.get_date_string()
+            except ValueError:
+                return False, "Invalid Input", "Sorry, this date is invalid"
+
+        return True, True, True
