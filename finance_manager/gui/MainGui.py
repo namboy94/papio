@@ -117,6 +117,7 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         super(MainGui, self).start()
+        self.account.save()
         sys.exit(0)
 
     def __fill_data__(self):
@@ -127,7 +128,8 @@ class MainGui(GenericGtkGui):
         self.expenses["list_store"].clear()
         self.income["list_store"].clear()
         self.assets["list_store"].clear()
-        # self.wallet_selector["combo_box"].clear()
+        self.wallet_selector["list_store"].clear()
+        self.wallet_selector["list_store"].append(("All",))
         for expense in self.account.get_all_expenses_as_list():
             self.expenses["list_store"].append(expense)
         for income in self.account.get_all_income_as_list():
@@ -182,6 +184,7 @@ class MainGui(GenericGtkGui):
             asset = AssetPromptDialog(self).start()
             if asset is not None:
                 self.account.add_asset_from_dict(asset)
+                self.account.save()
                 self.__fill_data__()
 
     def __open_new_wallet_prompt__(self, widget):

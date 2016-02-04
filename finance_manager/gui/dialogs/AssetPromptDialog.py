@@ -79,7 +79,7 @@ class AssetPromptDialog(GenericGtkDialog):
             date = self.asset_date_widget.get_date_string()
             value = self.asset_value_text_field.get_text()
             name = self.asset_name_text_field.get_text()
-
+            print(date)
             asset = {"description": name,
                      "value": value,
                      "date": date}
@@ -107,7 +107,7 @@ class AssetPromptDialog(GenericGtkDialog):
 
             try:
                 self.asset_date_widget.get_date_string()
-            except Exception:
+            except ValueError:
                 return False, "Invalid Input", "Sorry, this date is invalid"
 
         return True, True, True

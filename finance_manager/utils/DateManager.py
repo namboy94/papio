@@ -57,8 +57,12 @@ class DateManager(object):
         :param second: the second
         :return: the date string
         """
-        return year + "/" + month.zfill(2) + "/" + day.zfill(2) + ":" + \
-               hour.zfill(2) + "-" + minute.zfill(2) + "-" + second.zfill(2)
+        valid = DateManager.validate_date(year, month, day, hour, minute, second)
+        if valid:
+            return year + "/" + month.zfill(2) + "/" + day.zfill(2) + ":" + \
+                   hour.zfill(2) + "-" + minute.zfill(2) + "-" + second.zfill(2)
+        else:
+            raise ValueError("Invalid Date")
 
     @staticmethod
     def get_current_year_string():
@@ -107,3 +111,47 @@ class DateManager(object):
         :return: the second string
         """
         return str(datetime.datetime.now().second).zfill(2)
+
+    @staticmethod
+    def validate_date(year, month, day, hour, minute, second):
+        """
+        Checks if a valid date was entered
+        :param year: the year to check
+        :param month: the month to check
+        :param day: the day to check
+        :param hour: the hour to check
+        :param minute: the minute to scheck
+        :param second: the second to check
+        :return: True, if the date is valid, False otherwise
+        """
+        try:
+            int(year)
+            int(month)
+            int(day)
+            int(hour)
+            int(minute)
+            int(second)
+        except ValueError:
+            return False
+
+        if int(year) < 1:
+            return False
+        if int(month) < 1 or int(month) > 12:
+            return False
+        if int(day) < 1:
+            if int(day) > 28 and int(month) == 2:
+                if int(year) % 4 != 0:
+                    return False
+                elif int(day) > 29:
+                    return False
+            elif int(day) > 30 and int(month) in [4, 6, 9, 11]:
+                return False
+            elif int(day) > 31 and int(month) in [1, 3, 5, 7, 8, 10, 12]:
+                return False
+        if int(hour) < 1 or int(hour) > 23:
+            return False
+        if int(minute) < 1 or int(minute) > 59:
+            return False
+        if int(second) < 1 or int(second) > 59:
+            return False
+        return True
