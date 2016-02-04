@@ -43,6 +43,7 @@ class GenericGtkDialog(Gtk.Dialog):
         :param parent: the parent window of this dialog
         :return: void
         """
+        self.parent = parent
         Gtk.Dialog.__init__(self, "My Dialog", parent, 0,
                             (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                              Gtk.STOCK_OK, Gtk.ResponseType.OK))

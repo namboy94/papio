@@ -63,10 +63,13 @@ class WalletPromptDialog(GenericGtkDialog):
         Extends the functionality of GenericGtkGui's start method if needed
         :return: void
         """
-        result = super(WalletPromptDialog, self).start()
         return_value = None
-        if result == Gtk.ResponseType.OK:
-            return_value = self.__ok_button__()
+        while return_value is None:
+            result = super(WalletPromptDialog, self).start()
+            if result == Gtk.ResponseType.OK:
+                return_value = self.__ok_button__()
+            elif result == Gtk.ResponseType.CANCEL:
+                break
         self.destroy()
         return return_value
 
