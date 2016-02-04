@@ -79,7 +79,7 @@ class WalletPromptDialog(GenericGtkDialog):
         If an error is encountered, the user is notified
         :return: the wallet if no errors were encountered, otherwise None
         """
-        valid_input, error = self.__check_input__()
+        valid_input, error_main, error_sec = self.__check_input__()
         if valid_input:
             start_dollars, start_cents = MoneyMath.parse_money_string(self.wallet_starting_value_text_field.get_text())
             income = []
@@ -105,26 +105,21 @@ class WalletPromptDialog(GenericGtkDialog):
                       "expenses": expenses}
             return wallet
         else:
-            if error == "wallet_exists":
-                self.parent.show_message_dialog("Invalid Input", "Sorry, this wallet already exists.")
-            elif error == "invalid_value":
-                self.parent.show_message_dialog("Invalid Input", "Sorry, this is not a valid money value.")
-            else:
-                self.parent.show_message_dialog("Invalid Input", "Sorry, your input is incorrect")
+            self.parent.show_message_dialog(error_main, error_sec)
             return None
 
     def __check_input__(self):
         """
         Checks the input for errors and returns information about them if there are any.
-        :return: False, the error description if an error is found, otherwise True, True
+        :return: False, the error description if an error is found, otherwise True, True, True
         """
         name = self.wallet_name_text_field.get_text()
         value = self.wallet_starting_value_text_field.get_text()
         if name in self.parent.account.get_wallet_names_as_list():
-            return False, "wallet_exists"
+            return False, "Invalid Input", "Sorry, this wallet already exists."
         else:
             try:
                 MoneyMath.parse_money_string(value)
             except ValueError:
-                return False, "invalid_value"
-        return True, True
+                return False, "Invalid Input", "Sorry, this is not a valid money value."
+        return True, True, True

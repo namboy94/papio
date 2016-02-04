@@ -58,10 +58,13 @@ class AssetPromptDialog(GenericGtkDialog):
         Extends the functionality of GenericGtkGui's start method if needed
         :return: void
         """
-        result = super(AssetPromptDialog, self).start()
         return_value = None
-        if result == Gtk.ResponseType.OK:
-            return_value = self.__ok_button__()
+        while return_value is None:
+            result = super(AssetPromptDialog, self).start()
+            if result == Gtk.ResponseType.OK:
+                return_value = self.__ok_button__()
+            elif result == Gtk.ResponseType.CANCEL:
+                break
         self.destroy()
         return return_value
 
@@ -71,52 +74,40 @@ class AssetPromptDialog(GenericGtkDialog):
         If an error is encountered, the user is notified
         :return: the asset if no errors were encountered, otherwise None
         """
-        valid_input, error = self.__check_input__()
+        valid_input, error_main, error_sec = self.__check_input__()
         if valid_input:
-            start_dollars, start_cents = MoneyMath.parse_money_string(self.wallet_starting_value_text_field.get_text())
-            income = []
-            expenses = []
-            date = DateManager.get_current_date_time_as_string()
+            date = self.asset_date_widget.get_date_string()
+            value = self.asset_value_text_field.get_text()
+            name = self.asset_name_text_field.get_text()
 
-            if start_dollars < 0:
-                start_value = MoneyMath.encode_money_string(-start_dollars, -start_cents)
-                expenses.append({"value": start_value,
-                                 "description": "starting_value",
-                                 "recipient": "starting",
-                                 "date": date})
-            else:
-                start_value = MoneyMath.encode_money_string(start_dollars, start_cents)
-                income.append({"value": start_value,
-                               "description": "starting_value",
-                               "donor": "starting",
-                               "date": date})
-
-            wallet = {"name": self.wallet_name_text_field.get_text(),
-                      "balance": self.wallet_starting_value_text_field.get_text(),
-                      "income": income,
-                      "expenses": expenses}
-            return wallet
+            asset = {"description": name,
+                     "value": value,
+                     "date": date}
+            return asset
         else:
-            if error == "wallet_exists":
-                self.parent.show_message_dialog("Invalid Input", "Sorry, this wallet already exists.")
-            elif error == "invalid_value":
-                self.parent.show_message_dialog("Invalid Input", "Sorry, this is not a valid money value.")
-            else:
-                self.parent.show_message_dialog("Invalid Input", "Sorry, your input is incorrect")
+            self.parent.show_message_dialog(error_main, error_sec)
             return None
 
     def __check_input__(self):
         """
         Checks the input for errors and returns information about them if there are any.
-        :return: False, the error description if an error is found, otherwise True, True
+        :return: False, the error description if an error is found, otherwise True, True, True
         """
-        name = self.wallet_name_text_field.get_text()
-        value = self.wallet_starting_value_text_field.get_text()
-        if name in self.parent.account.get_wallet_names_as_list():
-            return False, "wallet_exists"
+        name = self.asset_name_text_field.get_text()
+        value = self.asset_value_text_field.get_text()
+        if len(name) == 0:
+            return False, "Invalid Input", "Please enter an asset name"
         else:
             try:
-                MoneyMath.parse_money_string(value)
+                d, c = MoneyMath.parse_money_string(value)
+                if d < 0:
+                    raise ValueError()
             except ValueError:
-                return False, "invalid_value"
-        return True, True
+                return False, "Invalid Input", "Please enter a valid, positive money value"
+
+            try:
+                self.asset_date_widget.get_date_string()
+            except Exception:
+                return False, "Invalid Input", "Sorry, this date is invalid"
+
+        return True, True, True
