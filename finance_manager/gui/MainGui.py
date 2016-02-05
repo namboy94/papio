@@ -65,6 +65,8 @@ class MainGui(GenericGtkGui):
         self.new_income_button = None
         self.new_asset_button = None
         self.new_wallet_button = None
+        self.selected_wallet = "all"
+        self.selected_wallet_index = 0
         super().__init__(account_name, parent)
 
     def lay_out(self):
@@ -91,6 +93,7 @@ class MainGui(GenericGtkGui):
         self.expense_button = GenericGtkGui.generate_simple_button("Expenses", self.__set_mode__, self.expenses)
         self.asset_button = GenericGtkGui.generate_simple_button("Assets", self.__set_mode__, self.assets)
         self.wallet_selector = GenericGtkGui.generate_combo_box(["all"] + self.account.get_wallet_names_as_list())
+        self.wallet_selector["combo_box"].connect("changed", self.__on_wallet_change__)
 
         self.new_expense_button = GenericGtkGui.generate_simple_button("New Expense", self.__open_new_expense_prompt__)
         self.new_income_button = GenericGtkGui.generate_simple_button("New Income", self.__open_new_income_prompt__)
@@ -127,19 +130,33 @@ class MainGui(GenericGtkGui):
         Fills the data widgets with information of the loaded account
         :return: void
         """
-        self.expenses["list_store"].clear()
-        self.income["list_store"].clear()
         self.assets["list_store"].clear()
         self.wallet_selector["list_store"].clear()
         self.wallet_selector["list_store"].append(("All",))
-        for expense in self.account.get_all_expenses_as_list():
-            self.expenses["list_store"].append(expense)
-        for income in self.account.get_all_income_as_list():
-            self.income["list_store"].append(income)
-        for asset in self.account.get_all_assets_as_list():
-            self.assets["list_store"].append(asset)
         for wallet in self.account.get_wallet_names_as_list():
-            self.wallet_selector["list_store"].append([wallet])
+                self.wallet_selector["list_store"].append([wallet])
+        for asset in self.account.get_all_assets_as_list():
+                self.assets["list_store"].append(asset)
+        self.__change_wallet__()
+
+    def __change_wallet__(self):
+        """
+        Changes the displayed expenses and income to only show the data for one wallet
+        :return:
+        """
+        self.expenses["list_store"].clear()
+        self.income["list_store"].clear()
+        if self.selected_wallet == "All":
+            for expense in self.account.get_all_expenses_as_list():
+                self.expenses["list_store"].append(expense)
+            for income in self.account.get_all_income_as_list():
+                self.income["list_store"].append(income)
+        else:
+            for expense in self.account.get_all_expenses_as_list(self.selected_wallet):
+                self.expenses["list_store"].append(expense)
+            for income in self.account.get_all_income_as_list(self.selected_wallet):
+                self.income["list_store"].append(income)
+        self.wallet_selector["combo_box"].set_active(self.selected_wallet_index)
 
     def __set_mode__(self, widget, widget_to_display):
         """
@@ -215,3 +232,16 @@ class MainGui(GenericGtkGui):
                 self.account.add_wallet_from_dict(wallet)
                 self.account.save()
                 self.__fill_data__()
+
+    def __on_wallet_change__(self, widget):
+        """
+        Runs whenever the selected wallet combo box element is selected
+        :param widget: the combo box affected
+        :return: void
+        """
+        if widget is not None:
+            this_selected_wallet = GenericGtkGui.get_current_selected_combo_box_option(self.wallet_selector)
+            if this_selected_wallet:
+                self.selected_wallet = this_selected_wallet
+                self.selected_wallet_index = self.wallet_selector["combo_box"].get_active()
+                self.__change_wallet__()

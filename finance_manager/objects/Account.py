@@ -157,29 +157,50 @@ class Account(object):
             wallet_names.append(wallet["name"])
         return wallet_names
 
-    def get_all_expenses_as_list(self):
+    def get_all_expenses_as_list(self, wallet_to_find=""):
         """
         Returns a list of tuples containing all expenses
+        :param wallet_to_find: can be set to look for a specific wallet's expenses and income
         :return: the list of tuples
         """
         expenses = []
         for wallet in self.wallets:
-            for expense in wallet["expenses"]:
-                expense_tuple = (expense["value"], expense["description"], expense["recipient"], expense["date"],
-                                 wallet["name"])
-                expenses.append(expense_tuple)
+            if wallet_to_find:
+                if wallet_to_find == wallet["name"]:
+                    for expense in wallet["expenses"]:
+                        expense_tuple = (expense["value"], expense["description"], expense["recipient"],
+                                         expense["date"], wallet["name"])
+                        expenses.append(expense_tuple)
+                    break
+                else:
+                    continue
+            else:
+                for expense in wallet["expenses"]:
+                    expense_tuple = (expense["value"], expense["description"], expense["recipient"], expense["date"],
+                                     wallet["name"])
+                    expenses.append(expense_tuple)
         return expenses
 
-    def get_all_income_as_list(self):
+    def get_all_income_as_list(self, wallet_to_find=""):
         """
         Returns a list of tuples containing all income
+        :param wallet_to_find: can be set to look for a specific wallet's expenses and income
         :return: the list of tuples
         """
         income = []
         for wallet in self.wallets:
-            for inc in wallet["income"]:
-                income_tuple = (inc["value"], inc["description"], inc["donor"], inc["date"], wallet["name"])
-                income.append(income_tuple)
+            if wallet_to_find:
+                if wallet_to_find == wallet["name"]:
+                    for inc in wallet["income"]:
+                        income_tuple = (inc["value"], inc["description"], inc["donor"], inc["date"], wallet["name"])
+                        income.append(income_tuple)
+                    break
+                else:
+                    continue
+            else:
+                for inc in wallet["income"]:
+                    income_tuple = (inc["value"], inc["description"], inc["donor"], inc["date"], wallet["name"])
+                    income.append(income_tuple)
         return income
 
     def get_all_assets_as_list(self):

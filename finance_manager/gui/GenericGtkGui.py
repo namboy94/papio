@@ -310,4 +310,7 @@ class GenericGtkGui(Gtk.Window):
         """
         combo_box = combo_box_dict["combo_box"]
         combo_box_list = combo_box_dict["list_store"]
-        return combo_box_list.get(combo_box.get_active_iter(), 0)[0]
+        combo_iter = combo_box.get_active_iter()
+        if combo_iter is None:
+            return None
+        return combo_box_list.get(combo_iter, 0)[0]
