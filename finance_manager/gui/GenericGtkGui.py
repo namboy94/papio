@@ -260,7 +260,6 @@ class GenericGtkGui(Gtk.Window):
         """
         types = ()
         titles = []
-        print(options)
         for key in sorted(options.items()):
             types += key[1]
             titles.append(key[0])
