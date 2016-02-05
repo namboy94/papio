@@ -328,3 +328,18 @@ class Account(object):
         wallet = {"name": wallet_name, "balance": wallet_balance, "expenses": expenses, "income": income}
         self.wallets.append(wallet)
         self.__add_expense_or_income_to_balance__(wallet_balance)
+
+    def get_balance(self, wallet_name=""):
+        """
+        Gets the balance as a money string
+        :param wallet_name: can be set to get the balance of a single wallet
+        :return:
+        """
+        if not wallet_name:
+            return MoneyMath.encode_money_string(self.account_balance_no_assets_dollars,
+                                                 self.account_balance_no_assets_cents)
+        else:
+            for wallet in self.wallets:
+                if wallet["name"] == wallet_name:
+                    return wallet["balance"]
+        return ""

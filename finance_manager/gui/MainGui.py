@@ -58,6 +58,7 @@ class MainGui(GenericGtkGui):
         self.income = None
         self.assets = None
         self.wallet_selector = None
+        self.wallet_balance_label = None
         self.income_button = None
         self.expense_button = None
         self.asset_button = None
@@ -94,6 +95,7 @@ class MainGui(GenericGtkGui):
         self.asset_button = GenericGtkGui.generate_simple_button("Assets", self.__set_mode__, self.assets)
         self.wallet_selector = GenericGtkGui.generate_combo_box(["all"] + self.account.get_wallet_names_as_list())
         self.wallet_selector["combo_box"].connect("changed", self.__on_wallet_change__)
+        self.wallet_balance_label = GenericGtkGui.generate_label("")
 
         self.new_expense_button = GenericGtkGui.generate_simple_button("New Expense", self.__open_new_expense_prompt__)
         self.new_income_button = GenericGtkGui.generate_simple_button("New Income", self.__open_new_income_prompt__)
@@ -104,10 +106,12 @@ class MainGui(GenericGtkGui):
         self.grid.attach(self.income["scrollable"], 0, 5, 20, 10)
         self.grid.attach(self.expenses["scrollable"], 0, 5, 20, 10)
         self.grid.attach(self.assets["scrollable"], 0, 5, 20, 10)
-        self.grid.attach_next_to(self.income_button, self.assets["scrollable"], Gtk.PositionType.TOP, 5, 4)
-        self.grid.attach_next_to(self.expense_button, self.income_button, Gtk.PositionType.RIGHT, 5, 4)
-        self.grid.attach_next_to(self.asset_button, self.expense_button, Gtk.PositionType.RIGHT, 5, 4)
-        self.grid.attach_next_to(self.wallet_selector["combo_box"], self.asset_button, Gtk.PositionType.RIGHT, 5, 4)
+        self.grid.attach_next_to(self.income_button, self.assets["scrollable"], Gtk.PositionType.TOP, 4, 4)
+        self.grid.attach_next_to(self.expense_button, self.income_button, Gtk.PositionType.RIGHT, 4, 4)
+        self.grid.attach_next_to(self.asset_button, self.expense_button, Gtk.PositionType.RIGHT, 4, 4)
+        self.grid.attach_next_to(self.wallet_selector["combo_box"], self.asset_button, Gtk.PositionType.RIGHT, 4, 4)
+        self.grid.attach_next_to(self.wallet_balance_label, self.wallet_selector["combo_box"],
+                                 Gtk.PositionType.RIGHT, 4, 4)
         self.grid.attach_next_to(self.new_income_button, self.assets["scrollable"], Gtk.PositionType.BOTTOM, 10, 7)
         self.grid.attach_next_to(self.new_expense_button, self.new_income_button, Gtk.PositionType.RIGHT, 10, 7)
         self.grid.attach_next_to(self.new_asset_button, self.new_income_button, Gtk.PositionType.BOTTOM, 10, 7)
@@ -151,11 +155,13 @@ class MainGui(GenericGtkGui):
                 self.expenses["list_store"].append(expense)
             for income in self.account.get_all_income_as_list():
                 self.income["list_store"].append(income)
+            self.wallet_balance_label.set_text(str(self.account.get_balance()))
         else:
             for expense in self.account.get_all_expenses_as_list(self.selected_wallet):
                 self.expenses["list_store"].append(expense)
             for income in self.account.get_all_income_as_list(self.selected_wallet):
                 self.income["list_store"].append(income)
+            self.wallet_balance_label.set_text(str(self.account.get_balance(self.selected_wallet)))
         self.wallet_selector["combo_box"].set_active(self.selected_wallet_index)
 
     def __set_mode__(self, widget, widget_to_display):
