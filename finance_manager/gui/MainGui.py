@@ -73,21 +73,19 @@ class MainGui(GenericGtkGui):
         :return: void
         """
         # Create objects
-        self.expenses = GenericGtkGui.generate_multi_list_box({"Value": (str,),
-                                                               "Description": (str,),
-                                                               "Recipient": (str,),
-                                                               "Date": (str,),
-                                                               "Wallet": (str,)})
         self.income = GenericGtkGui.generate_multi_list_box({"Value": (str,),
                                                              "Description": (str,),
                                                              "Source": (str,),
                                                              "Date": (str,),
                                                              "Wallet": (str,)})
+        self.expenses = GenericGtkGui.generate_multi_list_box({"Value": (str,),
+                                                               "Description": (str,),
+                                                               "Recipient": (str,),
+                                                               "Date": (str,),
+                                                               "Wallet": (str,)})
         self.assets = GenericGtkGui.generate_multi_list_box({"Value": (str,),
                                                              "Description": (str,),
                                                              "Date": (str,)})
-        self.income["scrollable"].set_visible(False)
-        self.expenses["scrollable"].set_visible(False)
 
         self.income_button = GenericGtkGui.generate_simple_button("Income", self.__set_mode__, self.income)
         self.expense_button = GenericGtkGui.generate_simple_button("Expenses", self.__set_mode__, self.expenses)
@@ -100,8 +98,8 @@ class MainGui(GenericGtkGui):
         self.new_wallet_button = GenericGtkGui.generate_simple_button("New Wallet", self.__open_new_wallet_prompt__)
 
         # Lay out objects
-        self.grid.attach(self.expenses["scrollable"], 0, 5, 20, 10)
         self.grid.attach(self.income["scrollable"], 0, 5, 20, 10)
+        self.grid.attach(self.expenses["scrollable"], 0, 5, 20, 10)
         self.grid.attach(self.assets["scrollable"], 0, 5, 20, 10)
         self.grid.attach_next_to(self.income_button, self.assets["scrollable"], Gtk.PositionType.TOP, 5, 4)
         self.grid.attach_next_to(self.expense_button, self.income_button, Gtk.PositionType.RIGHT, 5, 4)
@@ -150,7 +148,7 @@ class MainGui(GenericGtkGui):
         :param widget_to_display: the widget to be displayed
         :return:
         """
-        if widget is not None:
+        if widget is not None or widget is None:
             self.income["scrollable"].set_visible(False)
             self.expenses["scrollable"].set_visible(False)
             self.assets["scrollable"].set_visible(False)
@@ -191,7 +189,6 @@ class MainGui(GenericGtkGui):
                 self.__fill_data__()
             except TypeError:
                 return
-
 
     def __open_new_asset_prompt__(self, widget):
         """
