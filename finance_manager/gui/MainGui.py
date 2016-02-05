@@ -162,11 +162,17 @@ class MainGui(GenericGtkGui):
         :param widget: the button that called this method
         :return: void
         """
+        if len(self.account.get_wallet_names_as_list()) == 0:
+            GenericGtkGui.show_message_dialog(self, "No wallets found", "Please add a wallet before adding expenses")
+            return
         if widget is not None:
-            expense, wallet_name = ExpensePromptDialog(self).start()
-            self.account.add_expense_from_dict(expense, wallet_name)
-            self.account.save()
-            self.__fill_data__()
+            try:
+                expense, wallet_name = ExpensePromptDialog(self).start()
+                self.account.add_expense_from_dict(expense, wallet_name)
+                self.account.save()
+                self.__fill_data__()
+            except TypeError:
+                return
 
     def __open_new_income_prompt__(self, widget):
         """
@@ -174,11 +180,18 @@ class MainGui(GenericGtkGui):
         :param widget: the button that called this method
         :return: void
         """
+        if len(self.account.get_wallet_names_as_list()) == 0:
+            GenericGtkGui.show_message_dialog(self, "No wallets found", "Please add a wallet before adding income")
+            return
         if widget is not None:
-            income, wallet_name = IncomePromptDialog(self).start()
-            self.account.add_income_from_dict(income, wallet_name)
-            self.account.save()
-            self.__fill_data__()
+            try:
+                income, wallet_name = IncomePromptDialog(self).start()
+                self.account.add_income_from_dict(income, wallet_name)
+                self.account.save()
+                self.__fill_data__()
+            except TypeError:
+                return
+
 
     def __open_new_asset_prompt__(self, widget):
         """

@@ -86,6 +86,23 @@ class GenericGtkDialog(Gtk.Dialog):
         self.grid.attach(text_object, x_pos + int(x_dim / 2), y_pos, int(x_dim / 2), y_dim)
         return text_object
 
+    def add_label_and_combo_box(self, text, options, x_pos, y_pos, x_dim, y_dim):
+        """
+        Adds a label and a combo box to the bottom of the dialog
+        :param text: The text to be displayed on the label
+        :param options: the x position
+        :param x_pos: the x position
+        :param y_pos: the y position
+        :param x_dim: the x size
+        :param y_dim: the y size
+        :return: the combo box list store object
+        """
+        label_object = GenericGtkGui.generate_label(text)
+        combo_box = GenericGtkGui.generate_combo_box(options)
+        self.grid.attach(label_object, x_pos, y_pos, int(x_dim / 2), y_dim)
+        self.grid.attach(combo_box["combo_box"], x_pos + int(x_dim / 2), y_pos, int(x_dim / 2), y_dim)
+        return combo_box
+
     def add_date_widget(self, x_pos, y_pos, x_dim, y_dim):
         """
         Adds a date selector widget to the dialog

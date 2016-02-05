@@ -31,19 +31,22 @@ class DateManager(object):
     """
 
     @staticmethod
-    def get_current_date_time_as_string():
+    def get_current_date_time_as_string(time=True):
         """
         Determines the current time and turns it into a string
+        :param time: flag to include the current time
         :return: the date string
         """
         year = DateManager.get_current_year_string()
         month = DateManager.get_current_month_string()
         day = DateManager.get_current_day_string()
-        hour = DateManager.get_current_hour_string()
-        minute = DateManager.get_current_minute_string()
-        second = DateManager.get_current_second_string()
-
-        return year + "/" + month + "/" + day + ":" + hour + "-" + minute + "-" + second
+        if time:
+            hour = DateManager.get_current_hour_string()
+            minute = DateManager.get_current_minute_string()
+            second = DateManager.get_current_second_string()
+            return year + "/" + month + "/" + day + ":" + hour + "-" + minute + "-" + second
+        else:
+            return year + "/" + month + "/" + day
 
     @staticmethod
     def get_time_as_date_string(year, month, day, hour, minute, second):

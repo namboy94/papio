@@ -75,6 +75,7 @@ class DateSelector(Gtk.Grid):
             self.attach_next_to(self.second_text, self.second_label, Gtk.PositionType.BOTTOM, 10, 10)
         self.set_current_time()
         self.current_time_check = GenericGtkGui.generate_check_box("Current Time")
+        self.current_time_check.set_active(False)
         self.attach_next_to(self.current_time_check, self.year_text, Gtk.PositionType.BOTTOM, 30, 5)
 
     def set_current_time(self):
@@ -95,6 +96,8 @@ class DateSelector(Gtk.Grid):
         Returns the input as a date string
         :return: the date string
         """
+        if self.current_time_check.get_active():
+            return DateManager.get_current_date_time_as_string(self.time)
         year = self.year_text.get_text()
         month = self.month_text.get_text()
         day = self.day_text.get_text()

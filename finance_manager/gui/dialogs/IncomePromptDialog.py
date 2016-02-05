@@ -24,10 +24,12 @@ This file is part of finance-manager.
 # imports
 try:
     from finance_manager.gui.dialogs.GenericGtkDialog import GenericGtkDialog
+    from finance_manager.gui.GenericGtkGui import GenericGtkGui
     from finance_manager.utils.MoneyMath import MoneyMath
     from finance_manager.utils.DateManager import DateManager
 except ImportError:
     from gui.dialogs.GenericGtkDialog import GenericGtkDialog
+    from gui.GenericGtkGui import GenericGtkGui
     from utils.MoneyMath import MoneyMath
     from utils.DateManager import DateManager
 from gi.repository import Gtk
@@ -43,6 +45,7 @@ class IncomePromptDialog(GenericGtkDialog):
         self.income_value_text_field = None
         self.income_donor_text_field = None
         self.income_date_widget = None
+        self.income_wallet = None
         super().__init__(parent)
 
     def lay_out(self):
@@ -53,7 +56,9 @@ class IncomePromptDialog(GenericGtkDialog):
         self.income_description_text_field = self.add_label_and_text("Income Description:", 0, 0, 20, 10)
         self.income_value_text_field = self.add_label_and_text("Value:", 0, 10, 20, 10)
         self.income_donor_text_field = self.add_label_and_text("Donor:", 0, 20, 20, 10)
-        self.income_date_widget = self.add_date_widget(0, 30, 20, 10)
+        self.income_wallet = self.add_label_and_combo_box("Wallets:", self.parent.account.get_wallet_names_as_list(),
+                                                           0, 30, 20, 10)
+        self.income_date_widget = self.add_date_widget(0, 45, 20, 10)
 
     def start(self):
         """
@@ -82,11 +87,12 @@ class IncomePromptDialog(GenericGtkDialog):
             description = self.income_description_text_field.get_text()
             value = self.income_value_text_field.get_text()
             donor = self.income_donor_text_field.get_text()
+            wallet_name = GenericGtkGui.get_current_selected_combo_box_option(self.income_wallet)
             income = {"description": description,
                        "value": value,
                        "donor": donor,
                        "date": date}
-            return income
+            return income, wallet_name
         else:
             self.parent.show_message_dialog(error_main, error_sec)
             return None
@@ -99,10 +105,13 @@ class IncomePromptDialog(GenericGtkDialog):
         description = self.income_description_text_field.get_text()
         value = self.income_value_text_field.get_text()
         donor = self.income_donor_text_field.get_text()
+        wallet_name = GenericGtkGui.get_current_selected_combo_box_option(self.income_wallet)
         if len(description) == 0:
             return False, "Invalid Input", "Please enter a description"
         elif len(donor) == 0:
             return False, "Invalid Input", "Please enter a recipient name"
+        elif len(wallet_name) == 0:
+            return False, "Invalid Input", "Please select a wallet"
         else:
             try:
                 d, c = MoneyMath.parse_money_string(value)
