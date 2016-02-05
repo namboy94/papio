@@ -146,7 +146,7 @@ class MainGui(GenericGtkGui):
     def __change_wallet__(self):
         """
         Changes the displayed expenses and income to only show the data for one wallet
-        :return:
+        :return: void
         """
         self.expenses["list_store"].clear()
         self.income["list_store"].clear()

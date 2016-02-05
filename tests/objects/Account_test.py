@@ -22,7 +22,11 @@ This file is part of finance-manager.
 """
 
 from unittest import TestCase
-# from finance_manager.objects.Account import Account
+import os
+try:
+    from finance_manager.objects.Account import Account
+except ImportError:
+    from objects.Account import Account
 
 
 class AccountTest(TestCase):
@@ -35,5 +39,9 @@ class AccountTest(TestCase):
         Tests if the Account class correctly handles an invalid account file
         :return: void
         """
-        # TODO Implement
-        print("Test")
+        file = open("test", "w")
+        file.write("{}}{}}{}{}{{}}{}{}{}{}{}{}{}{}{{{{}}{}}}{{{{}}}{}")
+        file.close()
+        Account("test")
+        os.remove("test")
+        self.assertTrue(True)
