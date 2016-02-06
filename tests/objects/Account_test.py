@@ -44,4 +44,5 @@ class AccountTest(TestCase):
         file.close()
         Account("test")
         os.remove("test")
+
         self.assertTrue(True)
