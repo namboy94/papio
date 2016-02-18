@@ -51,6 +51,7 @@ class GenericGtkGui(Gtk.Window):
         self.hide_parent = hide_parent
 
         # initialize GTK
+        # noinspection PyCallByClass
         Gtk.Window.__init__(self, title=title)
         self.set_border_width(10)
 
@@ -123,6 +124,22 @@ class GenericGtkGui(Gtk.Window):
         dialog.format_secondary_text(secondary_message)
         dialog.run()
         dialog.destroy()
+
+    def show_y_n_dialog(self, primary_message, secondary_message=""):
+        """
+        Opens a yes/no dialog
+        :param primary_message: the primary message to be displayed
+        :param secondary_message: the secondary message to be displayed
+        :return: True, if yes was selected, False otherwise
+        """
+        dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.QUESTION, Gtk.ButtonsType.YES_NO, primary_message)
+        dialog.format_secondary_text(secondary_message)
+        response = dialog.run()
+        dialog.destroy()
+        if response == Gtk.ResponseType.YES:
+            return True
+        else:
+            return False
 
     def show_file_chooser_dialog(self):
         """
@@ -226,7 +243,7 @@ class GenericGtkGui(Gtk.Window):
         entry = Gtk.Entry()
         entry.set_text(defaulttext)
         if command is not None:
-            entry.connect("key-press-event", GenericGtkGui.defaultEnterKey, command, additional_args)
+            entry.connect("key-press-event", GenericGtkGui.default_enter_key, command, additional_args)
         return entry
 
     @staticmethod
