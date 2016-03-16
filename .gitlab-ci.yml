@@ -1,0 +1,56 @@
+stages:
+  - setup
+  - test
+  - upload
+  - cleanup
+  - upgrade
+
+clone:
+  stage: setup
+  script:
+    - cd
+    - git clone http://gitlab.namibsun.net/namboy94/finance-manager.git
+
+run_unit_tests:
+  stage: test
+  script:
+    - cd
+    - cd finance-manager
+    - python setup.py test
+
+generate_statistics:
+  stage: test
+  script:
+    - cd
+    - cd finance-manager
+    - git_stats generate
+
+upload_to_pypi:
+  stage: upload
+  script:
+    - cd
+    - cd finance-manager
+    - python setup.py register sdist upload
+    - sleep 60
+  allow_failure: true
+
+upload_statistics:
+  stage: upload
+  script:
+    - cd
+    - cd finance-manager
+    - rsync -avP --delete-after git_stats/ www.krumreyh.de@ssh.strato.de:~/git_stats_pages/finance-manager
+    - ssh www.krumreyh.de@ssh.strato.de 'rsync -av --delete-after git_stats_pages Homepage/'
+
+
+delete_clone:
+  stage: cleanup
+  script:
+    - cd
+    - rm -rf finance-manager
+
+upgrade_from_pypi:
+  stage: upgrade
+  script:
+    - sudo pip3.5 install finance_manager --upgrade
+    - sleep 5
