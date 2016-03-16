@@ -21,28 +21,55 @@ This file is part of finance-manager.
     along with finance-manager.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from unittest import TestCase
-import os
+from nose.tools import with_setup
+from nose.tools import assert_true
+
 try:
-    from finance_manager.objects.Account import Account
-except ImportError:
     from objects.Account import Account
+except ImportError:
+    from finance_manager.objects.Account import Account
 
 
-class AccountTest(TestCase):
+class TestFootballScores(object):
     """
-    A Unit test class for the Account class
+    Unit Test Class that tests the Account class
     """
 
-    def test_if_invalid_account_file(self):
+    def __init__(self):
         """
-        Tests if the Account class correctly handles an invalid account file
-        :return: void
+        Constructor
         """
-        file = open("test", "w")
-        file.write("{}}{}}{}{}{{}}{}{}{}{}{}{}{}{}{{{{}}{}}}{{{{}}}{}")
-        file.close()
-        Account("test")
-        os.remove("test")
+        str(self)
 
-        self.assertTrue(True)
+    @classmethod
+    def setup_class(cls):
+        """
+        Sets up the test class
+        """
+        print()
+
+    @classmethod
+    def teardown_class(cls):
+        """
+        Tears down the test class
+        """
+        print()
+
+    def setup(self):
+        """
+        Sets up a test
+        """
+        str(self)
+
+    def teardown(self):
+        """
+        Tears down a test
+        """
+        str(self)
+
+    @with_setup(setup, teardown)
+    def test_dummy(self):
+        """
+        Dummy Test
+        """
+        assert_true(True)
