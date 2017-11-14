@@ -7,12 +7,16 @@ The repository currently only contains 3 old projects that are no longer being
 maintained. These 3 projects are:
 
 ## [finance-manager](legacy/finance-manager)
+
+A somewhat OK-ish GTK-based wallet manager
+
 ## [finance-program](legacy/finance-program)
 
+A simple and ugly CLI finance manager
 
 ## [finance-program-professional](legacy/finance-program-professional)
 
-A simple and ugly command line wallet editor
+A simple and ugly GUI finance manager
 
 ## Further Information
 
