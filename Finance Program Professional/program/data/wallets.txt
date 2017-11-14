@@ -1,0 +1,4 @@
+bank
+credit
+cash
+wallet
