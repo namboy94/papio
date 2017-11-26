@@ -1,0 +1,26 @@
+ext {
+    version = "0.1.0"
+    versionCode = 000100
+}
+
+// Define class paths
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:+"
+    }
+
+}
+
+// Define Repositories for submodules
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task version() {
+    println rootProject.ext.version
+}

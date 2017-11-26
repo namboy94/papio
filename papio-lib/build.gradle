@@ -1,0 +1,19 @@
+apply plugin: "kotlin"
+
+// Define submodule dependencies
+dependencies {
+    compile "org.jetbrains.kotlin:kotlin-stdlib:+"
+}
+
+jar {
+    manifest {
+        // Define Main class
+        attributes 'Main-Class': 'net.namibsun.papio.lib.MainKt'
+    }
+    from {  // Makes sure to compile all required classes
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+
+}
