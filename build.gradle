@@ -28,16 +28,64 @@ buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:+"
     }
-
 }
 
-// Define Repositories for submodules
-allprojects {
+// Shared operations for subprojectsls
+subprojects {
+
+    // Define Repositories for submodules
     repositories {
         jcenter()
     }
+
+    apply plugin: "kotlin"
+    apply plugin: "jacoco"
+
+    configurations {
+        ktlint
+    }
+
+    // Define common submodule dependencies
+    dependencies {
+        ktlint 'com.github.shyiko:ktlint:+'
+        compile "org.jetbrains.kotlin:kotlin-stdlib:+"
+        testCompile "org.jetbrains.kotlin:kotlin-test-junit:+"
+    }
+
+    // Jacoco Test coverage generation. Name must stay jacocoTestReport
+    jacocoTestReport {
+        group = "Reporting"
+        reports {
+            xml.setEnabled(true)
+            csv.setEnabled(false)
+            html.setDestination(new File("${buildDir}/reports/coverage"))
+        }
+    }
+
+    // Define ktlint task
+    task ktlint(type: JavaExec) {
+        main = "com.github.shyiko.ktlint.Main"
+        classpath = configurations.ktlint
+        args "src/**/*.kt"
+    }
+    check.dependsOn ktlint
+
+
+    // Makes sure to compile all required classes in JAR files
+    jar {
+        from {
+            configurations.compile.collect {
+                it.isDirectory() ? it : zipTree(it)
+            }
+        }
+    }
 }
 
-task version() {
-    println rootProject.ext.version
+// Print version
+task version(type: VersionTask)
+class VersionTask extends DefaultTask {
+    @TaskAction
+    def version() {
+        println project.ext.version
+    }
 }

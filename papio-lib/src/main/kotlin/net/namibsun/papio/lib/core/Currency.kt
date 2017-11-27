@@ -17,7 +17,6 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.core
 
-
 /**
  * This enum represents several real-world currencies.
  */

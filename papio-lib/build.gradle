@@ -15,33 +15,11 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-apply plugin: "kotlin"
-apply plugin: "jacoco"
-
-// Define submodule dependencies
-dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:+"
-    testCompile "org.jetbrains.kotlin:kotlin-test-junit:+"
-}
-
+// Define Main class
 jar {
     manifest {
-        // Define Main class
         attributes 'Main-Class': 'net.namibsun.papio.lib.MainKt'
-    }
-    from {  // Makes sure to compile all required classes
-        configurations.compile.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
     }
 }
 
-// Jacoco Unit Test Coverage Reporting
-jacocoTestReport {
-    group = "Reporting"
-    reports {
-        xml.setEnabled(true)
-        csv.setEnabled(false)
-        html.setDestination(new File("${buildDir}/reports/coverage"))
-    }
-}
+

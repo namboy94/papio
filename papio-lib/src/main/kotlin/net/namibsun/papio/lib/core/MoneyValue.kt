@@ -17,7 +17,6 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.core
 
-
 /**
  * The MoneyValue class defines a monetary value in a particular currency.
  * @param value: The value of the MoneyValue object
@@ -30,10 +29,10 @@ class MoneyValue(private var value: Int, private var currency: Currency) {
      * @param currency: The currency in which to get the value
      */
     fun getValue(currency: Currency? = null): Int {
+
         return if (currency == null) {
             this.value
-        }
-        else {
+        } else {
             CurrencyExchanger.update()
             CurrencyExchanger.convertValue(this.value, this.currency, currency)
         }
@@ -76,5 +75,4 @@ class MoneyValue(private var value: Int, private var currency: Currency) {
         this.value = CurrencyExchanger.convertValue(this.value, this.currency, currency)
         this.currency = currency
     }
-
 }

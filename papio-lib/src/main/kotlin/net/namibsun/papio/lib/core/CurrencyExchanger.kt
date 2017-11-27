@@ -19,7 +19,7 @@ package net.namibsun.papio.lib.core
 
 import java.io.IOException
 import java.net.URL
-import java.util.*
+import java.util.Scanner
 import java.util.logging.Logger
 
 /**
@@ -75,23 +75,19 @@ object CurrencyExchanger {
                     var rate = exchangeRateData.split("${currency.name}' rate='")[1]
                     rate = rate.split("'")[0]
                     this.exchangeRates[currency] = rate.toDouble()
-
                 } catch (e: IndexOutOfBoundsException) {
-                    this.logger.warning("Currency $currency not found in XML data.")
-                    this.exchangeRates[currency] = 1.0 // If currency not found, set to 1.0
-                                                       // Euro will also trigger this, but since that's the
-                                                       // reference currency, it should be set to 1.0 anyways
-
+                    if (currency != Currency.EUR) {
+                        this.logger.warning("Currency $currency not found in XML data.")
+                        this.exchangeRates[currency] = 1.0 // If currency not found, set to 1.0
+                    }
                 } catch (e: NumberFormatException) {
                     this.logger.warning("Invalid exchange rate value for $currency in XML data.")
                     this.exchangeRates[currency] = 1.0 // If currency rate not valid long, set to 1.0
                 }
             }
 
-            this.exchangeRates[Currency.EUR] = 1.0  // Make sure Euro is set to 1.0
-
-        }
-        else {
+            this.exchangeRates[Currency.EUR] = 1.0 // Make sure Euro is set to 1.0
+        } else {
             this.logger.fine("Skipping exchange rate update")
         }
     }
@@ -113,7 +109,6 @@ object CurrencyExchanger {
         val destinationEuroValue = this.exchangeRates[destination]!! // Not null
 
         return ((value / sourceEuroValue) * destinationEuroValue).toInt()
-
     }
 
     /**
@@ -134,7 +129,6 @@ object CurrencyExchanger {
                 result += scanner.next()
             }
             result
-
         } catch (e: IOException) {
             ""
         }

@@ -21,3 +21,10 @@ unittest:
   script:
     - gradle test jacocoTestReport
     - rsync -av --delete-after papio-lib/build/reports/coverage/ /var/www/coverage.namibsun.net/public_html/papio-lib
+
+lint:
+  stage: test
+  tags:
+    - gradle
+  script:
+    - gradle ktlint -q

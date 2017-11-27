@@ -21,5 +21,4 @@ class CurrencyExchangerTest {
         }
         assertEquals(1.0, rates[Currency.EUR])
     }
-
 }
