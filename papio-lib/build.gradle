@@ -16,13 +16,12 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 apply plugin: "kotlin"
-apply plugin: 'idea'
 
 // Define submodule dependencies
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib:+"
-    testCompile 'junit:junit:+'
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:+"
+    testCompile "org.mockito:mockito-core:+"
 }
 
 jar {

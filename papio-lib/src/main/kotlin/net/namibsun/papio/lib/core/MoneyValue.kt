@@ -16,7 +16,6 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 package net.namibsun.papio.lib.core
-import net.namibsun.papio.lib.exceptions.CurrencyNotFoundException
 
 
 /**
@@ -30,17 +29,42 @@ class MoneyValue(private var value: Int, private var currency: Currency) {
      * Gets the value of the MoneyValue object in the specified currency.
      * @param currency: The currency in which to get the value
      */
-    fun getValue(currency: Currency): Int {
-        return this.value
+    fun getValue(currency: Currency? = null): Int {
+        return if (currency == null) {
+            this.value
+        }
+        else {
+            CurrencyExchanger.update()
+            CurrencyExchanger.convertValue(this.value, this.currency, currency)
+        }
     }
 
     /**
-     * Adds another monetary value to this one.
-     * @param value: The Value to addd to this MoneyValue object
+     * Method that enables retrieving the currency of this MoneyValue
+     * @return The current currency of this MoneyValue object
      */
-    fun add(value: MoneyValue) {
-        value.convert(this.currency)
-        this.value += this.value
+    fun getCurrency(): Currency {
+        return this.currency
+    }
+
+    /**
+     * Adds another monetary value to this one. Can be called using the '+' operator.
+     * @param value: The Value to add to this MoneyValue object
+     * @return The result of the addition as a new MoneyValue object
+     */
+    operator fun plus(value: MoneyValue): MoneyValue {
+        val newValue = this.value + value.getValue(this.currency)
+        return MoneyValue(newValue, this.currency)
+    }
+
+    /**
+     * Subtracts another monetary value from this one. Can be called using the '-' operator.
+     * @param value: The value to subtract from this MoneyValue object
+     * @return The result of the subtraction as a new MoneyValue object
+     */
+    operator fun minus(value: MoneyValue): MoneyValue {
+        val newValue = this.value - value.getValue(this.currency)
+        return MoneyValue(newValue, this.currency)
     }
 
     /**
@@ -48,37 +72,9 @@ class MoneyValue(private var value: Int, private var currency: Currency) {
      * @param currency: The currency into which to convert the MoneyValue
      */
     fun convert(currency: Currency) {
-        this.value = this.convertValue(this.value, this.currency, currency)
+        CurrencyExchanger.update()
+        this.value = CurrencyExchanger.convertValue(this.value, this.currency, currency)
         this.currency = currency
-    }
-
-    /**
-     * Converts a value from one currency to another.
-     * @param value: The value to convert
-     * @param source: The source currency from which to convert from
-     * @param destination: The destination currency into which to convert to
-     * @return The converted value
-     */
-    private fun convertValue(value: Int, source: Currency, destination: Currency): Int {
-
-        if (source == destination) {
-            return value
-        }
-
-        val exchangeRates = this.getUsdExchangeRates()
-        val sourceUsdValue = exchangeRates[source] ?: throw CurrencyNotFoundException(source)
-        val destinationUsdValue = exchangeRates[destination] ?: throw CurrencyNotFoundException(destination)
-
-        return ((value / sourceUsdValue) * destinationUsdValue).toInt()
-
-    }
-
-    /**
-     * Retrieves the current exchange rates relative to the US Dollar.
-     * @return A map mapping currencies to exchange rates
-     */
-    private fun getUsdExchangeRates(): Map<Currency, Float> {
-        return hashMapOf()
     }
 
 }
