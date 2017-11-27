@@ -79,6 +79,8 @@ object CurrencyExchanger {
                 } catch (e: IndexOutOfBoundsException) {
                     this.logger.warning("Currency $currency not found in XML data.")
                     this.exchangeRates[currency] = 1.0 // If currency not found, set to 1.0
+                                                       // Euro will also trigger this, but since that's the
+                                                       // reference currency, it should be set to 1.0 anyways
 
                 } catch (e: NumberFormatException) {
                     this.logger.warning("Invalid exchange rate value for $currency in XML data.")

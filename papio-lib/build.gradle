@@ -16,6 +16,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 apply plugin: "kotlin"
+apply plugin: "jacoco"
 
 // Define submodule dependencies
 dependencies {
@@ -33,5 +34,14 @@ jar {
             it.isDirectory() ? it : zipTree(it)
         }
     }
+}
 
+// Jacoco Unit Test Coverage Reporting
+jacocoTestReport {
+    group = "Reporting"
+    reports {
+        xml.setEnabled(true)
+        csv.setEnabled(false)
+        html.setDestination(new File("${buildDir}/reports/coverage"))
+    }
 }

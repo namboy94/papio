@@ -1,5 +1,6 @@
 stages:
   - mirror
+  - test
 
 github_mirror:
   stage: mirror
@@ -9,3 +10,14 @@ github_mirror:
     - git checkout master
     - git pull
     - git push git@github.com:namboy94/papio.git master -f
+    - git checkout develop
+    - git pull
+    - git push git@github.com:namboy94/papio.git develop -f
+
+unittest:
+  stage: test
+  tags:
+    - gradle
+  script:
+    - gradle test jacocoTestReport
+    - rsync -av --delete-after papio-lib/build/reports/coverage/ /var/www/coverage.namibsun.net/public_html/papio-lib
