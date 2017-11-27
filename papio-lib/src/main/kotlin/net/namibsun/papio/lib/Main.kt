@@ -17,6 +17,9 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib
 
+import net.namibsun.papio.lib.core.CurrencyExchanger
+
 fun main(args: Array<String>) {
-    println("Hello World")
+    val rates = CurrencyExchanger.getExchangeRates()
+    println(rates)
 }
