@@ -15,8 +15,11 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib
+package net.namibsun.papio.lib.exceptions
+import net.namibsun.papio.lib.core.Currency
 
-fun main(args: Array<String>) {
-    println("Hello World")
-}
+/**
+ * Exception that is thrown whenever a currency is not found.
+ * @param currency: The currency that was not found
+ */
+class CurrencyNotFoundException(currency: Currency) : Exception(currency.name)

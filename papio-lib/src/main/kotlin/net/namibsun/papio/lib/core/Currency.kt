@@ -15,8 +15,14 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib
+package net.namibsun.papio.lib.core
 
-fun main(args: Array<String>) {
-    println("Hello World")
+
+/**
+ * This enum represents several real-world currencies.
+ */
+enum class Currency {
+    EUR,
+    USD,
+    ZAR
 }
