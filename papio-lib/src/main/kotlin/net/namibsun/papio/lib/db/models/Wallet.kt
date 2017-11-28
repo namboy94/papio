@@ -20,7 +20,7 @@ import net.namibsun.papio.lib.core.Currency
 import net.namibsun.papio.lib.core.MoneyValue
 import net.namibsun.papio.lib.db.DbHandler
 
-data class Wallet(val id: Int, val name: String, val startingValue: MoneyValue) {
+data class Wallet(val id: Int, val name: String, private var startingValue: MoneyValue) {
 
     /**
      * Calculates the balance of all transactions
@@ -60,7 +60,7 @@ data class Wallet(val id: Int, val name: String, val startingValue: MoneyValue) 
             transaction.convertCurrency(dbHandler, currency)
         }
         // Change currency of transaction BEFORE the wallet itself!
-        this.startingValue.convert(currency)
+        this.startingValue = this.startingValue.convert(currency)
         dbHandler.adjustWalletStartingValue(this.id, this.startingValue)
     }
 

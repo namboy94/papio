@@ -91,8 +91,8 @@ class MoneyValueTest {
      */
     @Test
     fun testConvertingValueToAnotherCurrency() {
-        val value = MoneyValue(100, Currency.EUR)
-        value.convert(Currency.USD)
+        var value = MoneyValue(100, Currency.EUR)
+        value = value.convert(Currency.USD)
         val rates = CurrencyExchanger.getExchangeRates()
 
         assertEquals((100 * rates[Currency.USD]!!).toInt(), value.getValue(Currency.USD))

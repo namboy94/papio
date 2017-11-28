@@ -65,7 +65,7 @@ data class Transaction(val id: Int,
      * @param currency: The currency to use
      */
     fun convertCurrency(dbHandler: DbHandler, currency: Currency) {
-        this.amount.convert(currency)
+        this.amount = this.amount.convert(currency)
         dbHandler.adjustTransactionAmount(this.id, this.amount.getValue())
     }
 

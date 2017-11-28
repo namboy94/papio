@@ -19,6 +19,7 @@ package net.namibsun.papio.lib.core
 
 /**
  * The MoneyValue class defines a monetary value in a particular currency.
+ * MoneyValues are immutable. To change one, a new object needs to be created
  * @param value: The value of the MoneyValue object
  * @param currency: The currency of the monetary value
  */
@@ -69,10 +70,10 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
     /**
      * Converts the currency of this MoneyValue object and adjusts the value according to current exchange rates.
      * @param currency: The currency into which to convert the MoneyValue
+     * @return The converted MoneyValue
      */
-    fun convert(currency: Currency) {
+    fun convert(currency: Currency): MoneyValue {
         CurrencyExchanger.update()
-        this.value = CurrencyExchanger.convertValue(this.value, this.currency, currency)
-        this.currency = currency
+        return MoneyValue(CurrencyExchanger.convertValue(this.value, this.currency, currency), currency)
     }
 }

@@ -312,7 +312,7 @@ class DbHandler(private val connection: Connection) {
                           description: String,
                           amount: MoneyValue,
                           unixUtcTimestamp: Int = (System.currentTimeMillis() / 1000).toInt()) : Transaction {
-        amount.convert(wallet.getCurrency())
+        val converted = amount.convert(wallet.getCurrency())
         val statement = this.connection.prepareStatement("" +
                 "INSERT INTO transactions " +
                 "(wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp) " +
@@ -322,7 +322,7 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(2, category.id)
         statement.setInt(3, transactionPartner.id)
         statement.setString(4, description)
-        statement.setInt(5, amount.getValue())
+        statement.setInt(5, converted.getValue())
         statement.setInt(6, unixUtcTimestamp)
         statement.execute()
 
@@ -335,7 +335,7 @@ class DbHandler(private val connection: Connection) {
         idStatement.close()
         results.close()
 
-        return Transaction(id, wallet, category, transactionPartner, description, amount, unixUtcTimestamp)
+        return Transaction(id, wallet, category, transactionPartner, description, converted, unixUtcTimestamp)
     }
 
     /**
