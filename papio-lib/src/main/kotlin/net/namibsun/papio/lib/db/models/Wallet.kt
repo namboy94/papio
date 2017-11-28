@@ -53,6 +53,18 @@ data class Wallet(val id: Int, val name: String, val startingValue: MoneyValue) 
     }
 
     /**
+     * Converts the currency of the wallet. All transaction values in the wallet will also be converted.
+     */
+    fun convertCurrency(dbHandler: DbHandler, currency: Currency) {
+        for (transaction in this.getAllTransactions(dbHandler)) {
+            transaction.convertCurrency(dbHandler, currency)
+        }
+        // Change currency of transaction BEFORE the wallet itself!
+        this.startingValue.convert(currency)
+        dbHandler.adjustWalletStartingValue(this.id, this.startingValue)
+    }
+
+    /**
      * Deletes this wallet and all associated transactions
      * @param dbHandler: The database handler to use
      */

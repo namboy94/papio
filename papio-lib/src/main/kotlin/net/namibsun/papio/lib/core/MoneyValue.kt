@@ -22,7 +22,7 @@ package net.namibsun.papio.lib.core
  * @param value: The value of the MoneyValue object
  * @param currency: The currency of the monetary value
  */
-class MoneyValue(private var value: Int, private var currency: Currency) {
+data class MoneyValue(private var value: Int, private var currency: Currency) {
 
     /**
      * Gets the value of the MoneyValue object in the specified currency.

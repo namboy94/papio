@@ -25,8 +25,8 @@ import net.namibsun.papio.lib.db.models.Wallet
 import java.sql.Connection
 
 /**
- * Interface that defines which methods a database handler should
- * implement
+ * Class that manages database calls
+ * @param connection: A JDBC compatible database connection
  */
 class DbHandler(private val connection: Connection) {
 
@@ -57,12 +57,19 @@ class DbHandler(private val connection: Connection) {
                 "   category_id INTEGER NOT NULL," +
                 "   transaction_partner_id INTEGER NOT NULL," +
                 "   description TEXT NOT NULL," +
-                "   amount: INTEGER NOT NULL," +
-                "   unix_utc_timestamp: INTEGER NOT NULL," +
+                "   amount INTEGER NOT NULL," +
+                "   unix_utc_timestamp INTEGER NOT NULL," +
                 "   FOREIGN KEY(wallet_id) REFERENCES wallets(id)," +
                 "   FOREIGN KEY(category_id) REFERENCES categories(id)," +
                 "   FOREIGN KEY(transaction_partner_id) REFERENCES transaction_partners(id)" +
                 ")")
+    }
+
+    /**
+     * Closes the database connection
+     */
+    fun close() {
+        this.connection.close()
     }
 
     /**
@@ -75,6 +82,13 @@ class DbHandler(private val connection: Connection) {
      * @return The created wallet object or the existing one if it already existed
      */
     fun createWallet(name: String, startingValue: MoneyValue): Wallet {
+
+        // Don't allow duplicates
+        val existing = this.getWallet(name)
+        if (existing != null) {
+            return existing
+        }
+
         val statement = this.connection.prepareStatement("" +
                 "INSERT INTO wallets " +
                 "(name, initial_value, currency) " +
@@ -130,7 +144,7 @@ class DbHandler(private val connection: Connection) {
         statement.execute()
         val results = statement.resultSet
 
-        val wallet = if (results.fetchSize != 1) {
+        val wallet = if (!results.next()) {
             null
         } else {
             Wallet( results.getInt("id"),
@@ -149,6 +163,13 @@ class DbHandler(private val connection: Connection) {
      * @return The corresponding Category object
      */
     fun createCategory(name: String) : Category {
+
+        // Don't allow duplicates
+        val existing = this.getCategory(name)
+        if (existing != null) {
+            return existing
+        }
+
         val statement = this.connection.prepareStatement("INSERT INTO categories (name) VALUES (?)")
         statement.setString(1, name)
         statement.execute()
@@ -194,7 +215,7 @@ class DbHandler(private val connection: Connection) {
         statement.execute()
         val results = statement.resultSet
 
-        val category = if (results.fetchSize != 1) {
+        val category = if (!results.next()) {
             null
         } else {
             Category(results.getInt("id"), results.getString("name"))
@@ -212,6 +233,13 @@ class DbHandler(private val connection: Connection) {
      * @return The corresponding TransactionPartner object
      */
     fun createTransactionPartner(name: String): TransactionPartner {
+
+        // Don't allow duplicates
+        val existing = this.getTransactionPartner(name)
+        if (existing != null) {
+            return existing
+        }
+
         val statement = this.connection.prepareStatement("INSERT INTO transaction_partners (name) VALUES (?)")
         statement.setString(1, name)
         statement.execute()
@@ -257,7 +285,7 @@ class DbHandler(private val connection: Connection) {
         statement.execute()
         val results = statement.resultSet
 
-        val transactionPartner = if (results.fetchSize != 1) {
+        val transactionPartner = if (!results.next()) {
             null
         } else {
             TransactionPartner(results.getInt("id"), results.getString("name"))
@@ -286,9 +314,8 @@ class DbHandler(private val connection: Connection) {
                           unixUtcTimestamp: Int = (System.currentTimeMillis() / 1000).toInt()) : Transaction {
         amount.convert(wallet.getCurrency())
         val statement = this.connection.prepareStatement("" +
-                "INSERT INTO transaction " +
+                "INSERT INTO transactions " +
                 "(wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp) " +
-                "OUTPUT INSERTED.id" +
                 "VALUES (?, ?, ?, ?, ?, ?)"
         )
         statement.setInt(1, wallet.id)
@@ -298,10 +325,16 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(5, amount.getValue())
         statement.setInt(6, unixUtcTimestamp)
         statement.execute()
-        val results = statement.resultSet
-        val id = statement.resultSet.getInt(1)
+
+        val idStatement = this.connection.prepareStatement("SELECT last_insert_rowid()")
+        idStatement.execute()
+        val results = idStatement.resultSet
+        val id = results.getInt(1)
+
         statement.close()
+        idStatement.close()
         results.close()
+
         return Transaction(id, wallet, category, transactionPartner, description, amount, unixUtcTimestamp)
     }
 
@@ -325,6 +358,20 @@ class DbHandler(private val connection: Connection) {
         statement.close()
         results.close()
         return wallets
+    }
+
+    /**
+     * Adjusts the starting value of a wallet. Can also be used to change the currency of a wallet.
+     * @param walletId: The ID of the wallet to adjust
+     * @param initialValue: The new initial value of the wallet
+     */
+    fun adjustWalletStartingValue(walletId: Int, initialValue: MoneyValue) {
+        val statement = this.connection.prepareStatement("UPDATE wallets SET initial_value=?,currency=? WHERE id=?")
+        statement.setInt(1, initialValue.getValue())
+        statement.setString(2, initialValue.getCurrency().name)
+        statement.setInt(3, walletId)
+        statement.execute()
+        statement.close()
     }
 
     /**

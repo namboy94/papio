@@ -18,6 +18,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.core
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 /**
  * Tests the MoneyValue class
@@ -57,6 +58,22 @@ class MoneyValueTest {
         val value = valueOne - valueTwo
         assertEquals(-100, value.getValue())
         assertEquals(Currency.EUR, value.getCurrency())
+    }
+
+    /**
+     * Tests if the equality of a MoneyValue object is calculated correctly
+     */
+    @Test
+    fun testEquality() {
+        val valueOne = MoneyValue(100, Currency.EUR)
+        val valueTwo = MoneyValue(100, Currency.EUR)
+        val valueThree = MoneyValue(200, Currency.EUR)
+        val valueFour = MoneyValue(100, Currency.USD)
+
+        assertEquals(valueOne, valueOne)
+        assertEquals(valueOne, valueTwo)
+        assertNotEquals(valueOne, valueThree)
+        assertNotEquals(valueOne, valueFour)
     }
 
     /**

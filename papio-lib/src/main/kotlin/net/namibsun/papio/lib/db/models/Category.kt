@@ -30,7 +30,7 @@ data class Category(val id: Int, val name: String) {
      * Deletes the category
      * @param dbHandler: The Database Handler to use
      */
-    fun deleteCategory(dbHandler: DbHandler) {
+    fun delete(dbHandler: DbHandler) {
         dbHandler.deleteCategory(this.id)
     }
 
