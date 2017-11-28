@@ -35,13 +35,13 @@ import net.namibsun.papio.lib.db.DbHandler
  * @param amount: The amount of money that makes up the transaction. Always the same currency as the wallet
  * @param unixUtcTimestamp: The timestamp indicating when the transaction took place
  */
-data class Transaction(private val id: Int,
+data class Transaction(val id: Int,
                        private val wallet: Wallet,
                        private val category: Category,
                        private val partner: TransactionPartner,
-                       private val description: String,
+                       val description: String,
                        private var amount: MoneyValue,
-                       private val unixUtcTimestamp: Int) {
+                       val unixUtcTimestamp: Int) {
 
     /**
      * Retrieves the amount of money in this transaction

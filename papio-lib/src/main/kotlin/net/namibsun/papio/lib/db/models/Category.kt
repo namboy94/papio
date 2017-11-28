@@ -24,7 +24,7 @@ import net.namibsun.papio.lib.db.DbHandler
  * @param id: The ID of the category in the database
  * @param name: The name of the category
  */
-data class Category(private val id: Int, private val name: String) {
+data class Category(val id: Int, val name: String) {
 
     /**
      * Deletes the category

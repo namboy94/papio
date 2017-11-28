@@ -16,10 +16,11 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 package net.namibsun.papio.lib.db.models
+import net.namibsun.papio.lib.core.Currency
 import net.namibsun.papio.lib.core.MoneyValue
 import net.namibsun.papio.lib.db.DbHandler
 
-data class Wallet(private val id: Int, private val name: String, private val startingValue: MoneyValue) {
+data class Wallet(val id: Int, val name: String, val startingValue: MoneyValue) {
 
     /**
      * Calculates the balance of all transactions
@@ -32,6 +33,14 @@ data class Wallet(private val id: Int, private val name: String, private val sta
             value += transaction.getAmount()
         }
         return value + this.startingValue
+    }
+
+    /**
+     * Retrieves the currency currently used within this wallet
+     * @return The currently used currency of the wallet
+     */
+    fun getCurrency(): Currency {
+        return this.startingValue.getCurrency()
     }
 
     /**

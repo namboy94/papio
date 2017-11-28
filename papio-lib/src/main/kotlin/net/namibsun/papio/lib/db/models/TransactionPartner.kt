@@ -24,7 +24,7 @@ import net.namibsun.papio.lib.db.DbHandler
  * @param id: The ID of the transaction partner
  * @param name: The name of the transaction partner
  */
-data class TransactionPartner(private val id: Int, private val name: String) {
+data class TransactionPartner(val id: Int, val name: String) {
 
     /**
      * Deletes the Transaction Partner from the database
