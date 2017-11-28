@@ -88,7 +88,7 @@ class TransactionTest {
     fun testCreatingTransactionWithWrongCurrency() {
         val value = MoneyValue(100, Currency.USD)
         val transaction = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!,"Description", value
+                this.wallet!!, this.category!!, this.partner!!, "Description", value
         )
         assertEquals(transaction.getAmount().getCurrency(), Currency.EUR)
         assertNotEquals(transaction.getAmount(), value)
@@ -197,5 +197,4 @@ class TransactionTest {
         }
         assertEquals(0, indices.size)
     }
-
 }

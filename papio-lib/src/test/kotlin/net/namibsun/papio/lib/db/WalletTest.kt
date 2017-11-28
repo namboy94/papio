@@ -123,11 +123,9 @@ class WalletTest {
         this.handler!!.createTransaction(wallet, cat, part, "One", MoneyValue(1000, Currency.EUR))
         this.handler!!.createTransaction(wallet, cat, part, "Two", MoneyValue(-50, Currency.EUR))
 
-
         val balance = wallet.getBalance(this.handler!!)
         assertEquals(balance.getValue(), 1050)
         assertEquals(balance.getCurrency(), Currency.EUR)
         assertEquals(balance, MoneyValue(1050, Currency.EUR))
-
     }
 }

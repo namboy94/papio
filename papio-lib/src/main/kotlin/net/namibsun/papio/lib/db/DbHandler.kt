@@ -17,7 +17,8 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
-import net.namibsun.papio.lib.core.*
+import net.namibsun.papio.lib.core.MoneyValue
+import net.namibsun.papio.lib.core.Currency
 import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
@@ -149,7 +150,11 @@ class DbHandler(private val connection: Connection) {
         } else {
             Wallet( results.getInt("id"),
                     results.getString("name"),
-                    MoneyValue(results.getInt("initial_value"),Currency.valueOf(results.getString("currency"))))
+                    MoneyValue(
+                            results.getInt("initial_value"),
+                            Currency.valueOf(results.getString("currency"))
+                    )
+            )
         }
         statement.close()
         results.close()
@@ -162,7 +167,7 @@ class DbHandler(private val connection: Connection) {
      * @param name: The name of the category
      * @return The corresponding Category object
      */
-    fun createCategory(name: String) : Category {
+    fun createCategory(name: String): Category {
 
         // Don't allow duplicates
         val existing = this.getCategory(name)
@@ -311,7 +316,7 @@ class DbHandler(private val connection: Connection) {
                           transactionPartner: TransactionPartner,
                           description: String,
                           amount: MoneyValue,
-                          unixUtcTimestamp: Int = (System.currentTimeMillis() / 1000).toInt()) : Transaction {
+                          unixUtcTimestamp: Int = (System.currentTimeMillis() / 1000).toInt()): Transaction {
         val converted = amount.convert(wallet.getCurrency())
         val statement = this.connection.prepareStatement("" +
                 "INSERT INTO transactions " +
@@ -348,7 +353,7 @@ class DbHandler(private val connection: Connection) {
         val results = statement.resultSet
         val wallets = mutableListOf<Wallet>()
 
-        while(results.next()) {
+        while (results.next()) {
             wallets.add(Wallet(
                     results.getInt("id"),
                     results.getString("name"),

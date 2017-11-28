@@ -70,5 +70,4 @@ class TransactionPartnerTest {
         original.delete(this.handler!!)
         assertNull(this.handler!!.getTransactionPartner("Partner"))
     }
-
 }

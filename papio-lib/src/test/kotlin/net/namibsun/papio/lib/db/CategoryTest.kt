@@ -1,7 +1,5 @@
 package net.namibsun.papio.lib.db
 
-import net.namibsun.papio.lib.core.Currency
-import net.namibsun.papio.lib.core.MoneyValue
 import net.namibsun.papio.lib.db.models.Category
 import org.junit.After
 import org.junit.Before

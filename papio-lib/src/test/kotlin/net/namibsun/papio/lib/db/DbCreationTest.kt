@@ -7,7 +7,8 @@ import org.sqlite.SQLiteException
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
-import kotlin.test.*
+import kotlin.test.fail
+import kotlin.test.assertTrue
 
 /**
  * Class that tests the creation of the database tables and their content

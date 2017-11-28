@@ -42,5 +42,4 @@ data class TransactionPartner(val id: Int, val name: String) {
     fun getAllTransactions(dbHandler: DbHandler): List<Transaction> {
         return dbHandler.getTransactionsByTransactionPartner(this.id)
     }
-
 }

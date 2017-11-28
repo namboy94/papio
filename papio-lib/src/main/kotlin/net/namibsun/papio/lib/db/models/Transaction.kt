@@ -68,5 +68,4 @@ data class Transaction(val id: Int,
         this.amount = this.amount.convert(currency)
         dbHandler.adjustTransactionAmount(this.id, this.amount.getValue())
     }
-
 }
