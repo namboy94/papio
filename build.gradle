@@ -49,6 +49,7 @@ subprojects {
     dependencies {
         ktlint 'com.github.shyiko:ktlint:+'
         compile "org.jetbrains.kotlin:kotlin-stdlib:+"
+        compile "org.xerial:sqlite-jdbc:+"
         testCompile "org.jetbrains.kotlin:kotlin-test-junit:+"
     }
 
