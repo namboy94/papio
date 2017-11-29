@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib.core
+package net.namibsun.papio.lib.money
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
