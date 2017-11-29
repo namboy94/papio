@@ -1,1 +1,4 @@
-This project currently does not maintain a changelog file.
+V 0.1.0:
+  - Created papio library
+  - Deleted legacy code
+  - Redid build process
