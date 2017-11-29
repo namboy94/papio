@@ -1,6 +1,8 @@
 stages:
   - mirror
   - test
+  - build
+  - release
 
 github_mirror:
   stage: mirror
@@ -28,3 +30,46 @@ lint:
     - gradle
   script:
     - gradle ktlint -q
+
+build_jar:
+  stage: build
+  only:
+    - master
+    - develop
+  tags:
+    - gradle
+  script:
+    - mkdir -p artifacts
+    - gradle build
+    - mv papio-lib/build/libs/papio-lib.jar artifacts/
+  artifacts:
+    paths:
+      - artifacts/
+
+upload_release_to_github:
+  stage: release
+  only:
+    - master
+  tags:
+    - python
+    - gradle
+  script:
+    - mkdir -p artifacts
+    - git clone https://gitlab.namibsun.net/namboy94/ci-scripts.git
+    - python ci-scripts/src/changelog-reader/changelog-reader.py -c CHANGELOG -d current_changelog
+    - python ci-scripts/src/github-release-uploader/github-release-uploader.py namboy94 papio $GITHUB_ACCESS_TOKEN
+      $(gradle version -q) current_changelog artifacts -b master
+
+upload_release_to_gitlab:
+  stage: release
+  only:
+    - master
+  tags:
+    - python
+    - gradle
+  script:
+    - mkdir -p artifacts
+    - git clone https://gitlab.namibsun.net/namboy94/ci-scripts.git
+    - python ci-scripts/src/changelog-reader/changelog-reader.py -c CHANGELOG -d  current_changelog
+    - python ci-scripts/src/gitlab-release-uploader/gitlab-release-uploader.py namboy94 papio $GITLAB_ACCESS_TOKEN
+      $(gradle version -q) current_changelog artifacts -b master -u https://gitlab.namibsun.net

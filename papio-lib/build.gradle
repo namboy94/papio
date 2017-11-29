@@ -25,4 +25,3 @@ jar {
         attributes 'Main-Class': 'net.namibsun.papio.lib.MainKt'
     }
 }
-
