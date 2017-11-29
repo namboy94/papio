@@ -1,6 +1,8 @@
 # Papio [![pipeline status](https://gitlab.namibsun.net/namboy94/papio/badges/master/pipeline.svg)](https://gitlab.namibsun.net/namboy94/papio/commits/master)
 
-![Logo](resources/logo/logo-readme.png)
+|master|develop|
+|:----:|:-----:|
+|[![build status](https://gitlab.namibsun.net/namboy94/papio/badges/master/build.svg)](https://gitlab.namibsun.net/namboy94/papio/commits/master)|[![build status](https://gitlab.namibsun.net/namboy94/papio/badges/develop/build.svg)](https://gitlab.namibsun.net/namboy94/papio/commits/develop)|
 
 Papio is a personal finance manager program written in Kotlin and backed by gradle.
 
