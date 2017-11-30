@@ -24,6 +24,7 @@ ext {
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:+"
@@ -36,6 +37,7 @@ subprojects {
     // Define Repositories for submodules
     repositories {
         jcenter()
+        mavenCentral()
     }
 
     apply plugin: "kotlin"

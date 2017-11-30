@@ -18,15 +18,33 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.cli.argparse.ActionMode
-
+import net.namibsun.papio.lib.db.DbHandler
 
 /**
  * Executor for the Category Root action
  */
-class CategoryExecutor(private val mode: ActionMode, private val args: Array<String>): Executor {
+class CategoryExecutor(
+        private val mode: ActionMode,
+        private val args: Array<String>,
+        private val dbHandler: DbHandler) : Executor {
 
-    override fun execute() {
+    /**
+     * Executes the 'create' option
+     */
+    override fun executeCreate() {}
 
-    }
+    /**
+     * Executes the 'delete' option
+     */
+    override fun executeDelete() {}
 
+    /**
+     * Executes the 'list' option
+     */
+    override fun executeList() {}
+
+    /**
+     * Executes the 'display' option
+     */
+    override fun executeDisplay() {}
 }

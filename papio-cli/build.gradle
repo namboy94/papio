@@ -30,5 +30,6 @@ jar {
 
 dependencies {
     compile "org.xerial:sqlite-jdbc:+"
+    compile "net.sourceforge.argparse4j:argparse4j:+"
     compile project(':papio-lib')
 }

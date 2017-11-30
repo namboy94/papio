@@ -18,15 +18,57 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.cli.argparse.ActionMode
+import net.namibsun.papio.lib.db.DbHandler
+import net.sourceforge.argparse4j.ArgumentParsers
+import net.sourceforge.argparse4j.inf.ArgumentParserException
 
-class WalletExecutor(private val mode: ActionMode, private val args: Array<String>): Executor {
+class WalletExecutor(
+        private val mode: ActionMode,
+        private val args: Array<String>,
+        private val dbHandler: DbHandler) : Executor {
 
-    private fun parseArgs() {
+    /**
+     * Executes the 'create' option
+     */
+    override fun executeCreate() {
+        val parser = ArgumentParsers.newFor("papio wallet create").build().defaultHelp(true)
+        parser.addArgument("name").help("A")
+        parser.addArgument("--currency").choices(listOf("A")).setDefault("A").help("A")
+        parser.addArgument("--initial-value").type(Int::class.java).setDefault(0).help("B")
+
+        try {
+            val result = parser.parseArgs(this.args)
+            val existing = this.dbHandler.getWallet(result.getString("name"))
+            if (existing != null) {
+                println("Wallet ${result.getString("name")} exists!")
+                System.exit(1)
+            } else {
+                val wallet = this.dbHandler.createWallet(
+                        result.getString("name"),
+                        result.getInt("initial-value"),
+                        result.getString("name")
+                )
+                println("Created wallet ${} with initial value")
+            }
+        } catch (e: ArgumentParserException) {
+            parser.handleError(e)
+            System.exit(1)
+        }
 
     }
 
-    override fun execute() {
+    /**
+     * Executes the 'delete' option
+     */
+    override fun executeDelete() {}
 
-    }
+    /**
+     * Executes the 'list' option
+     */
+    override fun executeList() {}
 
+    /**
+     * Executes the 'display' option
+     */
+    override fun executeDisplay() {}
 }

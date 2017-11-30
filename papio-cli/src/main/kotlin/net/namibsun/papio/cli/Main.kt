@@ -17,17 +17,33 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli
 
+import net.namibsun.papio.cli.argparse.ActionMode
 import net.namibsun.papio.cli.argparse.ModeParser
 import net.namibsun.papio.cli.argparse.RootMode
 import net.namibsun.papio.cli.executors.CategoryExecutor
 import net.namibsun.papio.cli.executors.TransactionExecutor
 import net.namibsun.papio.cli.executors.TransactionPartnerExecutor
 import net.namibsun.papio.cli.executors.WalletExecutor
+import net.namibsun.papio.lib.db.DbHandler
+import java.io.File
+import java.sql.DriverManager
 
 /**
  * The main entry point of the program
  */
 fun main(args: Array<String>) {
+
+    val papioDir = File(System.getProperty("user.home"), ".papio")
+    val papioDb = File(papioDir.toString(), "data.db")
+
+    if (!papioDir.isDirectory && !papioDir.exists()) {
+        papioDir.mkdirs()
+    } else if (papioDir.exists() && !papioDir.isDirectory) {
+        println("Could not create .papio directory. File exists.")
+        System.exit(1)
+    }
+    val connection = DriverManager.getConnection("jdbc:sqlite:$papioDb")
+    val dbHandler = DbHandler(connection)
 
     val modeParser = ModeParser(args)
 
@@ -36,11 +52,16 @@ fun main(args: Array<String>) {
     val actionMode = modeParser.actionMode!!
 
     val executor = when (rootMode) {
-        RootMode.WALLET -> WalletExecutor(actionMode, trimmedArgs)
-        RootMode.CATEGORY -> CategoryExecutor(actionMode, trimmedArgs)
-        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor(actionMode, trimmedArgs)
-        RootMode.TRANSACTION -> TransactionExecutor(actionMode, trimmedArgs)
+        RootMode.WALLET -> WalletExecutor(actionMode, trimmedArgs, dbHandler)
+        RootMode.CATEGORY -> CategoryExecutor(actionMode, trimmedArgs, dbHandler)
+        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor(actionMode, trimmedArgs, dbHandler)
+        RootMode.TRANSACTION -> TransactionExecutor(actionMode, trimmedArgs, dbHandler)
     }
 
-    executor.execute()
+    when (actionMode) {
+        ActionMode.LIST -> executor.executeList()
+        ActionMode.DISPLAY -> executor.executeDisplay()
+        ActionMode.CREATE -> executor.executeCreate()
+        ActionMode.DELETE -> executor.executeDelete()
+    }
 }

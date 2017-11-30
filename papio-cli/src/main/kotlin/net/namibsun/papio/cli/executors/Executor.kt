@@ -23,8 +23,22 @@ package net.namibsun.papio.cli.executors
 interface Executor {
 
     /**
-     * Executes the Executor
+     * Executes the 'create' option
      */
-    fun execute()
+    fun executeCreate()
 
+    /**
+     * Executes the 'delete' option
+     */
+    fun executeDelete()
+
+    /**
+     * Executes the 'list' option
+     */
+    fun executeList()
+
+    /**
+     * Executes the 'display' option
+     */
+    fun executeDisplay()
 }
