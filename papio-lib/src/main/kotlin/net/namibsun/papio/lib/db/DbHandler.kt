@@ -24,6 +24,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import java.sql.Connection
+import java.time.ZonedDateTime
 
 /**
  * Class that manages database calls
@@ -350,7 +351,16 @@ class DbHandler(private val connection: Connection) {
                           amount: MoneyValue,
                           date: String = "today"): Transaction {
 
-        if (!Transaction.validateDate(date)) {
+        var dateString = date
+        if (date == "today") {
+            val now = ZonedDateTime.now()
+            val year = now.year.toString().padStart(4, '0')
+            val month = now.monthValue.toString().padStart(2, '0')
+            val day = now.dayOfMonth.toString().padStart(2, '0')
+            dateString = "$year-$month-$day"
+        }
+
+        if (!Transaction.validateDate(dateString)) {
             throw IllegalArgumentException("Illegal Date")
         }
 
@@ -365,7 +375,7 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(3, transactionPartner.id)
         statement.setString(4, description)
         statement.setInt(5, converted.getValue())
-        statement.setString(6, date)
+        statement.setString(6, dateString)
         statement.execute()
 
         val idStatement = this.connection.prepareStatement("SELECT last_insert_rowid()")
@@ -377,7 +387,7 @@ class DbHandler(private val connection: Connection) {
         idStatement.close()
         results.close()
 
-        return Transaction(id, wallet, category, transactionPartner, description, converted, date)
+        return Transaction(id, wallet, category, transactionPartner, description, converted, dateString)
     }
 
     /**

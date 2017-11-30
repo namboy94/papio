@@ -34,7 +34,13 @@ class TransactionExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeCreate(args: Array<String>, dbHandler: DbHandler) {
+
         val now = ZonedDateTime.now()
+        val year = now.year.toString().padStart(4, '0')
+        val month = now.monthValue.toString().padStart(2, '0')
+        val day = now.dayOfMonth.toString().padStart(2, '0')
+        val defaultDateString = "$year-$month-$day"
+
         val parser = ArgumentParsers.newFor("papio-cli transaction create").build().defaultHelp(true)
         parser.addArgument("wallet")
                 .help("The name or ID of the wallet this transaction takes place in." +
@@ -51,7 +57,7 @@ class TransactionExecutor : Executor {
                 .type(Int::class.java)
                 .help("The amount of money used in the transaction in the same currency as the wallet.")
         parser.addArgument("-d", "--date")
-                .setDefault("${now.year}-${now.month}-${now.dayOfMonth}")
+                .setDefault(defaultDateString)
                 .help("The date of the transaction in the format YYYY-MM-DD. Default to the current day.")
         val results = this.handleParserError(parser, args)
 
@@ -71,18 +77,23 @@ class TransactionExecutor : Executor {
             partner = dbHandler.createTransactionPartner(results.getString("transactionpartner"))
         }
 
-        val transaction = dbHandler.createTransaction(
-                wallet!!,
-                category,
-                partner,
-                results.getString("description"),
-                MoneyValue(
-                        results.getInt("amount"),
-                        wallet.getCurrency()
-                )
-        )
+        try {
+            val transaction = dbHandler.createTransaction(
+                    wallet!!,
+                    category,
+                    partner,
+                    results.getString("description"),
+                    MoneyValue(
+                            results.getInt("amount"),
+                            wallet.getCurrency()
+                    ),
+                    results.getString("date")
+            )
 
-        println("Transaction Created:\n$transaction")
+            println("Transaction Created:\n$transaction")
+        } catch (e: IllegalArgumentException) {
+            println("Date value '${results.getString("date")} is invalid")
+        }
     }
 
     /**
