@@ -59,10 +59,10 @@ class DbHandler(private val connection: Connection) {
                 "   transaction_partner_id INTEGER NOT NULL," +
                 "   description TEXT NOT NULL," +
                 "   amount INTEGER NOT NULL," +
-                "   unix_utc_timestamp INTEGER NOT NULL," +
-                "   FOREIGN KEY(wallet_id) REFERENCES wallets(id)," +
-                "   FOREIGN KEY(category_id) REFERENCES categories(id)," +
-                "   FOREIGN KEY(transaction_partner_id) REFERENCES transaction_partners(id)" +
+                "   date TEXT NOT NULL," +
+                "   FOREIGN KEY(wallet_id) REFERENCES wallets(id) ON DELETE CASCADE," +
+                "   FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE," +
+                "   FOREIGN KEY(transaction_partner_id) REFERENCES transaction_partners(id) ON DELETE CASCADE" +
                 ")")
     }
 
@@ -307,7 +307,7 @@ class DbHandler(private val connection: Connection) {
      */
     fun getTransaction(id: Int): Transaction? {
         val statement = this.connection.prepareStatement("" +
-                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp " +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date " +
                 "FROM transactions WHERE id=?"
         )
         statement.setInt(1, id)
@@ -324,7 +324,7 @@ class DbHandler(private val connection: Connection) {
                     this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
                     results.getString("description"),
                     MoneyValue(results.getInt("amount"), wallet.getCurrency()),
-                    results.getInt("unix_utc_timestamp")
+                    results.getString("date")
             )
         }
         statement.close()
@@ -339,20 +339,25 @@ class DbHandler(private val connection: Connection) {
      * @param transactionPartner: The transaction partner of the transaction
      * @param description: The description of the transaction
      * @param amount: The monetary amount of the transaction
-     * @param unixUtcTimestamp: A UTC timestamp that denotes the time the transaction took place.
-     *                          Defaults to the current time.
+     * @param date: The ISO 8601 date on which the transaction took place
      * @return The created Transaction object
+     * @throws IllegalArgumentException: If the provided date is not a valid ISO-8601 formatted String
      */
     fun createTransaction(wallet: Wallet,
                           category: Category,
                           transactionPartner: TransactionPartner,
                           description: String,
                           amount: MoneyValue,
-                          unixUtcTimestamp: Int = (System.currentTimeMillis() / 1000).toInt()): Transaction {
+                          date: String = "today"): Transaction {
+
+        if (!Transaction.validateDate(date)) {
+            throw IllegalArgumentException("Illegal Date")
+        }
+
         val converted = amount.convert(wallet.getCurrency())
         val statement = this.connection.prepareStatement("" +
                 "INSERT INTO transactions " +
-                "(wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp) " +
+                "(wallet_id, category_id, transaction_partner_id, description, amount, date) " +
                 "VALUES (?, ?, ?, ?, ?, ?)"
         )
         statement.setInt(1, wallet.id)
@@ -360,7 +365,7 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(3, transactionPartner.id)
         statement.setString(4, description)
         statement.setInt(5, converted.getValue())
-        statement.setInt(6, unixUtcTimestamp)
+        statement.setString(6, date)
         statement.execute()
 
         val idStatement = this.connection.prepareStatement("SELECT last_insert_rowid()")
@@ -372,7 +377,7 @@ class DbHandler(private val connection: Connection) {
         idStatement.close()
         results.close()
 
-        return Transaction(id, wallet, category, transactionPartner, description, converted, unixUtcTimestamp)
+        return Transaction(id, wallet, category, transactionPartner, description, converted, date)
     }
 
     /**
@@ -504,7 +509,7 @@ class DbHandler(private val connection: Connection) {
      */
     private fun getTransactionsByIdType(idType: String, id: Int): List<Transaction> {
         val statement = this.connection.prepareStatement("" +
-                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp " +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date " +
                 "FROM transactions WHERE ${idType}_id=?"
         )
         statement.setInt(1, id)
@@ -521,7 +526,7 @@ class DbHandler(private val connection: Connection) {
                     this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
                     results.getString("description"),
                     MoneyValue(results.getInt("amount"), wallet.getCurrency()),
-                    results.getInt("unix_utc_timestamp")
+                    results.getString("date")
             ))
         }
         return transactions

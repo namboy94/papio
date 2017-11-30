@@ -31,6 +31,7 @@ import java.sql.DriverManager
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
+import kotlin.test.fail
 
 /**
  * Class that tests Transaction-related actions
@@ -86,13 +87,13 @@ class TransactionTest {
     fun testCreatingTransaction() {
         val transaction = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), 100
+                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
         )
         assertEquals(
                 transaction,
                 Transaction(
                         1, this.wallet!!, this.category!!, this.partner!!,
-                        "Description", MoneyValue(100, Currency.EUR), 100
+                        "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
                 )
         )
     }
@@ -118,7 +119,7 @@ class TransactionTest {
     fun testDeletingTransaction() {
         val transaction = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), 100
+                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
         )
         assertEquals(1, this.wallet!!.getAllTransactions(this.handler!!).size)
         transaction.delete(this.handler!!)
@@ -133,16 +134,16 @@ class TransactionTest {
     fun testCreatingIdenticalTransactions() {
         val transactionOne = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), 100
+                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
         )
         val transactionTwo = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), 100
+                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
         )
         assertNotEquals(transactionOne, transactionTwo)
         assertNotEquals(transactionOne.id, transactionTwo.id)
         assertEquals(transactionOne.description, transactionTwo.description)
-        assertEquals(transactionOne.unixUtcTimestamp, transactionTwo.unixUtcTimestamp)
+        assertEquals(transactionOne.date, transactionTwo.date)
         assertEquals(transactionOne.getAmount(), transactionTwo.getAmount())
     }
 
@@ -213,5 +214,81 @@ class TransactionTest {
             indices.remove(transaction.id)
         }
         assertEquals(0, indices.size)
+    }
+
+    /**
+     * Tests if the date check works correctly
+     */
+    @Test
+    fun testTransactionDates() {
+
+        val valid = listOf(
+                "2017-01-01",
+                "1970-01-01",
+                "1000-10-10",
+                "2017-01-31",
+                "2017-02-28",
+                "2016-02-29",
+                "2017-03-31",
+                "2017-04-30",
+                "2017-05-31",
+                "2017-06-30",
+                "2017-07-31",
+                "2017-08-31",
+                "2017-09-30",
+                "2017-10-31",
+                "2017-11-30",
+                "2017-12-31"
+        )
+
+        val invalid = listOf(
+                "2017-01-0A",
+                "2017-0A-01",
+                "201A-01-01",
+                "ABC",
+                "2017:01:01",
+                "2017/01/01",
+                "01-01-2017",
+                "2017-13-01",
+                "2017-13-01",
+                "2017-01-32",
+                "2017-02-29",
+                "2016-02-30",
+                "2017-03-32",
+                "2017-04-31",
+                "2017-05-32",
+                "2017-06-31",
+                "2017-07-32",
+                "2017-08-32",
+                "2017-09-31",
+                "2017-10-32",
+                "2017-11-31",
+                "2017-12-32",
+                "2017-01-1",
+                "2017-1-01",
+                "1-01-01"
+        )
+
+        for (date in valid) {
+            try {
+                this.handler!!.createTransaction(
+                        this.wallet!!, this.category!!, this.partner!!,
+                        "A", MoneyValue(1, Currency.EUR), date
+                )
+            } catch (e: IllegalArgumentException) {
+                fail()
+            }
+        }
+
+        for (date in invalid) {
+            try {
+                this.handler!!.createTransaction(
+                        this.wallet!!, this.category!!, this.partner!!,
+                        "A", MoneyValue(1, Currency.EUR), date
+                )
+                fail()
+            } catch (e: IllegalArgumentException) {
+            }
+        }
     }
 }
