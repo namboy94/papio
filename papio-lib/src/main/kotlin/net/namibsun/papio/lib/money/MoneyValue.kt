@@ -53,10 +53,10 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
      *     front=false:  200.10 EUR
      * The above examples are for a MoneyValue object with a value of 20010 and the currency EUR
      * @param front: Defines if the currency should be in front of or after the value
-     * @param comma: Use comma instead of a decimal point
+     * @param decimal: Use a decimal point if set to true or a comma if set to false
      * @return The formatted string
      */
-    fun getFormatted(front: Boolean = true, comma: Boolean = true): String {
+    fun getFormatted(front: Boolean = true, decimal: Boolean = true): String {
 
         val stringValue = this.value.toString().replace("-", "")
         val minus = if (this.value < 0) { "-" } else { "" }
@@ -73,7 +73,7 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
             else -> stringValue
         }
 
-        val seperator = if (comma) { "," } else { "." }
+        val seperator = if (decimal) { "." } else { "," }
         val frontCurrency = if (front) { "${this.currency.name} " } else { "" }
         val backCurrency = if (!front) { " ${this.currency.name}" } else { "" }
 

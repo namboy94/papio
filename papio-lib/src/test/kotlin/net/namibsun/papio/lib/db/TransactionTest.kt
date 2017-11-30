@@ -142,6 +142,9 @@ class TransactionTest {
         )
         assertNotEquals(transactionOne, transactionTwo)
         assertNotEquals(transactionOne.id, transactionTwo.id)
+        assertEquals(transactionOne.wallet, transactionTwo.wallet)
+        assertEquals(transactionOne.category, transactionTwo.category)
+        assertEquals(transactionOne.partner, transactionTwo.partner)
         assertEquals(transactionOne.description, transactionTwo.description)
         assertEquals(transactionOne.date, transactionTwo.date)
         assertEquals(transactionOne.getAmount(), transactionTwo.getAmount())
@@ -242,6 +245,7 @@ class TransactionTest {
         )
 
         val invalid = listOf(
+                "01.01.1970",
                 "2017-01-0A",
                 "2017-0A-01",
                 "201A-01-01",
@@ -289,6 +293,21 @@ class TransactionTest {
                 fail()
             } catch (e: IllegalArgumentException) {
             }
+        }
+    }
+
+    /**
+     * Tests creating a transaction with an invalid date
+     */
+    @Test
+    fun testCreatingTransactionWithInvalidDate() {
+        try {
+            Transaction(
+                    1, this.wallet!!, this.category!!, this.partner!!,
+                    "A", MoneyValue(1, Currency.EUR), "01.01.1970"
+            )
+            fail()
+        } catch (e: IllegalArgumentException) {
         }
     }
 }
