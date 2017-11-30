@@ -126,8 +126,9 @@ class TransactionExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        println("Listing transactions is not supported. Use the display option with a wallet, category or " +
-                "transaction partner instead.")
+        for (transaction in dbHandler.getTransactions()) {
+            println(transaction)
+        }
     }
 
     /**

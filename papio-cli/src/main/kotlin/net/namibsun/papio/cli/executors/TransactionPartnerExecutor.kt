@@ -38,7 +38,7 @@ class TransactionPartnerExecutor : Executor {
         parser.addArgument("name").help("The name of the new transaction partner")
         val results = this.handleParserError(parser, args)
         val original = dbHandler.getTransactionPartner(results.getString("name"))
-        val partner= dbHandler.createTransactionPartner(results.getString("name"))
+        val partner = dbHandler.createTransactionPartner(results.getString("name"))
         if (original == null) {
             println("Category created:\n$partner")
         } else {
@@ -90,6 +90,29 @@ class TransactionPartnerExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeDisplay(args: Array<String>, dbHandler: DbHandler) {
+        val parser = ArgumentParsers.newFor("papio-cli transactionpartner display")
+                .build().defaultHelp(true)
+        parser.addArgument("identifier").help("The name or ID of the transaction partner")
+        parser.addArgument("-t", "--transactions")
+                .type(Int::class.java).setDefault(-1)
+                .help("Sets the amount of transactions to display. By default, all transactions are displayed")
+        val result = this.handleParserError(parser, args)
+
+        val partner = this.getTransactionPartner(dbHandler, result.getString("identifier"))
+        if (partner != null) {
+            println("$partner\n")
+
+            val transactions = partner.getAllTransactions(dbHandler)
+            var limit = result.getInt("transactions")
+            if (limit == -1 || limit > transactions.size) {
+                limit = transactions.size
+            }
+            for (i in 0 until limit) {
+                println(transactions[i])
+            }
+        } else {
+            println("Transaction Partner not found")
+        }
     }
 
     /**

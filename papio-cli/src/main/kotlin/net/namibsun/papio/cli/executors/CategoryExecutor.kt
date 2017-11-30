@@ -86,7 +86,28 @@ class CategoryExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeDisplay(args: Array<String>, dbHandler: DbHandler) {
+        val parser = ArgumentParsers.newFor("papio-cli category display").build().defaultHelp(true)
+        parser.addArgument("identifier").help("The name or ID of the category")
+        parser.addArgument("-t", "--transactions")
+                .type(Int::class.java).setDefault(-1)
+                .help("Sets the amount of transactions to display. By default, all transactions are displayed")
+        val result = this.handleParserError(parser, args)
 
+        val category = this.getCategory(dbHandler, result.getString("identifier"))
+        if (category != null) {
+            println("$category\n")
+
+            val transactions = category.getAllTransactions(dbHandler)
+            var limit = result.getInt("transactions")
+            if (limit == -1 || limit > transactions.size) {
+                limit = transactions.size
+            }
+            for (i in 0 until limit) {
+                println(transactions[i])
+            }
+        } else {
+            println("Category not found")
+        }
     }
 
     /**

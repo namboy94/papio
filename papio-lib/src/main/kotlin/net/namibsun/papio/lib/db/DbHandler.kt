@@ -449,6 +449,34 @@ class DbHandler(private val connection: Connection) {
     }
 
     /**
+     * Retrieves all transactions in the database
+     * @return All transactions in the database
+     */
+    fun getTransactions(): List<Transaction> {
+        val statement = this.connection.prepareStatement("" +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date FROM transactions"
+        )
+        val results = statement.resultSet
+
+        val transactions = mutableListOf<Transaction>()
+        while (results.next()) {
+            val wallet = this.getWallet(results.getInt("wallet_id"))!!
+            transactions.add(Transaction(
+                    results.getInt("id"),
+                    wallet,
+                    this.getCategory(results.getInt("category_id"))!!,
+                    this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
+                    results.getString("description"),
+                    MoneyValue(results.getInt("amount"), wallet.getCurrency()),
+                    results.getString("date")
+            ))
+        }
+        statement.close()
+        results.close()
+        return transactions
+    }
+
+    /**
      * Adjusts the starting value of a wallet. Can also be used to change the currency of a wallet.
      * @param walletId: The ID of the wallet to adjust
      * @param initialValue: The new initial value of the wallet
@@ -575,6 +603,8 @@ class DbHandler(private val connection: Connection) {
                     results.getString("date")
             ))
         }
+        statement.close()
+        results.close()
         return transactions
     }
 }
