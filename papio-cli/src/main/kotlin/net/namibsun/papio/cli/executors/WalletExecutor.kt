@@ -52,12 +52,10 @@ class WalletExecutor : Executor {
         val existing = dbHandler.getWallet(name)
 
         if (existing != null) {
-            println("Wallet ${existing.name}(id: ${existing.id}) exists!")
+            println("Wallet\n$existing\nexists!")
         } else {
             val wallet = dbHandler.createWallet(name, value)
-            println("Wallet ${wallet.name}(id: ${wallet.id}) with value " +
-                    "${wallet.getBalance(dbHandler).getFormatted()} " +
-                    "was created successfully.")
+            println("Wallet\n$wallet\n was created successfully.")
         }
     }
 
@@ -74,7 +72,7 @@ class WalletExecutor : Executor {
         val wallet = this.getWallet(dbHandler, result.getString("identifier"))
         if (wallet != null) {
             val confirm = this.getUserConfirmation(
-                    "Delete wallet ${wallet.name}(id: ${wallet.id}) and all transactions in it?"
+                    "Delete wallet\n$wallet\nand all transactions in it?"
             )
             if (confirm) {
                 wallet.delete(dbHandler)
@@ -121,7 +119,7 @@ class WalletExecutor : Executor {
                 limit = transactions.size
             }
             for (i in 0 until limit) {
-                println(transactions.get(i))
+                println(transactions[i])
             }
         } else {
             println("Wallet not found")

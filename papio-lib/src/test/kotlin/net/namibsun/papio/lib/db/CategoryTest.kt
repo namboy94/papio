@@ -18,12 +18,15 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.db
 
 import net.namibsun.papio.lib.db.models.Category
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.MoneyValue
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -87,6 +90,31 @@ class CategoryTest {
         assertNotNull(this.handler!!.getCategory("Category"))
         original.delete(this.handler!!)
         assertNull(this.handler!!.getWallet("Category"))
+    }
+
+    /**
+     * Tests retrieving all categories from the database
+     */
+    @Test
+    fun testGettingCategories() {
+
+        val categories = listOf(
+                this.handler!!.createCategory("A"),
+                this.handler!!.createCategory("B"),
+                this.handler!!.createCategory("C")
+        )
+
+        val dbCategories = this.handler!!.getCategories()
+        assertEquals(3, dbCategories.size)
+        for (category in dbCategories) {
+            for (original in categories) {
+                if (category.name == original.name) {
+                    assertEquals(category, original)
+                } else {
+                    assertNotEquals(category, original)
+                }
+            }
+        }
     }
 
     /**

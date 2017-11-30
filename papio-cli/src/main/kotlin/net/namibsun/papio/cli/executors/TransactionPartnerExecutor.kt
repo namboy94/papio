@@ -19,6 +19,7 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.TransactionPartner
+import net.sourceforge.argparse4j.ArgumentParsers
 
 /**
  * Executor for the TransactionPartner root action
@@ -32,6 +33,17 @@ class TransactionPartnerExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeCreate(args: Array<String>, dbHandler: DbHandler) {
+        val parser = ArgumentParsers.newFor("papio-cli transactionpartner create")
+                .build().defaultHelp(true)
+        parser.addArgument("name").help("The name of the new transaction partner")
+        val results = this.handleParserError(parser, args)
+        val original = dbHandler.getTransactionPartner(results.getString("name"))
+        val partner= dbHandler.createTransactionPartner(results.getString("name"))
+        if (original == null) {
+            println("Category created:\n$partner")
+        } else {
+            println("Category already exists:\n$partner")
+        }
     }
 
     /**
@@ -40,6 +52,25 @@ class TransactionPartnerExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeDelete(args: Array<String>, dbHandler: DbHandler) {
+        val parser = ArgumentParsers.newFor("papio-cli transactionpartner delete")
+                .build().defaultHelp(true)
+        parser.addArgument("identifier").help("The name or ID of the transaction partner")
+        val result = this.handleParserError(parser, args)
+
+        val partner = this.getTransactionPartner(dbHandler, result.getString("identifier"))
+        if (partner != null) {
+            val confirm = this.getUserConfirmation(
+                    "Delete transaction partner\n$partner\nand all transactions using it?"
+            )
+            if (confirm) {
+                partner.delete(dbHandler)
+                println("Transaction Partner has been deleted")
+            } else {
+                println("Deleting transaction partner cancelled")
+            }
+        } else {
+            println("Transaction Partner not found.")
+        }
     }
 
     /**
@@ -48,6 +79,9 @@ class TransactionPartnerExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
+        for (partner in dbHandler.getTransactionPartners()) {
+            println(partner)
+        }
     }
 
     /**

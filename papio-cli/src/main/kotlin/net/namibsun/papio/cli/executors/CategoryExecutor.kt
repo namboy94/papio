@@ -19,6 +19,7 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
+import net.sourceforge.argparse4j.ArgumentParsers
 
 /**
  * Executor for the Category Root action
@@ -32,6 +33,16 @@ class CategoryExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeCreate(args: Array<String>, dbHandler: DbHandler) {
+        val parser = ArgumentParsers.newFor("papio-cli category create").build().defaultHelp(true)
+        parser.addArgument("name").help("The name of the new category")
+        val results = this.handleParserError(parser, args)
+        val original = dbHandler.getCategory(results.getString("name"))
+        val category = dbHandler.createCategory(results.getString("name"))
+        if (original == null) {
+            println("Category created:\n$category")
+        } else {
+            println("Category already exists:\n$category")
+        }
     }
 
     /**
@@ -40,6 +51,22 @@ class CategoryExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeDelete(args: Array<String>, dbHandler: DbHandler) {
+        val parser = ArgumentParsers.newFor("papio-cli category delete").build().defaultHelp(true)
+        parser.addArgument("identifier").help("The name or ID of the category")
+        val result = this.handleParserError(parser, args)
+
+        val category = this.getCategory(dbHandler, result.getString("identifier"))
+        if (category != null) {
+            val confirm = this.getUserConfirmation("Delete category\n$category\nand all transactions using it?")
+            if (confirm) {
+                category.delete(dbHandler)
+                println("Category has been deleted")
+            } else {
+                println("Deleting category cancelled")
+            }
+        } else {
+            println("Category not found.")
+        }
     }
 
     /**
@@ -48,6 +75,9 @@ class CategoryExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
+        for (category in dbHandler.getCategories()) {
+            println(category)
+        }
     }
 
     /**
@@ -56,6 +86,7 @@ class CategoryExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeDisplay(args: Array<String>, dbHandler: DbHandler) {
+
     }
 
     /**
