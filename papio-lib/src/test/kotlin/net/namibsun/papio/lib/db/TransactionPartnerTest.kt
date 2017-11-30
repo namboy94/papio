@@ -87,4 +87,13 @@ class TransactionPartnerTest {
         original.delete(this.handler!!)
         assertNull(this.handler!!.getTransactionPartner("Partner"))
     }
+
+    /**
+     * Tests the toString method of the TransactionPartner class
+     */
+    @Test
+    fun testStringRepresentation() {
+        val partner = this.handler!!.createTransactionPartner("A")
+        assertEquals("Transaction Partner; ID: 1; Name: A", partner.toString())
+    }
 }

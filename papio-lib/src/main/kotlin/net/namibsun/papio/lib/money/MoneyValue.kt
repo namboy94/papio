@@ -109,4 +109,13 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
         CurrencyExchanger.update()
         return MoneyValue(CurrencyExchanger.convertValue(this.value, this.currency, currency), currency)
     }
+
+    /**
+     * Generates a String representation of this value with the currency identifier at the front and
+     * using decimal points.
+     * @return The String representation of the MoneyValue object
+     */
+    override fun toString(): String {
+        return this.getFormatted()
+    }
 }

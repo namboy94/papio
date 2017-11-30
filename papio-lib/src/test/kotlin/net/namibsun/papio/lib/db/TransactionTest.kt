@@ -310,4 +310,20 @@ class TransactionTest {
         } catch (e: IllegalArgumentException) {
         }
     }
+
+    /**
+     * Tests the toString method of the Transaction class
+     */
+    @Test
+    fun testStringRepresentation() {
+        val transaction = this.handler!!.createTransaction(
+                this.wallet!!, this.category!!, this.partner!!,
+                "Desc", MoneyValue(500, Currency.EUR), "2017-01-01"
+        )
+        assertEquals(
+                "Transaction; ID: 1; Wallet: Wallet; Category: Category; Transaction Partner: Partner; " +
+                "Description: Desc; Amount: EUR 5.00; Date: 2017-01-01",
+                transaction.toString()
+        )
+    }
 }

@@ -97,4 +97,14 @@ data class Transaction(val id: Int,
         this.amount = this.amount.convert(currency)
         dbHandler.adjustTransactionAmount(this.id, this.amount.getValue())
     }
+
+    /**
+     * Generates a String that represents the Transaction object
+     * @return The String representation of the transaction
+     */
+    override fun toString(): String {
+        return "Transaction; ID: ${this.id}; Wallet: ${this.wallet.name}; Category: ${this.category.name}; " +
+                "Transaction Partner: ${this.partner.name}; Description: ${this.description}; " +
+                "Amount: ${this.amount}; Date: ${this.date}"
+    }
 }

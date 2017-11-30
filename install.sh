@@ -9,3 +9,5 @@ echo '
 java -jar ~/.local/bin/papio-cli.jar "$@"
 ' > ~/.local/bin/papio-cli
 chmod 755 ~/.local/bin/papio-cli
+
+echo "Done! Use \"papio-cli\" to run the program."

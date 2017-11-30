@@ -88,4 +88,13 @@ class CategoryTest {
         original.delete(this.handler!!)
         assertNull(this.handler!!.getWallet("Category"))
     }
+
+    /**
+     * Tests the toString method of the Category class
+     */
+    @Test
+    fun testStringRepresentation() {
+        val category = this.handler!!.createCategory("A")
+        assertEquals("Category; ID: 1; Name: A", category.toString())
+    }
 }

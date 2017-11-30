@@ -168,4 +168,23 @@ class WalletTest {
             }
         }
     }
+
+    /**
+     * Tests the toString method of the Wallet class
+     */
+    @Test
+    fun testStringRepresentation() {
+        val wallet = this.handler!!.createWallet("A", MoneyValue(100, Currency.EUR))
+        val category = this.handler!!.createCategory("B")
+        val partner = this.handler!!.createTransactionPartner("C")
+        this.handler!!.createTransaction(
+                wallet, category, partner, "D", MoneyValue(500, Currency.EUR)
+        )
+
+        assertEquals("Wallet; ID: 1; Name: A; Starting Value: EUR 1.00", wallet.toString())
+        assertEquals(
+                "Wallet; ID: 1; Name: A; Balance: EUR 6.00; Starting Value: EUR 1.00",
+                wallet.toString(this.handler!!)
+        )
+    }
 }
