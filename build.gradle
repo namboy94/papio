@@ -70,15 +70,6 @@ subprojects {
     }
     check.dependsOn ktlint
 
-
-    // Makes sure to compile all required classes in JAR files
-    jar {
-        from {
-            configurations.compile.collect {
-                it.isDirectory() ? it : zipTree(it)
-            }
-        }
-    }
 }
 
 // Print version

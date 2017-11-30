@@ -15,11 +15,20 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Submodule dependencies
-dependencies {
-    testCompile "org.xerial:sqlite-jdbc:+"
+// Define Main class
+jar {
+    manifest {
+        attributes 'Main-Class': 'net.namibsun.papio.cli.MainKt'
+    }
+    // Create Fatjar
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }
 
-jar {
-
+dependencies {
+    compile "org.xerial:sqlite-jdbc:+"
+    compile project(':papio-lib')
 }

@@ -15,11 +15,18 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Submodule dependencies
-dependencies {
-    testCompile "org.xerial:sqlite-jdbc:+"
-}
+package net.namibsun.papio.cli.executors
 
-jar {
+import net.namibsun.papio.cli.argparse.ActionMode
+
+class WalletExecutor(private val mode: ActionMode, private val args: Array<String>): Executor {
+
+    private fun parseArgs() {
+
+    }
+
+    override fun execute() {
+
+    }
 
 }
