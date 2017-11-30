@@ -48,6 +48,39 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
     }
 
     /**
+     * Generates a formatted string of the money value in the form:
+     *     front=true:   EUR 200.10
+     *     front=false:  200.10 EUR
+     * The above examples are for a MoneyValue object with a value of 20010 and the currency EUR
+     * @param front: Defines if the currency should be in front of or after the value
+     * @param comma: Use comma instead of a decimal point
+     * @return The formatted string
+     */
+    fun getFormatted(front: Boolean = true, comma: Boolean = true): String {
+
+        val stringValue = this.value.toString().replace("-", "")
+        val minus = if (this.value < 0) { "-" } else { "" }
+
+        val preComma = if (stringValue.length > 2) {
+            stringValue.substring(0, stringValue.length - 2)
+        } else {
+            "0"
+        }
+
+        val postComma = when {
+            stringValue.length > 2 -> stringValue.substring(stringValue.length - 2, stringValue.length)
+            stringValue.length == 1 -> "0$stringValue"
+            else -> stringValue
+        }
+
+        val seperator = if (comma) { "," } else { "." }
+        val frontCurrency = if (front) { "${this.currency.name} " } else { "" }
+        val backCurrency = if (!front) { " ${this.currency.name}" } else { "" }
+
+        return "$frontCurrency$minus$preComma$seperator$postComma$backCurrency"
+    }
+
+    /**
      * Adds another monetary value to this one. Can be called using the '+' operator.
      * @param value: The Value to add to this MoneyValue object
      * @return The result of the addition as a new MoneyValue object

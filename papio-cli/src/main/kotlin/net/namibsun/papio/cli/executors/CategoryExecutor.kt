@@ -17,34 +17,60 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
-import net.namibsun.papio.cli.argparse.ActionMode
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.models.Category
 
 /**
  * Executor for the Category Root action
+ * Manages categories in the database
  */
-class CategoryExecutor(
-        private val mode: ActionMode,
-        private val args: Array<String>,
-        private val dbHandler: DbHandler) : Executor {
+class CategoryExecutor : Executor {
 
     /**
      * Executes the 'create' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
      */
-    override fun executeCreate() {}
+    override fun executeCreate(args: Array<String>, dbHandler: DbHandler) {
+    }
 
     /**
      * Executes the 'delete' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
      */
-    override fun executeDelete() {}
+    override fun executeDelete(args: Array<String>, dbHandler: DbHandler) {
+    }
 
     /**
      * Executes the 'list' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
      */
-    override fun executeList() {}
+    override fun executeList(args: Array<String>, dbHandler: DbHandler) {
+    }
 
     /**
      * Executes the 'display' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
      */
-    override fun executeDisplay() {}
+    override fun executeDisplay(args: Array<String>, dbHandler: DbHandler) {
+    }
+
+    /**
+     * Tries to retrieve a category based on the category's name or ID, in that order.
+     * @param dbHandler: The Database handler to use
+     * @param nameOrId: The identifier to use to find the category
+     * @return The retrieved wallet or null if none was found
+     */
+    fun getCategory(dbHandler: DbHandler, nameOrId: String): Category? {
+        var category = dbHandler.getCategory(nameOrId)
+        if (category == null) {
+            try {
+                category = dbHandler.getCategory(nameOrId.toInt())
+            } catch (e: NumberFormatException) {}
+        }
+        return category
+    }
 }

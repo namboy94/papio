@@ -52,16 +52,16 @@ fun main(args: Array<String>) {
     val actionMode = modeParser.actionMode!!
 
     val executor = when (rootMode) {
-        RootMode.WALLET -> WalletExecutor(actionMode, trimmedArgs, dbHandler)
-        RootMode.CATEGORY -> CategoryExecutor(actionMode, trimmedArgs, dbHandler)
-        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor(actionMode, trimmedArgs, dbHandler)
-        RootMode.TRANSACTION -> TransactionExecutor(actionMode, trimmedArgs, dbHandler)
+        RootMode.WALLET -> WalletExecutor()
+        RootMode.CATEGORY -> CategoryExecutor()
+        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
+        RootMode.TRANSACTION -> TransactionExecutor()
     }
 
     when (actionMode) {
-        ActionMode.LIST -> executor.executeList()
-        ActionMode.DISPLAY -> executor.executeDisplay()
-        ActionMode.CREATE -> executor.executeCreate()
-        ActionMode.DELETE -> executor.executeDelete()
+        ActionMode.LIST -> executor.executeList(trimmedArgs, dbHandler)
+        ActionMode.DISPLAY -> executor.executeDisplay(trimmedArgs, dbHandler)
+        ActionMode.CREATE -> executor.executeCreate(trimmedArgs, dbHandler)
+        ActionMode.DELETE -> executor.executeDelete(trimmedArgs, dbHandler)
     }
 }

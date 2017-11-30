@@ -301,6 +301,38 @@ class DbHandler(private val connection: Connection) {
     }
 
     /**
+     * Retrieves a transaction from the database
+     * @param id: The ID of the transaction to fetch
+     * @return The transaction object or null if no transaction was found for the ID
+     */
+    fun getTransaction(id: Int): Transaction? {
+        val statement = this.connection.prepareStatement("" +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp " +
+                "FROM transactions WHERE id=?"
+        )
+        statement.setInt(1, id)
+        statement.execute()
+        val results = statement.resultSet
+        val transaction = if (!results.next()) {
+            null
+        } else {
+            val wallet = this.getWallet(results.getInt("wallet_id"))!!
+            Transaction(
+                    id,
+                    wallet,
+                    this.getCategory(results.getInt("category_id"))!!,
+                    this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
+                    results.getString("description"),
+                    MoneyValue(results.getInt("amount"), wallet.getCurrency()),
+                    results.getInt("unix_utc_timestamp")
+            )
+        }
+        statement.close()
+        results.close()
+        return transaction
+    }
+
+    /**
      * Stores a transaction for a wallet, category and transaction partner in the database.
      * @param wallet: The wallet for which to store the transaction
      * @param category: The category of the transaction
