@@ -84,7 +84,8 @@ class ModeParser(args: Array<String>) {
                 "category           (create|delete|list|display) ...\n" +
                 "transactionpartner (create|delete|list|display) ...\n" +
                 "transaction        (create|delete|list|display) ...\n" +
-                "backup")
+                "backup\n" +
+                "transfer")
         System.exit(1)
     }
 }

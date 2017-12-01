@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
+import net.namibsun.papio.lib.date.DateFormatter
 import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.db.models.Category
@@ -24,7 +25,6 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import java.sql.Connection
-import java.time.ZonedDateTime
 
 /**
  * Class that manages database calls
@@ -353,14 +353,10 @@ class DbHandler(private val connection: Connection) {
 
         var dateString = date
         if (date == "today") {
-            val now = ZonedDateTime.now()
-            val year = now.year.toString().padStart(4, '0')
-            val month = now.monthValue.toString().padStart(2, '0')
-            val day = now.dayOfMonth.toString().padStart(2, '0')
-            dateString = "$year-$month-$day"
+            dateString = DateFormatter().getTodayString()
         }
 
-        if (!Transaction.validateDate(dateString)) {
+        if (!DateFormatter().validateDateString(dateString)) {
             throw IllegalArgumentException("Illegal Date")
         }
 

@@ -17,10 +17,10 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.lib.date.DateFormatter
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.money.MoneyValue
 import net.sourceforge.argparse4j.ArgumentParsers
-import java.time.ZonedDateTime
 
 /**
  * Executor for the Transaction root action
@@ -34,13 +34,6 @@ class TransactionExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeCreate(args: Array<String>, dbHandler: DbHandler) {
-
-        val now = ZonedDateTime.now()
-        val year = now.year.toString().padStart(4, '0')
-        val month = now.monthValue.toString().padStart(2, '0')
-        val day = now.dayOfMonth.toString().padStart(2, '0')
-        val defaultDateString = "$year-$month-$day"
-
         val parser = ArgumentParsers.newFor("papio-cli transaction create").build().defaultHelp(true)
         parser.addArgument("wallet")
                 .help("The name or ID of the wallet this transaction takes place in." +
@@ -57,7 +50,7 @@ class TransactionExecutor : Executor {
                 .type(Int::class.java)
                 .help("The amount of money used in the transaction in the same currency as the wallet.")
         parser.addArgument("-d", "--date")
-                .setDefault(defaultDateString)
+                .setDefault(DateFormatter().getTodayString())
                 .help("The date of the transaction in the format YYYY-MM-DD. Default to the current day.")
         val results = this.handleParserError(parser, args)
 

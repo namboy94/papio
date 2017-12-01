@@ -17,11 +17,10 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db.models
 
+import net.namibsun.papio.lib.date.DateFormatter
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.db.DbHandler
-import java.time.LocalDateTime
-import java.time.format.DateTimeParseException
 
 /**
  * Models a transaction in the database
@@ -50,25 +49,8 @@ data class Transaction(val id: Int,
      * Checks if the date is valid
      */
     init {
-        if (!Transaction.validateDate(date)) {
+        if (!DateFormatter().validateDateString(date)) {
             throw IllegalArgumentException("Illegal date")
-        }
-    }
-
-    companion object {
-
-        /**
-         * Checks if a String is a valid ISO-8601 formatted date
-         * @param date: The string to check
-         * @return true if the string is valid, else false
-         */
-        fun validateDate(date: String): Boolean {
-            return try {
-                LocalDateTime.parse("${date}T00:00:00")
-                true
-            } catch (e: DateTimeParseException) {
-                false
-            }
         }
     }
 

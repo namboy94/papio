@@ -22,9 +22,10 @@ import net.namibsun.papio.cli.argparse.ModeParser
 import net.namibsun.papio.cli.argparse.OtherMode
 import net.namibsun.papio.cli.argparse.RootMode
 import net.namibsun.papio.cli.executors.CategoryExecutor
+import net.namibsun.papio.cli.executors.WalletExecutor
+import net.namibsun.papio.cli.executors.TransferExecutor
 import net.namibsun.papio.cli.executors.TransactionExecutor
 import net.namibsun.papio.cli.executors.TransactionPartnerExecutor
-import net.namibsun.papio.cli.executors.WalletExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import java.io.File
 import java.sql.DriverManager
@@ -55,6 +56,9 @@ fun main(args: Array<String>) {
             val dbBackup = File(papioDir.toString(), "backup-${System.currentTimeMillis().toInt()}.db")
             papioDb.copyTo(dbBackup, true)
             println("Backup created: $dbBackup")
+        }
+        OtherMode.TRANSFER -> {
+            TransferExecutor().execute(dbHandler, trimmedArgs)
         }
         null -> {
             val rootMode = modeParser.rootMode!!

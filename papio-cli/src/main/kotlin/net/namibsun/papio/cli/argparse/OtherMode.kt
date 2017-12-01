@@ -22,5 +22,6 @@ package net.namibsun.papio.cli.argparse
  * LIST, DISPLAY, CREATE and DELETE action options
  */
 enum class OtherMode {
-    BACKUP
+    BACKUP,
+    TRANSFER
 }

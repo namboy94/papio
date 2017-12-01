@@ -23,37 +23,9 @@ import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 
 /**
- * Interface that acts as a common base class of all Executors
+ * Base executor interface containing helper methods
  */
-interface Executor {
-
-    /**
-     * Executes the 'create' option
-     * @param args: The command line arguments without root and action mode arguments
-     * @param dbHandler: The database handler to use
-     */
-    fun executeCreate(args: Array<String>, dbHandler: DbHandler)
-
-    /**
-     * Executes the 'delete' option
-     * @param args: The command line arguments without root and action mode arguments
-     * @param dbHandler: The database handler to use
-     */
-    fun executeDelete(args: Array<String>, dbHandler: DbHandler)
-
-    /**
-     * Executes the 'list' option
-     * @param args: The command line arguments without root and action mode arguments
-     * @param dbHandler: The database handler to use
-     */
-    fun executeList(args: Array<String>, dbHandler: DbHandler)
-
-    /**
-     * Executes the 'display' option
-     * @param args: The command line arguments without root and action mode arguments
-     * @param dbHandler: The database handler to use
-     */
-    fun executeDisplay(args: Array<String>, dbHandler: DbHandler)
+interface BaseExecutor {
 
     /**
      * Handles a parser error. On error, a helpful message will be output and the program will exit.
@@ -85,4 +57,38 @@ interface Executor {
         }
         return response == "y"
     }
+}
+
+/**
+ * Interface that acts as a common base class of all Executors
+ */
+interface Executor : BaseExecutor {
+
+    /**
+     * Executes the 'create' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
+     */
+    fun executeCreate(args: Array<String>, dbHandler: DbHandler)
+
+    /**
+     * Executes the 'delete' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
+     */
+    fun executeDelete(args: Array<String>, dbHandler: DbHandler)
+
+    /**
+     * Executes the 'list' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
+     */
+    fun executeList(args: Array<String>, dbHandler: DbHandler)
+
+    /**
+     * Executes the 'display' option
+     * @param args: The command line arguments without root and action mode arguments
+     * @param dbHandler: The database handler to use
+     */
+    fun executeDisplay(args: Array<String>, dbHandler: DbHandler)
 }
