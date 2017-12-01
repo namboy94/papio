@@ -19,6 +19,7 @@ package net.namibsun.papio.cli
 
 import net.namibsun.papio.cli.argparse.ActionMode
 import net.namibsun.papio.cli.argparse.ModeParser
+import net.namibsun.papio.cli.argparse.OtherMode
 import net.namibsun.papio.cli.argparse.RootMode
 import net.namibsun.papio.cli.executors.CategoryExecutor
 import net.namibsun.papio.cli.executors.TransactionExecutor
@@ -48,20 +49,30 @@ fun main(args: Array<String>) {
     val modeParser = ModeParser(args)
 
     val trimmedArgs = modeParser.parse()
-    val rootMode = modeParser.rootMode!!
-    val actionMode = modeParser.actionMode!!
 
-    val executor = when (rootMode) {
-        RootMode.WALLET -> WalletExecutor()
-        RootMode.CATEGORY -> CategoryExecutor()
-        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
-        RootMode.TRANSACTION -> TransactionExecutor()
-    }
+    when (modeParser.otherMode) {
+        OtherMode.BACKUP -> {
+            val dbBackup = File(papioDir.toString(), "backup-${System.currentTimeMillis().toInt()}.db")
+            papioDb.copyTo(dbBackup, true)
+            println("Backup created: $dbBackup")
+        }
+        null -> {
+            val rootMode = modeParser.rootMode!!
+            val actionMode = modeParser.actionMode!!
 
-    when (actionMode) {
-        ActionMode.LIST -> executor.executeList(trimmedArgs, dbHandler)
-        ActionMode.DISPLAY -> executor.executeDisplay(trimmedArgs, dbHandler)
-        ActionMode.CREATE -> executor.executeCreate(trimmedArgs, dbHandler)
-        ActionMode.DELETE -> executor.executeDelete(trimmedArgs, dbHandler)
+            val executor = when (rootMode) {
+                RootMode.WALLET -> WalletExecutor()
+                RootMode.CATEGORY -> CategoryExecutor()
+                RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
+                RootMode.TRANSACTION -> TransactionExecutor()
+            }
+
+            when (actionMode) {
+                ActionMode.LIST -> executor.executeList(trimmedArgs, dbHandler)
+                ActionMode.DISPLAY -> executor.executeDisplay(trimmedArgs, dbHandler)
+                ActionMode.CREATE -> executor.executeCreate(trimmedArgs, dbHandler)
+                ActionMode.DELETE -> executor.executeDelete(trimmedArgs, dbHandler)
+            }
+        }
     }
 }
