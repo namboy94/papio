@@ -24,6 +24,7 @@ import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -86,5 +87,39 @@ class TransactionPartnerTest {
         assertNotNull(this.handler!!.getTransactionPartner("Partner"))
         original.delete(this.handler!!)
         assertNull(this.handler!!.getTransactionPartner("Partner"))
+    }
+
+    /**
+     * Tests retrieving all transaction partners from the database
+     */
+    @Test
+    fun testGettingTransactionPartners() {
+
+        val originals = listOf(
+                this.handler!!.createTransactionPartner("A"),
+                this.handler!!.createTransactionPartner("B"),
+                this.handler!!.createTransactionPartner("C")
+        )
+
+        val dbPartners = this.handler!!.getTransactionPartners()
+        assertEquals(3, dbPartners.size)
+        for (partner in dbPartners) {
+            for (original in originals) {
+                if (partner.name == original.name) {
+                    assertEquals(partner, original)
+                } else {
+                    assertNotEquals(partner, original)
+                }
+            }
+        }
+    }
+
+    /**
+     * Tests the toString method of the TransactionPartner class
+     */
+    @Test
+    fun testStringRepresentation() {
+        val partner = this.handler!!.createTransactionPartner("A")
+        assertEquals("Transaction Partner; ID: 1; Name: A", partner.toString())
     }
 }

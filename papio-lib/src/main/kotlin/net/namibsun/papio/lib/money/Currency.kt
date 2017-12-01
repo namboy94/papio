@@ -15,11 +15,43 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib
+package net.namibsun.papio.lib.money
 
-import net.namibsun.papio.lib.core.CurrencyExchanger
-
-fun main(args: Array<String>) {
-    val rates = CurrencyExchanger.getExchangeRates()
-    println(rates)
+/**
+ * This enum represents several real-world currencies.
+ */
+enum class Currency {
+    EUR,
+    USD,
+    ZAR,
+    JPY,
+    BGN,
+    CZK,
+    DKK,
+    GBP,
+    HUF,
+    PLN,
+    RON,
+    SEK,
+    CHF,
+    NOK,
+    HRK,
+    RUB,
+    TRY,
+    AUD,
+    BRL,
+    CAD,
+    CNY,
+    HKD,
+    IDR,
+    ILS,
+    INR,
+    KRW,
+    MXN,
+    MYR,
+    NZD,
+    PHP,
+    SGD,
+    THB,
+    NAD
 }

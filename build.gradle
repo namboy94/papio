@@ -16,14 +16,15 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ext {
-    version = "0.1.0"
-    versionCode = 000100
+    version = "0.2.0"
+    versionCode = 000200
 }
 
 // Define class paths
 buildscript {
     repositories {
         jcenter()
+        mavenCentral()
     }
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:+"
@@ -36,6 +37,7 @@ subprojects {
     // Define Repositories for submodules
     repositories {
         jcenter()
+        mavenCentral()
     }
 
     apply plugin: "kotlin"
@@ -70,15 +72,6 @@ subprojects {
     }
     check.dependsOn ktlint
 
-
-    // Makes sure to compile all required classes in JAR files
-    jar {
-        from {
-            configurations.compile.collect {
-                it.isDirectory() ? it : zipTree(it)
-            }
-        }
-    }
 }
 
 // Print version

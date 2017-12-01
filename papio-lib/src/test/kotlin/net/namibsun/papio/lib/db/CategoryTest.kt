@@ -24,6 +24,7 @@ import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -87,5 +88,39 @@ class CategoryTest {
         assertNotNull(this.handler!!.getCategory("Category"))
         original.delete(this.handler!!)
         assertNull(this.handler!!.getWallet("Category"))
+    }
+
+    /**
+     * Tests retrieving all categories from the database
+     */
+    @Test
+    fun testGettingCategories() {
+
+        val categories = listOf(
+                this.handler!!.createCategory("A"),
+                this.handler!!.createCategory("B"),
+                this.handler!!.createCategory("C")
+        )
+
+        val dbCategories = this.handler!!.getCategories()
+        assertEquals(3, dbCategories.size)
+        for (category in dbCategories) {
+            for (original in categories) {
+                if (category.name == original.name) {
+                    assertEquals(category, original)
+                } else {
+                    assertNotEquals(category, original)
+                }
+            }
+        }
+    }
+
+    /**
+     * Tests the toString method of the Category class
+     */
+    @Test
+    fun testStringRepresentation() {
+        val category = this.handler!!.createCategory("A")
+        assertEquals("Category; ID: 1; Name: A", category.toString())
     }
 }

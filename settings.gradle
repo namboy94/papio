@@ -17,3 +17,4 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 rootProject.name = 'papio'
 include ':papio-lib'
+include ':papio-cli'

@@ -17,9 +17,11 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db.models
 
-import net.namibsun.papio.lib.core.Currency
-import net.namibsun.papio.lib.core.MoneyValue
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.db.DbHandler
+import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 
 /**
  * Models a transaction in the database
@@ -33,15 +35,42 @@ import net.namibsun.papio.lib.db.DbHandler
  * @param partner: The partner of this transaction
  * @param description: A description of the transaction
  * @param amount: The amount of money that makes up the transaction. Always the same currency as the wallet
- * @param unixUtcTimestamp: The timestamp indicating when the transaction took place
+ * @param date: The ISO-8601 date String indicating when the transaction took place
+ * @throws IllegalArgumentException: If the provided date is invalid
  */
 data class Transaction(val id: Int,
-                       private val wallet: Wallet,
-                       private val category: Category,
-                       private val partner: TransactionPartner,
+                       val wallet: Wallet,
+                       val category: Category,
+                       val partner: TransactionPartner,
                        val description: String,
                        private var amount: MoneyValue,
-                       val unixUtcTimestamp: Int) {
+                       val date: String) {
+
+    /**
+     * Checks if the date is valid
+     */
+    init {
+        if (!Transaction.validateDate(date)) {
+            throw IllegalArgumentException("Illegal date")
+        }
+    }
+
+    companion object {
+
+        /**
+         * Checks if a String is a valid ISO-8601 formatted date
+         * @param date: The string to check
+         * @return true if the string is valid, else false
+         */
+        fun validateDate(date: String): Boolean {
+            return try {
+                LocalDateTime.parse("${date}T00:00:00")
+                true
+            } catch (e: DateTimeParseException) {
+                false
+            }
+        }
+    }
 
     /**
      * Retrieves the amount of money in this transaction
@@ -67,5 +96,15 @@ data class Transaction(val id: Int,
     fun convertCurrency(dbHandler: DbHandler, currency: Currency) {
         this.amount = this.amount.convert(currency)
         dbHandler.adjustTransactionAmount(this.id, this.amount.getValue())
+    }
+
+    /**
+     * Generates a String that represents the Transaction object
+     * @return The String representation of the transaction
+     */
+    override fun toString(): String {
+        return "Transaction; ID: ${this.id}; Wallet: ${this.wallet.name}; Category: ${this.category.name}; " +
+                "Transaction Partner: ${this.partner.name}; Description: ${this.description}; " +
+                "Amount: ${this.amount}; Date: ${this.date}"
     }
 }

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib.core
+package net.namibsun.papio.lib.money
 
 /**
  * The MoneyValue class defines a monetary value in a particular currency.
@@ -48,6 +48,39 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
     }
 
     /**
+     * Generates a formatted string of the money value in the form:
+     *     front=true:   EUR 200.10
+     *     front=false:  200.10 EUR
+     * The above examples are for a MoneyValue object with a value of 20010 and the currency EUR
+     * @param front: Defines if the currency should be in front of or after the value
+     * @param decimal: Use a decimal point if set to true or a comma if set to false
+     * @return The formatted string
+     */
+    fun getFormatted(front: Boolean = true, decimal: Boolean = true): String {
+
+        val stringValue = this.value.toString().replace("-", "")
+        val minus = if (this.value < 0) { "-" } else { "" }
+
+        val preComma = if (stringValue.length > 2) {
+            stringValue.substring(0, stringValue.length - 2)
+        } else {
+            "0"
+        }
+
+        val postComma = when {
+            stringValue.length > 2 -> stringValue.substring(stringValue.length - 2, stringValue.length)
+            stringValue.length == 1 -> "0$stringValue"
+            else -> stringValue
+        }
+
+        val seperator = if (decimal) { "." } else { "," }
+        val frontCurrency = if (front) { "${this.currency.name} " } else { "" }
+        val backCurrency = if (!front) { " ${this.currency.name}" } else { "" }
+
+        return "$frontCurrency$minus$preComma$seperator$postComma$backCurrency"
+    }
+
+    /**
      * Adds another monetary value to this one. Can be called using the '+' operator.
      * @param value: The Value to add to this MoneyValue object
      * @return The result of the addition as a new MoneyValue object
@@ -75,5 +108,14 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
     fun convert(currency: Currency): MoneyValue {
         CurrencyExchanger.update()
         return MoneyValue(CurrencyExchanger.convertValue(this.value, this.currency, currency), currency)
+    }
+
+    /**
+     * Generates a String representation of this value with the currency identifier at the front and
+     * using decimal points.
+     * @return The String representation of the MoneyValue object
+     */
+    override fun toString(): String {
+        return this.getFormatted()
     }
 }

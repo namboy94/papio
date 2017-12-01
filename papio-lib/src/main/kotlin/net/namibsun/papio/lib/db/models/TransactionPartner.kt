@@ -42,4 +42,12 @@ data class TransactionPartner(val id: Int, val name: String) {
     fun getAllTransactions(dbHandler: DbHandler): List<Transaction> {
         return dbHandler.getTransactionsByTransactionPartner(this.id)
     }
+
+    /**
+     * Generates a String that represents the TransactionPartner object
+     * @return The String representation of the Transaction Partner
+     */
+    override fun toString(): String {
+        return "Transaction Partner; ID: ${this.id}; Name: ${this.name}"
+    }
 }

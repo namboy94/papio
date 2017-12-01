@@ -15,11 +15,11 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// Submodule dependencies
-dependencies {
-    testCompile "org.xerial:sqlite-jdbc:+"
-}
+package net.namibsun.papio.cli.argparse
 
-jar {
-
+/**
+ * Enum that models the actions that are applicable on a root category
+ */
+enum class ActionMode {
+    LIST, DISPLAY, CREATE, DELETE
 }

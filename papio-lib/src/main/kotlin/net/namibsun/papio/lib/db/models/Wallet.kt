@@ -16,8 +16,8 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 package net.namibsun.papio.lib.db.models
-import net.namibsun.papio.lib.core.Currency
-import net.namibsun.papio.lib.core.MoneyValue
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.db.DbHandler
 
 data class Wallet(val id: Int, val name: String, private var startingValue: MoneyValue) {
@@ -70,5 +70,23 @@ data class Wallet(val id: Int, val name: String, private var startingValue: Mone
      */
     fun delete(dbHandler: DbHandler) {
         dbHandler.deleteWallet(this.id)
+    }
+
+    /**
+     * Represents the wallet as a String
+     * @return The wallet representation as a String
+     */
+    override fun toString(): String {
+        return "Wallet; ID: ${this.id}; Name: ${this.name}; Starting Value: ${this.startingValue}"
+    }
+
+    /**
+     * Represents the wallet as String including the current balance
+     * @param dbHandler: The database handler used to retrieve the transactions for calculating the balance
+     * @return The wallet represented as a String
+     */
+    fun toString(dbHandler: DbHandler): String {
+        return "Wallet; ID: ${this.id}; Name: ${this.name}; Balance: ${this.getBalance(dbHandler)}; " +
+                "Starting Value: ${this.startingValue}"
     }
 }

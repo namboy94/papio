@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib.core
+package net.namibsun.papio.lib.money
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -98,5 +98,25 @@ class MoneyValueTest {
         assertEquals((100 * rates[Currency.USD]!!).toInt(), value.getValue(Currency.USD))
         assertEquals(value.getValue(), value.getValue(Currency.USD))
         assertEquals(Currency.USD, value.getCurrency())
+    }
+
+    /**
+     * Tests formatting a MoneyValue object as a string
+     */
+    @Test
+    fun testFormattingMoneyValue() {
+        val valueOne = MoneyValue(0, Currency.EUR)
+        val valueTwo = MoneyValue(55, Currency.USD)
+        val valueThree = MoneyValue(12345, Currency.ZAR)
+        val valueFour = MoneyValue(-1, Currency.EUR)
+        val valueFive = MoneyValue(-90, Currency.USD)
+        val valueSix = MoneyValue(-123123, Currency.ZAR)
+
+        assertEquals("EUR 0.00", valueOne.getFormatted())
+        assertEquals("0.55 USD", valueTwo.getFormatted(false, true))
+        assertEquals("ZAR 123,45", valueThree.getFormatted(true, false))
+        assertEquals("-0.01 EUR", valueFour.getFormatted(false))
+        assertEquals("USD -0,90", valueFive.getFormatted(decimal = false))
+        assertEquals("-1231.23 ZAR", valueSix.getFormatted(front = false))
     }
 }

@@ -1,3 +1,6 @@
+V 0.2.0:
+  - Created papio CLI tool
+  - Changed timestamp of transactions to ISO-8061 date strings
 V 0.1.0:
   - Created papio library
   - Deleted legacy code

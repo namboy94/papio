@@ -15,13 +15,11 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib.core
+package net.namibsun.papio.cli.argparse
 
 /**
- * This enum represents several real-world currencies.
+ * Enum that models which part of the database are to be changed
  */
-enum class Currency {
-    EUR,
-    USD,
-    ZAR
+enum class RootMode {
+    WALLET, CATEGORY, TRANSACTIONPARTNER, TRANSACTION
 }

@@ -17,13 +17,14 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
-import net.namibsun.papio.lib.core.MoneyValue
-import net.namibsun.papio.lib.core.Currency
+import net.namibsun.papio.lib.money.MoneyValue
+import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import java.sql.Connection
+import java.time.ZonedDateTime
 
 /**
  * Class that manages database calls
@@ -59,10 +60,10 @@ class DbHandler(private val connection: Connection) {
                 "   transaction_partner_id INTEGER NOT NULL," +
                 "   description TEXT NOT NULL," +
                 "   amount INTEGER NOT NULL," +
-                "   unix_utc_timestamp INTEGER NOT NULL," +
-                "   FOREIGN KEY(wallet_id) REFERENCES wallets(id)," +
-                "   FOREIGN KEY(category_id) REFERENCES categories(id)," +
-                "   FOREIGN KEY(transaction_partner_id) REFERENCES transaction_partners(id)" +
+                "   date TEXT NOT NULL," +
+                "   FOREIGN KEY(wallet_id) REFERENCES wallets(id) ON DELETE CASCADE," +
+                "   FOREIGN KEY(category_id) REFERENCES categories(id) ON DELETE CASCADE," +
+                "   FOREIGN KEY(transaction_partner_id) REFERENCES transaction_partners(id) ON DELETE CASCADE" +
                 ")")
     }
 
@@ -301,26 +302,72 @@ class DbHandler(private val connection: Connection) {
     }
 
     /**
+     * Retrieves a transaction from the database
+     * @param id: The ID of the transaction to fetch
+     * @return The transaction object or null if no transaction was found for the ID
+     */
+    fun getTransaction(id: Int): Transaction? {
+        val statement = this.connection.prepareStatement("" +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date " +
+                "FROM transactions WHERE id=?"
+        )
+        statement.setInt(1, id)
+        statement.execute()
+        val results = statement.resultSet
+        val transaction = if (!results.next()) {
+            null
+        } else {
+            val wallet = this.getWallet(results.getInt("wallet_id"))!!
+            Transaction(
+                    id,
+                    wallet,
+                    this.getCategory(results.getInt("category_id"))!!,
+                    this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
+                    results.getString("description"),
+                    MoneyValue(results.getInt("amount"), wallet.getCurrency()),
+                    results.getString("date")
+            )
+        }
+        statement.close()
+        results.close()
+        return transaction
+    }
+
+    /**
      * Stores a transaction for a wallet, category and transaction partner in the database.
      * @param wallet: The wallet for which to store the transaction
      * @param category: The category of the transaction
      * @param transactionPartner: The transaction partner of the transaction
      * @param description: The description of the transaction
      * @param amount: The monetary amount of the transaction
-     * @param unixUtcTimestamp: A UTC timestamp that denotes the time the transaction took place.
-     *                          Defaults to the current time.
+     * @param date: The ISO 8601 date on which the transaction took place
      * @return The created Transaction object
+     * @throws IllegalArgumentException: If the provided date is not a valid ISO-8601 formatted String
      */
     fun createTransaction(wallet: Wallet,
                           category: Category,
                           transactionPartner: TransactionPartner,
                           description: String,
                           amount: MoneyValue,
-                          unixUtcTimestamp: Int = (System.currentTimeMillis() / 1000).toInt()): Transaction {
+                          date: String = "today"): Transaction {
+
+        var dateString = date
+        if (date == "today") {
+            val now = ZonedDateTime.now()
+            val year = now.year.toString().padStart(4, '0')
+            val month = now.monthValue.toString().padStart(2, '0')
+            val day = now.dayOfMonth.toString().padStart(2, '0')
+            dateString = "$year-$month-$day"
+        }
+
+        if (!Transaction.validateDate(dateString)) {
+            throw IllegalArgumentException("Illegal Date")
+        }
+
         val converted = amount.convert(wallet.getCurrency())
         val statement = this.connection.prepareStatement("" +
                 "INSERT INTO transactions " +
-                "(wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp) " +
+                "(wallet_id, category_id, transaction_partner_id, description, amount, date) " +
                 "VALUES (?, ?, ?, ?, ?, ?)"
         )
         statement.setInt(1, wallet.id)
@@ -328,7 +375,7 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(3, transactionPartner.id)
         statement.setString(4, description)
         statement.setInt(5, converted.getValue())
-        statement.setInt(6, unixUtcTimestamp)
+        statement.setString(6, dateString)
         statement.execute()
 
         val idStatement = this.connection.prepareStatement("SELECT last_insert_rowid()")
@@ -340,7 +387,7 @@ class DbHandler(private val connection: Connection) {
         idStatement.close()
         results.close()
 
-        return Transaction(id, wallet, category, transactionPartner, description, converted, unixUtcTimestamp)
+        return Transaction(id, wallet, category, transactionPartner, description, converted, dateString)
     }
 
     /**
@@ -363,6 +410,70 @@ class DbHandler(private val connection: Connection) {
         statement.close()
         results.close()
         return wallets
+    }
+
+    /**
+     * Retrieves all categories in the database
+     * @return All categories in the database
+     */
+    fun getCategories(): List<Category> {
+        val statement = this.connection.prepareStatement("SELECT id, name FROM categories")
+        statement.execute()
+        val results = statement.resultSet
+        val categories = mutableListOf<Category>()
+
+        while (results.next()) {
+            categories.add(Category(results.getInt("id"), results.getString("name")))
+        }
+        statement.close()
+        results.close()
+        return categories
+    }
+
+    /**
+     * Retrieves all transaction partners in the database
+     * @return All transaction partners in the database
+     */
+    fun getTransactionPartners(): List<TransactionPartner> {
+        val statement = this.connection.prepareStatement("SELECT id, name FROM transaction_partners")
+        statement.execute()
+        val results = statement.resultSet
+        val partners = mutableListOf<TransactionPartner>()
+
+        while (results.next()) {
+            partners.add(TransactionPartner(results.getInt("id"), results.getString("name")))
+        }
+        statement.close()
+        results.close()
+        return partners
+    }
+
+    /**
+     * Retrieves all transactions in the database
+     * @return All transactions in the database
+     */
+    fun getTransactions(): List<Transaction> {
+        val statement = this.connection.prepareStatement("" +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date FROM transactions"
+        )
+        val results = statement.resultSet
+
+        val transactions = mutableListOf<Transaction>()
+        while (results.next()) {
+            val wallet = this.getWallet(results.getInt("wallet_id"))!!
+            transactions.add(Transaction(
+                    results.getInt("id"),
+                    wallet,
+                    this.getCategory(results.getInt("category_id"))!!,
+                    this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
+                    results.getString("description"),
+                    MoneyValue(results.getInt("amount"), wallet.getCurrency()),
+                    results.getString("date")
+            ))
+        }
+        statement.close()
+        results.close()
+        return transactions
     }
 
     /**
@@ -472,7 +583,7 @@ class DbHandler(private val connection: Connection) {
      */
     private fun getTransactionsByIdType(idType: String, id: Int): List<Transaction> {
         val statement = this.connection.prepareStatement("" +
-                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, unix_utc_timestamp " +
+                "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date " +
                 "FROM transactions WHERE ${idType}_id=?"
         )
         statement.setInt(1, id)
@@ -489,9 +600,11 @@ class DbHandler(private val connection: Connection) {
                     this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
                     results.getString("description"),
                     MoneyValue(results.getInt("amount"), wallet.getCurrency()),
-                    results.getInt("unix_utc_timestamp")
+                    results.getString("date")
             ))
         }
+        statement.close()
+        results.close()
         return transactions
     }
 }
