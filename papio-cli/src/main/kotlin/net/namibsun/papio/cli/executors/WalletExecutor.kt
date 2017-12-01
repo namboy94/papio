@@ -91,9 +91,13 @@ class WalletExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
+        var total = MoneyValue(0, Currency.EUR)
         for (wallet in dbHandler.getWallets()) {
-            println(wallet)
+            println(wallet.toString(dbHandler))
+            total += wallet.getBalance(dbHandler)
         }
+        println("-------------------------")
+        println("Total: $total")
     }
 
     /**

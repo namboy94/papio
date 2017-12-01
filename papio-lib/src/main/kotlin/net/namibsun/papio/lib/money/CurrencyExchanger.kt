@@ -72,7 +72,13 @@ object CurrencyExchanger {
 
                 // Format example: <Cube currency='USD' rate='1.1952'/>
                 try {
-                    var rate = exchangeRateData.split("${currency.name}' rate='")[1]
+                    val splitter = if (currency == Currency.NAD) {
+                        Currency.ZAR.name
+                    } else {
+                        currency.name
+                    }
+
+                    var rate = exchangeRateData.split("$splitter' rate='")[1]
                     rate = rate.split("'")[0]
                     this.exchangeRates[currency] = rate.toDouble()
                 } catch (e: IndexOutOfBoundsException) {
