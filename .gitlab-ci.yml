@@ -42,6 +42,7 @@ build_jar:
     - mkdir -p artifacts
     - gradle build
     - mv papio-lib/build/libs/papio-lib.jar artifacts/
+    - mv papio-cli/build/libs/papio-cli.jar artifacts/
   artifacts:
     paths:
       - artifacts/
