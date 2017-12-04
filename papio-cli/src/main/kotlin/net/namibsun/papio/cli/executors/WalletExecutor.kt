@@ -115,7 +115,7 @@ class WalletExecutor : Executor {
 
         val wallet = this.getWallet(dbHandler, result.getString("identifier"))
         if (wallet != null) {
-            println("$wallet\n")
+            println("${wallet.toString(dbHandler)}\n")
 
             val transactions = wallet.getAllTransactions(dbHandler)
             var limit = result.getInt("transactions")

@@ -452,6 +452,7 @@ class DbHandler(private val connection: Connection) {
         val statement = this.connection.prepareStatement("" +
                 "SELECT id, wallet_id, category_id, transaction_partner_id, description, amount, date FROM transactions"
         )
+        statement.execute()
         val results = statement.resultSet
 
         val transactions = mutableListOf<Transaction>()
