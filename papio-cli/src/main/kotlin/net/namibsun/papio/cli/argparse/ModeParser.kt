@@ -29,63 +29,39 @@ class ModeParser(args: Array<String>) {
     private val args = args.toMutableList()
 
     /**
-     * The Root mode of the parsed arguments
-     */
-    var rootMode: RootMode? = null
-
-    /**
-     * The Action mode of the parsed arguments
-     */
-    var actionMode: ActionMode? = null
-
-    /**
-     * The other mode of the parsed arguments
-     */
-    var otherMode: OtherMode? = null
-
-    /**
-     * Parses the command line arguments for their modes
-     * After running this method, the rootMode and actionMode variables will be set to the correct
-     * values. Should the parsing encounter an invalid argument, a help message is printed and the
+     * Parses the command line arguments for their modes.
+     * Should the parsing encounter an invalid argument combination, a help message is printed and the
      * program exits.
-     * @return The command line arguments without the mode arguments
+     * @return The command line arguments without the mode arguments, the root mode, the action mode
      */
-    fun parse(): Array<String> {
+    fun parse(): Triple<Array<String>, RootMode, ActionMode?> {
+
+        var first: RootMode? = null
+        var second: ActionMode? = null
+
         try {
-
-            val firstArg = this.args[0].toUpperCase()
-
-            if (firstArg in OtherMode.values().map { it.name }) {
-                this.otherMode = OtherMode.valueOf(firstArg)
-                this.args.removeAt(0)
-            } else {
-                val secondArg = this.args[1].toUpperCase()
-                this.rootMode = RootMode.valueOf(firstArg)
-                this.actionMode = ActionMode.valueOf(secondArg)
-                this.args.removeAt(0)
-                this.args.removeAt(0)
-            }
-        } catch (e: IllegalArgumentException) {
-            this.printHelpMessageAndExit()
+            first = RootMode.valueOf(this.args[0].toUpperCase())
+            this.args.removeAt(0)
         } catch (e: IndexOutOfBoundsException) {
-            this.printHelpMessageAndExit()
+            HelpPrinter().printAndExit()
+        } catch (e: IllegalArgumentException) {
+            HelpPrinter().printAndExit()
+        }
+        first = first!!
+
+        try {
+            second = ActionMode.valueOf(this.args[0].toUpperCase())
+            this.args.removeAt(0)
+        } catch (e: IndexOutOfBoundsException) {
+        } catch (e: IllegalArgumentException) {
         }
 
-        return this.args.toTypedArray()
-    }
+        if (second != null) {
+            if (second !in modeMap[first]!!) {
+                HelpPrinter().printAndExit()
+            }
+        }
 
-    /**
-     * Prints a Help message and exits
-     */
-    private fun printHelpMessageAndExit() {
-        println("papio\n" +
-                "Options:\n\n" +
-                "wallet             (create|delete|list|display) ...\n" +
-                "category           (create|delete|list|display) ...\n" +
-                "transactionpartner (create|delete|list|display) ...\n" +
-                "transaction        (create|delete|list|display) ...\n" +
-                "backup\n" +
-                "transfer")
-        System.exit(1)
+        return Triple(this.args.toTypedArray(), first, second)
     }
 }

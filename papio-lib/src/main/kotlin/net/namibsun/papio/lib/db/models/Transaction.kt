@@ -17,7 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db.models
 
-import net.namibsun.papio.lib.date.DateFormatter
+import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.db.DbHandler
@@ -34,8 +34,7 @@ import net.namibsun.papio.lib.db.DbHandler
  * @param partner: The partner of this transaction
  * @param description: A description of the transaction
  * @param amount: The amount of money that makes up the transaction. Always the same currency as the wallet
- * @param date: The ISO-8601 date String indicating when the transaction took place
- * @throws IllegalArgumentException: If the provided date is invalid
+ * @param date: The ISO-8601 date indicating when the transaction took place
  */
 data class Transaction(val id: Int,
                        val wallet: Wallet,
@@ -43,16 +42,7 @@ data class Transaction(val id: Int,
                        val partner: TransactionPartner,
                        val description: String,
                        private var amount: MoneyValue,
-                       val date: String) {
-
-    /**
-     * Checks if the date is valid
-     */
-    init {
-        if (!DateFormatter().validateDateString(date)) {
-            throw IllegalArgumentException("Illegal date")
-        }
-    }
+                       val date: IsoDate) {
 
     /**
      * Retrieves the amount of money in this transaction

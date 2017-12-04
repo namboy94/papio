@@ -17,7 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
-import net.namibsun.papio.lib.date.DateFormatter
+import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.db.models.Category
@@ -25,6 +25,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import java.sql.Connection
+import java.sql.ResultSet
 
 /**
  * Class that manages database calls
@@ -314,23 +315,15 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(1, id)
         statement.execute()
         val results = statement.resultSet
-        val transaction = if (!results.next()) {
-            null
-        } else {
-            val wallet = this.getWallet(results.getInt("wallet_id"))!!
-            Transaction(
-                    id,
-                    wallet,
-                    this.getCategory(results.getInt("category_id"))!!,
-                    this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
-                    results.getString("description"),
-                    MoneyValue(results.getInt("amount"), wallet.getCurrency()),
-                    results.getString("date")
-            )
-        }
+        val transactions = this.generateTransactions(results)
         statement.close()
         results.close()
-        return transaction
+
+        return if (transactions.size != 1) {
+            null
+        } else {
+            transactions[0]
+        }
     }
 
     /**
@@ -349,16 +342,7 @@ class DbHandler(private val connection: Connection) {
                           transactionPartner: TransactionPartner,
                           description: String,
                           amount: MoneyValue,
-                          date: String = "today"): Transaction {
-
-        var dateString = date
-        if (date == "today") {
-            dateString = DateFormatter().getTodayString()
-        }
-
-        if (!DateFormatter().validateDateString(dateString)) {
-            throw IllegalArgumentException("Illegal Date")
-        }
+                          date: IsoDate = IsoDate()): Transaction {
 
         val converted = amount.convert(wallet.getCurrency())
         val statement = this.connection.prepareStatement("" +
@@ -371,7 +355,7 @@ class DbHandler(private val connection: Connection) {
         statement.setInt(3, transactionPartner.id)
         statement.setString(4, description)
         statement.setInt(5, converted.getValue())
-        statement.setString(6, dateString)
+        statement.setString(6, date.toString())
         statement.execute()
 
         val idStatement = this.connection.prepareStatement("SELECT last_insert_rowid()")
@@ -383,7 +367,7 @@ class DbHandler(private val connection: Connection) {
         idStatement.close()
         results.close()
 
-        return Transaction(id, wallet, category, transactionPartner, description, converted, dateString)
+        return Transaction(id, wallet, category, transactionPartner, description, converted, date)
     }
 
     /**
@@ -455,19 +439,7 @@ class DbHandler(private val connection: Connection) {
         statement.execute()
         val results = statement.resultSet
 
-        val transactions = mutableListOf<Transaction>()
-        while (results.next()) {
-            val wallet = this.getWallet(results.getInt("wallet_id"))!!
-            transactions.add(Transaction(
-                    results.getInt("id"),
-                    wallet,
-                    this.getCategory(results.getInt("category_id"))!!,
-                    this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
-                    results.getString("description"),
-                    MoneyValue(results.getInt("amount"), wallet.getCurrency()),
-                    results.getString("date")
-            ))
-        }
+        val transactions = this.generateTransactions(results)
         statement.close()
         results.close()
         return transactions
@@ -587,6 +559,18 @@ class DbHandler(private val connection: Connection) {
         statement.execute()
         val results = statement.resultSet
 
+        val transactions = this.generateTransactions(results)
+        statement.close()
+        results.close()
+        return transactions
+    }
+
+    /**
+     * Generates a list of Transaction objects from a ResultSet
+     * @param results: The ResultSet of the SQL query
+     * @return The list of Transaction objects
+     */
+    private fun generateTransactions(results: ResultSet): List<Transaction> {
         val transactions = mutableListOf<Transaction>()
         while (results.next()) {
             val wallet = this.getWallet(results.getInt("wallet_id"))!!
@@ -597,11 +581,9 @@ class DbHandler(private val connection: Connection) {
                     this.getTransactionPartner(results.getInt("transaction_partner_id"))!!,
                     results.getString("description"),
                     MoneyValue(results.getInt("amount"), wallet.getCurrency()),
-                    results.getString("date")
+                    IsoDate(results.getString("date"))
             ))
         }
-        statement.close()
-        results.close()
         return transactions
     }
 }

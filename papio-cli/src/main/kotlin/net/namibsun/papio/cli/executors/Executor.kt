@@ -17,15 +17,25 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.argparse.ActionMode
+import net.namibsun.papio.cli.argparse.HelpPrinter
 import net.namibsun.papio.lib.db.DbHandler
 import net.sourceforge.argparse4j.inf.ArgumentParser
 import net.sourceforge.argparse4j.inf.ArgumentParserException
 import net.sourceforge.argparse4j.inf.Namespace
 
 /**
- * Base executor interface containing helper methods
+ * Base executor interface that specifies the execute() method and various helper methods
  */
 interface BaseExecutor {
+
+    /**
+     * Executes the Executor for a specified mode
+     * @param args: The command line arguments to parse
+     * @param dbHandler: The database handler to use
+     * @param mode: The mode for which to execute
+     */
+    fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?)
 
     /**
      * Handles a parser error. On error, a helpful message will be output and the program will exit.
@@ -60,9 +70,25 @@ interface BaseExecutor {
 }
 
 /**
- * Interface that acts as a common base class of all Executors
+ * Interface that acts as a common base for Executors that implement all ActionModes.
  */
-interface Executor : BaseExecutor {
+interface FullExecutor : BaseExecutor {
+
+    /**
+     * Automatically delegates the execution to the new methods specified in this interface
+     * @param args: The command line arguments to parse
+     * @param dbHandler: The database handler to use
+     * @param mode: The mode for which to execute
+     */
+    override fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?) {
+        when (mode) {
+            ActionMode.LIST -> this.executeList(args, dbHandler)
+            ActionMode.DISPLAY -> this.executeDisplay(args, dbHandler)
+            ActionMode.CREATE -> this.executeCreate(args, dbHandler)
+            ActionMode.DELETE -> this.executeDelete(args, dbHandler)
+            null -> HelpPrinter().printAndExit()
+        }
+    }
 
     /**
      * Executes the 'create' option

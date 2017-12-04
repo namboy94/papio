@@ -1,6 +1,8 @@
 package net.namibsun.papio.cli.executors
 
-import net.namibsun.papio.lib.date.DateFormatter
+import net.namibsun.papio.cli.argparse.ActionMode
+import net.namibsun.papio.cli.argparse.HelpPrinter
+import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.money.MoneyValue
 import net.sourceforge.argparse4j.ArgumentParsers
@@ -11,16 +13,22 @@ import net.sourceforge.argparse4j.ArgumentParsers
 class TransferExecutor : BaseExecutor {
 
     /**
-     * Executes the transfer
+     * Executes a transfer action
+     * @param args: The command line arguments to parse
      * @param dbHandler: The database handler to use
-     * @param args: The arguments to parse
+     * @param mode: The mode for which to execute
      */
-    fun execute(dbHandler: DbHandler, args: Array<String>) {
+    override fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?) {
+
+        if (mode != null) {
+            HelpPrinter().printAndExit()
+        }
+
         val parser = ArgumentParsers.newFor("papio-cli transfer").build().defaultHelp(true)
         parser.addArgument("source").help("The sender name|ID of the transferred amount")
         parser.addArgument("dest").help("The recipient name|ID of the transferred amount")
         parser.addArgument("amount").type(Int::class.java).help("The amount to transfer")
-        parser.addArgument("--date").setDefault(DateFormatter().getTodayString())
+        parser.addArgument("--date").setDefault("today")
                 .help("Specifies the date on which the transfer takes place.")
         val result = this.handleParserError(parser, args)
 
@@ -43,11 +51,7 @@ class TransferExecutor : BaseExecutor {
 
                 val amount = MoneyValue(result.getInt("amount"), sender.getCurrency())
                 val converted = amount.convert(receiver.getCurrency())
-
-                val date = result.getString("date")
-                if (!DateFormatter().validateDateString(date)) {
-                    println("Date $date is not a valid ISO-8601 Date String")
-                }
+                val date = IsoDate(result.getString("date"))
 
                 val senderTransaction = dbHandler.createTransaction(
                         sender, category, receiverTransactionPartner,

@@ -25,7 +25,7 @@ import net.sourceforge.argparse4j.ArgumentParsers
  * Executor for the Category Root action
  * Manages categories in the database
  */
-class CategoryExecutor : Executor {
+class CategoryExecutor : FullExecutor {
 
     /**
      * Executes the 'create' option

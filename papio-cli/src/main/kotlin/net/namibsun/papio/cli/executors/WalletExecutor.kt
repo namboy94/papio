@@ -27,7 +27,7 @@ import net.sourceforge.argparse4j.ArgumentParsers
  * Executor for the Wallet root action
  * Handles the management of wallets in the database
  */
-class WalletExecutor : Executor {
+class WalletExecutor : FullExecutor {
 
     /**
      * Executes the 'create' option
@@ -55,7 +55,7 @@ class WalletExecutor : Executor {
             println("Wallet\n$existing\nexists!")
         } else {
             val wallet = dbHandler.createWallet(name, value)
-            println("Wallet\n$wallet\n was created successfully.")
+            println("Wallet\n$wallet\nwas created successfully.")
         }
     }
 

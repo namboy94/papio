@@ -101,6 +101,23 @@ data class MoneyValue(private var value: Int, private var currency: Currency) {
     }
 
     /**
+     * Multiplies the MoneyValue with an integer value
+     * @param multiplicant: The value with which to multiply the MoneyValue object with
+     * @return The multiplied MoneyValue
+     */
+    operator fun times(multiplicant: Int): MoneyValue {
+        return MoneyValue(this.value * multiplicant, this.currency)
+    }
+
+    /**
+     * Negates the MoneyValue object
+     * @return The negated MoneyValue object
+     */
+    fun negate(): MoneyValue {
+        return MoneyValue(this.value * -1, this.currency)
+    }
+
+    /**
      * Converts the currency of this MoneyValue object and adjusts the value according to current exchange rates.
      * @param currency: The currency into which to convert the MoneyValue
      * @return The converted MoneyValue

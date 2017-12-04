@@ -25,7 +25,7 @@ import net.sourceforge.argparse4j.ArgumentParsers
  * Executor for the TransactionPartner root action
  * Handles the management of transaction partners in the database
  */
-class TransactionPartnerExecutor : Executor {
+class TransactionPartnerExecutor : FullExecutor {
 
     /**
      * Executes the 'create' option

@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
+import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.db.models.Category
@@ -87,13 +88,13 @@ class TransactionTest {
     fun testCreatingTransaction() {
         val transaction = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
+                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
         )
         assertEquals(
                 transaction,
                 Transaction(
                         1, this.wallet!!, this.category!!, this.partner!!,
-                        "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
+                        "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
                 )
         )
     }
@@ -119,7 +120,7 @@ class TransactionTest {
     fun testDeletingTransaction() {
         val transaction = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
+                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
         )
         assertEquals(1, this.wallet!!.getAllTransactions(this.handler!!).size)
         transaction.delete(this.handler!!)
@@ -134,11 +135,11 @@ class TransactionTest {
     fun testCreatingIdenticalTransactions() {
         val transactionOne = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
+                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
         )
         val transactionTwo = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), "1970-01-01"
+                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
         )
         assertNotEquals(transactionOne, transactionTwo)
         assertNotEquals(transactionOne.id, transactionTwo.id)
@@ -277,7 +278,7 @@ class TransactionTest {
             try {
                 this.handler!!.createTransaction(
                         this.wallet!!, this.category!!, this.partner!!,
-                        "A", MoneyValue(1, Currency.EUR), date
+                        "A", MoneyValue(1, Currency.EUR), IsoDate(date)
                 )
             } catch (e: IllegalArgumentException) {
                 fail()
@@ -288,7 +289,7 @@ class TransactionTest {
             try {
                 this.handler!!.createTransaction(
                         this.wallet!!, this.category!!, this.partner!!,
-                        "A", MoneyValue(1, Currency.EUR), date
+                        "A", MoneyValue(1, Currency.EUR), IsoDate(date)
                 )
                 fail()
             } catch (e: IllegalArgumentException) {
@@ -304,7 +305,7 @@ class TransactionTest {
         try {
             Transaction(
                     1, this.wallet!!, this.category!!, this.partner!!,
-                    "A", MoneyValue(1, Currency.EUR), "01.01.1970"
+                    "A", MoneyValue(1, Currency.EUR), IsoDate("01.01.1970")
             )
             fail()
         } catch (e: IllegalArgumentException) {
@@ -318,7 +319,7 @@ class TransactionTest {
     fun testStringRepresentation() {
         val transaction = this.handler!!.createTransaction(
                 this.wallet!!, this.category!!, this.partner!!,
-                "Desc", MoneyValue(500, Currency.EUR), "2017-01-01"
+                "Desc", MoneyValue(500, Currency.EUR), IsoDate("2017-01-01")
         )
         assertEquals(
                 "Transaction; ID: 1; Wallet: Wallet; Category: Category; Transaction Partner: Partner; " +

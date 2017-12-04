@@ -17,15 +17,15 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli
 
-import net.namibsun.papio.cli.argparse.ActionMode
 import net.namibsun.papio.cli.argparse.ModeParser
-import net.namibsun.papio.cli.argparse.OtherMode
 import net.namibsun.papio.cli.argparse.RootMode
+import net.namibsun.papio.cli.executors.BackupExecutor
 import net.namibsun.papio.cli.executors.CategoryExecutor
-import net.namibsun.papio.cli.executors.WalletExecutor
-import net.namibsun.papio.cli.executors.TransferExecutor
+import net.namibsun.papio.cli.executors.ExpenseExecutor
 import net.namibsun.papio.cli.executors.TransactionExecutor
 import net.namibsun.papio.cli.executors.TransactionPartnerExecutor
+import net.namibsun.papio.cli.executors.WalletExecutor
+import net.namibsun.papio.cli.executors.TransferExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import java.io.File
 import java.sql.DriverManager
@@ -35,6 +35,30 @@ import java.sql.DriverManager
  */
 fun main(args: Array<String>) {
 
+    val dbHandler = databaseConnect()
+
+    val parsed = ModeParser(args).parse()
+    val trimmedArgs = parsed.first
+    val rootMode = parsed.second
+    val actionMode = parsed.third
+
+    val executor = when (rootMode) {
+        RootMode.WALLET -> WalletExecutor()
+        RootMode.CATEGORY -> CategoryExecutor()
+        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
+        RootMode.TRANSACTION -> TransactionExecutor()
+        RootMode.BACKUP -> BackupExecutor()
+        RootMode.TRANSFER -> TransferExecutor()
+        RootMode.EXPENSE -> ExpenseExecutor()
+    }
+    executor.execute(trimmedArgs, dbHandler, actionMode)
+}
+
+/**
+ * Initializes the local .papio directory and database file.
+ * @return The database handler connected to the SQLite database file
+ */
+fun databaseConnect(): DbHandler {
     val papioDir = File(System.getProperty("user.home"), ".papio")
     val papioDb = File(papioDir.toString(), "data.db")
 
@@ -45,38 +69,5 @@ fun main(args: Array<String>) {
         System.exit(1)
     }
     val connection = DriverManager.getConnection("jdbc:sqlite:$papioDb")
-    val dbHandler = DbHandler(connection)
-
-    val modeParser = ModeParser(args)
-
-    val trimmedArgs = modeParser.parse()
-
-    when (modeParser.otherMode) {
-        OtherMode.BACKUP -> {
-            val dbBackup = File(papioDir.toString(), "backup-${System.currentTimeMillis().toInt()}.db")
-            papioDb.copyTo(dbBackup, true)
-            println("Backup created: $dbBackup")
-        }
-        OtherMode.TRANSFER -> {
-            TransferExecutor().execute(dbHandler, trimmedArgs)
-        }
-        null -> {
-            val rootMode = modeParser.rootMode!!
-            val actionMode = modeParser.actionMode!!
-
-            val executor = when (rootMode) {
-                RootMode.WALLET -> WalletExecutor()
-                RootMode.CATEGORY -> CategoryExecutor()
-                RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
-                RootMode.TRANSACTION -> TransactionExecutor()
-            }
-
-            when (actionMode) {
-                ActionMode.LIST -> executor.executeList(trimmedArgs, dbHandler)
-                ActionMode.DISPLAY -> executor.executeDisplay(trimmedArgs, dbHandler)
-                ActionMode.CREATE -> executor.executeCreate(trimmedArgs, dbHandler)
-                ActionMode.DELETE -> executor.executeDelete(trimmedArgs, dbHandler)
-            }
-        }
-    }
+    return DbHandler(connection)
 }
