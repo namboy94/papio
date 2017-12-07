@@ -118,13 +118,22 @@ class Transaction(id: Int,
         }
 
         /**
+         * Retrieves a list of all Transaction objects in the database
+         * @param dbHandler: The database handler to use
+         * @return The list of Transaction objects
+         */
+        fun getAll(dbHandler: DbHandler): List<Transaction> {
+            return dbHandler.getModels(Table.TRANSACTIONS).map { it as Transaction }
+        }
+
+        /**
          * Creates a new Transaction in the database and returns the corresponding Transaction object.
          * @param dbHandler: The database handler to use for database calls
          * @return The Tranaction object
          */
         @JvmStatic
         fun create(dbHandler: DbHandler, wallet: Wallet, category: Category, partner: TransactionPartner,
-                   description: String, amount: Value, date: IsoDate) : Transaction {
+                   description: String, amount: Value, date: IsoDate = IsoDate()) : Transaction {
 
             val stmt = dbHandler.connection.prepareStatement("" +
                     "INSERT INTO ${Table.TRANSACTIONS.tableName} (" +

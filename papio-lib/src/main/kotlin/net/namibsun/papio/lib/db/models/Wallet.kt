@@ -129,6 +129,15 @@ class Wallet(id: Int, name: String, private var startingValue: Value) :
         }
 
         /**
+         * Retrieves a list of all Wallet objects in the database
+         * @param dbHandler: The database handler to use
+         * @return The list of Wallet objects
+         */
+        fun getAll(dbHandler: DbHandler): List<Wallet> {
+            return dbHandler.getModels(Table.WALLETS).map { it as Wallet }
+        }
+
+        /**
          * Creates a new Wallet in the database and returns the corresponding Wallet object.
          * If a Wallet with the same name already exists, no new partner will be created
          * and the existing one will be returned instead

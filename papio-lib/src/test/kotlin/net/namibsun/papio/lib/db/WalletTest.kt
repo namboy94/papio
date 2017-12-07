@@ -17,11 +17,17 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
+import net.namibsun.papio.lib.db.models.Category
+import net.namibsun.papio.lib.db.models.Transaction
+import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.Value
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import java.math.BigDecimal
 import java.sql.DriverManager
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -61,10 +67,10 @@ class WalletTest {
      */
     @Test
     fun testCreatingAndGettingWallet() {
-        val wallet = this.handler!!.createWallet("Wallet", MoneyValue(100, Currency.EUR))
-        assertEquals(wallet, Wallet(1, "Wallet", MoneyValue(100, Currency.EUR)))
-        assertEquals(wallet, this.handler!!.getWallet("Wallet"))
-        assertEquals(wallet, this.handler!!.getWallet(1))
+        val wallet = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
+        assertEquals(wallet, Wallet(1, "Wallet", Value("100", Currency.EUR)))
+        assertEquals(wallet, Wallet.get(this.handler!!, "Wallet"))
+        assertEquals(wallet, Wallet.get(this.handler!!, 1))
     }
 
     /**
@@ -73,10 +79,10 @@ class WalletTest {
      */
     @Test
     fun testCreatingDuplicateWallet() {
-        val original = this.handler!!.createWallet("Wallet", MoneyValue(100, Currency.EUR))
-        val new = this.handler!!.createWallet("Wallet", MoneyValue(200, Currency.USD))
+        val original = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
+        val new = Wallet.create(this.handler!!, "Wallet", Value("200", Currency.USD))
         assertEquals(original, new)
-        assertEquals(original, Wallet(1, "Wallet", MoneyValue(100, Currency.EUR)))
+        assertEquals(original, Wallet(1, "Wallet", Value("100", Currency.EUR)))
     }
 
     /**
@@ -84,10 +90,10 @@ class WalletTest {
      */
     @Test
     fun testDeletingWallet() {
-        val original = this.handler!!.createWallet("Wallet", MoneyValue(100, Currency.EUR))
-        assertNotNull(this.handler!!.getWallet("Wallet"))
+        val original = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
+        assertNotNull(Wallet.get(this.handler!!, "Wallet"))
         original.delete(this.handler!!)
-        assertNull(this.handler!!.getWallet("Wallet"))
+        assertNull(Wallet.get(this.handler!!, "Wallet"))
     }
 
     /**
@@ -95,33 +101,33 @@ class WalletTest {
      */
     @Test
     fun testChangingCurrency() {
-        val wallet = this.handler!!.createWallet("Wallet", MoneyValue(100, Currency.EUR))
-        val category = this.handler!!.createCategory("Category")
-        val partner = this.handler!!.createTransactionPartner("Partner")
+        val wallet = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
+        val category = Category.create(this.handler!!, "Category")
+        val partner = TransactionPartner.create(this.handler!!, "Partner")
 
-        val transactionOne = this.handler!!.createTransaction(
-                wallet, category, partner, "One", MoneyValue(1000, Currency.EUR)
+        val transactionOne = Transaction.create(this.handler!!, 
+                wallet, category, partner, "One", Value("1000", Currency.EUR)
         )
-        val transactionTwo = this.handler!!.createTransaction(
-                wallet, category, partner, "Two", MoneyValue(-500, Currency.EUR)
+        val transactionTwo = Transaction.create(this.handler!!, 
+                wallet, category, partner, "Two", Value("-500", Currency.EUR)
         )
 
         val oldBalance = wallet.getBalance(this.handler!!)
 
         wallet.convertCurrency(this.handler!!, Currency.USD)
 
-        val dbWallet = this.handler!!.getWallet("Wallet")!!
+        val dbWallet = Wallet.get(this.handler!!, "Wallet")!!
         assertEquals(wallet.getCurrency(), dbWallet.getCurrency())
         assertEquals(wallet.getCurrency(), Currency.USD)
         assertEquals(wallet.getBalance(this.handler!!), dbWallet.getBalance(this.handler!!))
         assertNotEquals(wallet.getBalance(this.handler!!), oldBalance)
 
-        for (transaction in wallet.getAllTransactions(this.handler!!)) {
+        for (transaction in wallet.getTransactions(this.handler!!)) {
             assertNotEquals(transaction, transactionOne)
             assertNotEquals(transaction, transactionTwo)
-            assertEquals(transaction.getAmount().getCurrency(), Currency.USD)
-            assertNotEquals(transaction.getAmount().getValue(), 1000)
-            assertNotEquals(transaction.getAmount().getValue(), -500)
+            assertEquals(transaction.getAmount().currency, Currency.USD)
+            assertNotEquals(transaction.getAmount().value, BigDecimal("1000"))
+            assertNotEquals(transaction.getAmount().value, BigDecimal("-500"))
         }
     }
 
@@ -131,17 +137,17 @@ class WalletTest {
     @Test
     fun testBalanceCalculation() {
 
-        val wallet = this.handler!!.createWallet("Wallet", MoneyValue(100, Currency.EUR))
-        val cat = this.handler!!.createCategory("Category")
-        val part = this.handler!!.createTransactionPartner("Partner")
+        val wallet = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
+        val cat = Category.create(this.handler!!, "Category")
+        val part = TransactionPartner.create(this.handler!!, "Partner")
 
-        this.handler!!.createTransaction(wallet, cat, part, "One", MoneyValue(1000, Currency.EUR))
-        this.handler!!.createTransaction(wallet, cat, part, "Two", MoneyValue(-50, Currency.EUR))
+        Transaction.create(this.handler!!, wallet, cat, part, "One", Value("1000", Currency.EUR))
+        Transaction.create(this.handler!!, wallet, cat, part, "Two", Value("-50", Currency.EUR))
 
         val balance = wallet.getBalance(this.handler!!)
-        assertEquals(balance.getValue(), 1050)
-        assertEquals(balance.getCurrency(), Currency.EUR)
-        assertEquals(balance, MoneyValue(1050, Currency.EUR))
+        assertEquals(balance.value, BigDecimal("1050"))
+        assertEquals(balance.currency, Currency.EUR)
+        assertEquals(balance, Value("1050", Currency.EUR))
     }
 
     /**
@@ -149,11 +155,11 @@ class WalletTest {
      */
     @Test
     fun testGettingWallets() {
-        val walletOne = this.handler!!.createWallet("Wallet1", MoneyValue(100, Currency.EUR))
-        val walletTwo = this.handler!!.createWallet("Wallet2", MoneyValue(200, Currency.EUR))
-        val walletThree = this.handler!!.createWallet("Wallet3", MoneyValue(300, Currency.EUR))
+        val walletOne = Wallet.create(this.handler!!, "Wallet1", Value("100", Currency.EUR))
+        val walletTwo = Wallet.create(this.handler!!, "Wallet2", Value("200", Currency.EUR))
+        val walletThree = Wallet.create(this.handler!!, "Wallet3", Value("300", Currency.EUR))
 
-        val wallets = this.handler!!.getWallets()
+        val wallets = Wallet.getAll(this.handler!!)
 
         assertEquals(3, wallets.size)
         for (wallet in wallets) {
@@ -172,11 +178,11 @@ class WalletTest {
      */
     @Test
     fun testStringRepresentation() {
-        val wallet = this.handler!!.createWallet("A", MoneyValue(100, Currency.EUR))
-        val category = this.handler!!.createCategory("B")
-        val partner = this.handler!!.createTransactionPartner("C")
-        this.handler!!.createTransaction(
-                wallet, category, partner, "D", MoneyValue(500, Currency.EUR)
+        val wallet = Wallet.create(this.handler!!, "A", Value("100", Currency.EUR))
+        val category = Category.create(this.handler!!, "B")
+        val partner = TransactionPartner.create(this.handler!!, "C")
+        Transaction.create(this.handler!!, 
+                wallet, category, partner, "D", Value("500", Currency.EUR)
         )
 
         assertEquals("Wallet; ID: 1; Name: A; Starting Value: EUR 1.00", wallet.toString())

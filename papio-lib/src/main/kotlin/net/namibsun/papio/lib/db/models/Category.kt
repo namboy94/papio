@@ -68,6 +68,15 @@ class Category(id: Int, name: String): TransactionHolderModel(Table.CATEGORIES, 
         }
 
         /**
+         * Retrieves a list of all Category objects in the database
+         * @param dbHandler: The database handler to use
+         * @return The list of Category objects
+         */
+        fun getAll(dbHandler: DbHandler): List<Category> {
+            return dbHandler.getModels(Table.CATEGORIES).map { it as Category }
+        }
+
+        /**
          * Creates a new Category in the database and returns the corresponding Category object.
          * If a category with the same name already exists, no new category will be created
          * and the existing one will be returned instead

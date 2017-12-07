@@ -109,4 +109,30 @@ class DbHandler(val connection: Connection) {
         }
         return model
     }
+
+    /**
+     * Retrieves all models in a database table
+     * @param table: The table for which to fetch all models
+     * @return A List of Database model objects
+     */
+    fun getModels(table: Table): List<DbModel> {
+
+        val stmt = this.connection.prepareStatement("SELECT * FROM ${table.tableName}")
+        stmt.execute()
+        val result = stmt.resultSet
+
+        val models = mutableListOf<DbModel>()
+        while (result.next()) {
+            models.add( when (table) {
+                Table.WALLETS -> Wallet.fromResultSet(result)
+                Table.TRANSACTIONS -> Transaction.fromResultSet(result, this)
+                Table.TRANSACTION_PARTNERS -> TransactionPartner.fromResultSet(result)
+                Table.CATEGORIES -> Category.fromResultSet(result)
+            })
+        }
+
+        stmt.close()
+        result.close()
+        return models
+    }
 }

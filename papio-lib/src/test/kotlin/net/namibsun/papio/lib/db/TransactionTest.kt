@@ -22,6 +22,8 @@ import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.Value
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -65,9 +67,9 @@ class TransactionTest {
     fun setUp() {
         val connection = DriverManager.getConnection("jdbc:sqlite:test.db")
         this.handler = DbHandler(connection)
-        this.wallet = this.handler!!.createWallet("Wallet", MoneyValue(100, Currency.EUR))
-        this.category = this.handler!!.createCategory("Category")
-        this.partner = this.handler!!.createTransactionPartner("Partner")
+        this.wallet = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
+        this.category = Category.create(this.handler!!, "Category")
+        this.partner = TransactionPartner.create(this.handler!!, "Partner")
     }
 
     /**
@@ -84,15 +86,15 @@ class TransactionTest {
      */
     @Test
     fun testCreatingTransaction() {
-        val transaction = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
+        val transaction = Transaction.create(
+                this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "Description", Value("100", Currency.EUR), IsoDate("1970-01-01")
         )
         assertEquals(
                 transaction,
                 Transaction(
                         1, this.wallet!!, this.category!!, this.partner!!,
-                        "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
+                        "Description", Value("100", Currency.EUR), IsoDate("1970-01-01")
                 )
         )
     }
@@ -103,11 +105,11 @@ class TransactionTest {
      */
     @Test
     fun testCreatingTransactionWithWrongCurrency() {
-        val value = MoneyValue(100, Currency.USD)
-        val transaction = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!, "Description", value
+        val value = Value("100", Currency.USD)
+        val transaction = Transaction.create(
+                this.handler!!, this.wallet!!, this.category!!, this.partner!!, "Description", value
         )
-        assertEquals(transaction.getAmount().getCurrency(), Currency.EUR)
+        assertEquals(transaction.getAmount().currency, Currency.EUR)
         assertNotEquals(transaction.getAmount(), value)
     }
 
@@ -116,13 +118,13 @@ class TransactionTest {
      */
     @Test
     fun testDeletingTransaction() {
-        val transaction = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
+        val transaction = Transaction.create(
+                this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "Description", Value("100", Currency.EUR), IsoDate("1970-01-01")
         )
-        assertEquals(1, this.wallet!!.getAllTransactions(this.handler!!).size)
+        assertEquals(1, this.wallet!!.getTransactions(this.handler!!).size)
         transaction.delete(this.handler!!)
-        assertEquals(0, this.wallet!!.getAllTransactions(this.handler!!).size)
+        assertEquals(0, this.wallet!!.getTransactions(this.handler!!).size)
     }
 
     /**
@@ -131,13 +133,13 @@ class TransactionTest {
      */
     @Test
     fun testCreatingIdenticalTransactions() {
-        val transactionOne = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
+        val transactionOne = Transaction.create(
+                this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "Description", Value("100", Currency.EUR), IsoDate("1970-01-01")
         )
-        val transactionTwo = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!,
-                "Description", MoneyValue(100, Currency.EUR), IsoDate("1970-01-01")
+        val transactionTwo = Transaction.create(
+                this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "Description", Value("100", Currency.EUR), IsoDate("1970-01-01")
         )
         assertNotEquals(transactionOne, transactionTwo)
         assertNotEquals(transactionOne.id, transactionTwo.id)
@@ -154,18 +156,18 @@ class TransactionTest {
      */
     @Test
     fun testGettingTransactionsForWallet() {
-        val amount = MoneyValue(1, Currency.EUR)
-        val newWallet = this.handler!!.createWallet("NewWallet", MoneyValue(0, Currency.EUR))
+        val amount = Value("1", Currency.EUR)
+        val newWallet = Wallet.create(this.handler!!, "NewWallet", Value("0", Currency.EUR))
         for (i in 1..5) {
-            this.handler!!.createTransaction(newWallet, this.category!!, this.partner!!, "$i", amount)
+            Transaction.create(this.handler!!, newWallet, this.category!!, this.partner!!, "$i", amount)
         }
-        this.handler!!.createTransaction(this.wallet!!, this.category!!, this.partner!!, "A", amount)
+        Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!, "A", amount)
 
-        assertEquals(5, newWallet.getAllTransactions(this.handler!!).size)
-        assertEquals(1, this.wallet!!.getAllTransactions(this.handler!!).size)
+        assertEquals(5, newWallet.getTransactions(this.handler!!).size)
+        assertEquals(1, this.wallet!!.getTransactions(this.handler!!).size)
 
         val indices = mutableListOf(1, 2, 3, 4, 5)
-        for (transaction in newWallet.getAllTransactions(this.handler!!)) {
+        for (transaction in newWallet.getTransactions(this.handler!!)) {
             assertTrue(transaction.id in indices)
             indices.remove(transaction.id)
         }
@@ -177,18 +179,18 @@ class TransactionTest {
      */
     @Test
     fun testGettingTransactionsForCategory() {
-        val amount = MoneyValue(1, Currency.EUR)
-        val newCategory = this.handler!!.createCategory("NewCategory")
+        val amount = Value("1", Currency.EUR)
+        val newCategory = Category.create(this.handler!!, "NewCategory")
         for (i in 1..5) {
-            this.handler!!.createTransaction(this.wallet!!, newCategory, this.partner!!, "$i", amount)
+            Transaction.create(this.handler!!, this.wallet!!, newCategory, this.partner!!, "$i", amount)
         }
-        this.handler!!.createTransaction(this.wallet!!, this.category!!, this.partner!!, "A", amount)
+        Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!, "A", amount)
 
-        assertEquals(5, newCategory.getAllTransactions(this.handler!!).size)
-        assertEquals(1, this.category!!.getAllTransactions(this.handler!!).size)
+        assertEquals(5, newCategory.getTransactions(this.handler!!).size)
+        assertEquals(1, this.category!!.getTransactions(this.handler!!).size)
 
         val indices = mutableListOf(1, 2, 3, 4, 5)
-        for (transaction in newCategory.getAllTransactions(this.handler!!)) {
+        for (transaction in newCategory.getTransactions(this.handler!!)) {
             assertTrue(transaction.id in indices)
             indices.remove(transaction.id)
         }
@@ -200,18 +202,18 @@ class TransactionTest {
      */
     @Test
     fun testGettingTransactionsForTransactionPartner() {
-        val amount = MoneyValue(1, Currency.EUR)
-        val newPartner = this.handler!!.createTransactionPartner("NewPartner")
+        val amount = Value("1", Currency.EUR)
+        val newPartner = TransactionPartner.create(this.handler!!, "NewPartner")
         for (i in 1..5) {
-            this.handler!!.createTransaction(this.wallet!!, this.category!!, newPartner, "$i", amount)
+            Transaction.create(this.handler!!, this.wallet!!, this.category!!, newPartner, "$i", amount)
         }
-        this.handler!!.createTransaction(this.wallet!!, this.category!!, this.partner!!, "A", amount)
+        Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!, "A", amount)
 
-        assertEquals(5, newPartner.getAllTransactions(this.handler!!).size)
-        assertEquals(1, this.partner!!.getAllTransactions(this.handler!!).size)
+        assertEquals(5, newPartner.getTransactions(this.handler!!).size)
+        assertEquals(1, this.partner!!.getTransactions(this.handler!!).size)
 
         val indices = mutableListOf(1, 2, 3, 4, 5)
-        for (transaction in newPartner.getAllTransactions(this.handler!!)) {
+        for (transaction in newPartner.getTransactions(this.handler!!)) {
             assertTrue(transaction.id in indices)
             indices.remove(transaction.id)
         }
@@ -274,9 +276,9 @@ class TransactionTest {
 
         for (date in valid) {
             try {
-                this.handler!!.createTransaction(
-                        this.wallet!!, this.category!!, this.partner!!,
-                        "A", MoneyValue(1, Currency.EUR), IsoDate(date)
+                Transaction.create(
+                        this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate(date)
                 )
             } catch (e: IllegalArgumentException) {
                 fail()
@@ -285,9 +287,9 @@ class TransactionTest {
 
         for (date in invalid) {
             try {
-                this.handler!!.createTransaction(
-                        this.wallet!!, this.category!!, this.partner!!,
-                        "A", MoneyValue(1, Currency.EUR), IsoDate(date)
+                Transaction.create(
+                        this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate(date)
                 )
                 fail()
             } catch (e: IllegalArgumentException) {
@@ -303,7 +305,7 @@ class TransactionTest {
         try {
             Transaction(
                     1, this.wallet!!, this.category!!, this.partner!!,
-                    "A", MoneyValue(1, Currency.EUR), IsoDate("01.01.1970")
+                    "A", Value("1", Currency.EUR), IsoDate("01.01.1970")
             )
             fail()
         } catch (e: IllegalArgumentException) {
@@ -315,9 +317,9 @@ class TransactionTest {
      */
     @Test
     fun testStringRepresentation() {
-        val transaction = this.handler!!.createTransaction(
-                this.wallet!!, this.category!!, this.partner!!,
-                "Desc", MoneyValue(500, Currency.EUR), IsoDate("2017-01-01")
+        val transaction = Transaction.create(
+                this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "Desc", Value("500", Currency.EUR), IsoDate("2017-01-01")
         )
         assertEquals(
                 "Transaction; ID: 1; Wallet: Wallet; Category: Category; Transaction Partner: Partner; " +

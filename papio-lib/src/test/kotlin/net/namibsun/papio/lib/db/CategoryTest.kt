@@ -61,10 +61,11 @@ class CategoryTest {
      */
     @Test
     fun testCreatingAndGettingCategory() {
-        val category = this.handler!!.createCategory("Category")
+        val category = Category.create(this.handler!!, "Category")
         assertEquals(category, Category(1, "Category"))
-        assertEquals(category, this.handler!!.getCategory("Category"))
-        assertEquals(category, this.handler!!.getCategory(1))
+        assertEquals(category, Category.get(this.handler!!, "Category"))
+        Category.get(this.handler!!, "1")
+        assertEquals(category, Category.get(this.handler!!, 1))
     }
 
     /**
@@ -73,8 +74,8 @@ class CategoryTest {
      */
     @Test
     fun testCreatingDuplicateCategory() {
-        val original = this.handler!!.createCategory("Category")
-        val new = this.handler!!.createCategory("Category")
+        val original = Category.create(this.handler!!, "Category")
+        val new = Category.create(this.handler!!, "Category")
         assertEquals(original, new)
         assertEquals(original, Category(1, "Category"))
     }
@@ -84,10 +85,10 @@ class CategoryTest {
      */
     @Test
     fun testDeletingCategory() {
-        val original = this.handler!!.createCategory("Category")
-        assertNotNull(this.handler!!.getCategory("Category"))
+        val original = Category.create(this.handler!!,"Category")
+        assertNotNull(Category.get(this.handler!!, "Category"))
         original.delete(this.handler!!)
-        assertNull(this.handler!!.getWallet("Category"))
+        assertNull(Category.get(this.handler!!, "Category"))
     }
 
     /**
@@ -97,12 +98,12 @@ class CategoryTest {
     fun testGettingCategories() {
 
         val categories = listOf(
-                this.handler!!.createCategory("A"),
-                this.handler!!.createCategory("B"),
-                this.handler!!.createCategory("C")
+                Category.create(this.handler!!, "A"),
+                Category.create(this.handler!!, "B"),
+                Category.create(this.handler!!, "C")
         )
 
-        val dbCategories = this.handler!!.getCategories()
+        val dbCategories = Category.getAll(this.handler!!)
         assertEquals(3, dbCategories.size)
         for (category in dbCategories) {
             for (original in categories) {
@@ -120,7 +121,7 @@ class CategoryTest {
      */
     @Test
     fun testStringRepresentation() {
-        val category = this.handler!!.createCategory("A")
+        val category = Category.create(this.handler!!, "A")
         assertEquals("Category; ID: 1; Name: A", category.toString())
     }
 }

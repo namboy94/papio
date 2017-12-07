@@ -61,10 +61,10 @@ class TransactionPartnerTest {
      */
     @Test
     fun testCreatingAndGettingTransactionPartner() {
-        val partner = this.handler!!.createTransactionPartner("Partner")
+        val partner = TransactionPartner.create(this.handler!!, "Partner")
         assertEquals(partner, TransactionPartner(1, "Partner"))
-        assertEquals(partner, this.handler!!.getTransactionPartner("Partner"))
-        assertEquals(partner, this.handler!!.getTransactionPartner(1))
+        assertEquals(partner, TransactionPartner.get(this.handler!!, "Partner"))
+        assertEquals(partner, TransactionPartner.get(this.handler!!, 1))
     }
     /**
      * Tests creating a category of the same name as an existing category.
@@ -72,8 +72,8 @@ class TransactionPartnerTest {
      */
     @Test
     fun testCreatingDuplicateTransactionPartner() {
-        val original = this.handler!!.createTransactionPartner("Partner")
-        val new = this.handler!!.createTransactionPartner("Partner")
+        val original = TransactionPartner.create(this.handler!!, "Partner")
+        val new = TransactionPartner.create(this.handler!!, "Partner")
         assertEquals(original, new)
         assertEquals(original, TransactionPartner(1, "Partner"))
     }
@@ -83,10 +83,10 @@ class TransactionPartnerTest {
      */
     @Test
     fun testDeletingTransactionPartner() {
-        val original = this.handler!!.createTransactionPartner("Partner")
-        assertNotNull(this.handler!!.getTransactionPartner("Partner"))
+        val original = TransactionPartner.create(this.handler!!, "Partner")
+        assertNotNull(TransactionPartner.get(this.handler!!, "Partner"))
         original.delete(this.handler!!)
-        assertNull(this.handler!!.getTransactionPartner("Partner"))
+        assertNull(TransactionPartner.get(this.handler!!, "Partner"))
     }
 
     /**
@@ -96,12 +96,12 @@ class TransactionPartnerTest {
     fun testGettingTransactionPartners() {
 
         val originals = listOf(
-                this.handler!!.createTransactionPartner("A"),
-                this.handler!!.createTransactionPartner("B"),
-                this.handler!!.createTransactionPartner("C")
+                TransactionPartner.create(this.handler!!, "A"),
+                TransactionPartner.create(this.handler!!, "B"),
+                TransactionPartner.create(this.handler!!, "C")
         )
 
-        val dbPartners = this.handler!!.getTransactionPartners()
+        val dbPartners = TransactionPartner.getAll(this.handler!!)
         assertEquals(3, dbPartners.size)
         for (partner in dbPartners) {
             for (original in originals) {
@@ -119,7 +119,7 @@ class TransactionPartnerTest {
      */
     @Test
     fun testStringRepresentation() {
-        val partner = this.handler!!.createTransactionPartner("A")
+        val partner = TransactionPartner.create(this.handler!!, "A")
         assertEquals("Transaction Partner; ID: 1; Name: A", partner.toString())
     }
 }

@@ -71,6 +71,15 @@ class TransactionPartner(id: Int, name: String) : TransactionHolderModel(Table.T
         }
 
         /**
+         * Retrieves a list of all TransactionPartner objects in the database
+         * @param dbHandler: The database handler to use
+         * @return The list of TransactionPartner objects
+         */
+        fun getAll(dbHandler: DbHandler): List<TransactionPartner> {
+            return dbHandler.getModels(Table.TRANSACTION_PARTNERS).map { it as TransactionPartner }
+        }
+
+        /**
          * Creates a new Transaction Partner in the database and returns the corresponding TransactionPartner object.
          * If a transaction partner with the same name already exists, no new partner will be created
          * and the existing one will be returned instead
