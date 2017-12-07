@@ -36,7 +36,7 @@ object CurrencyConverter {
     /**
      * The current exchange rates with Euro as the base currency
      */
-    private var exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
+    val exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
 
     /**
      * A UNIX timestamp that keeps track of when the exchange rates were updated last

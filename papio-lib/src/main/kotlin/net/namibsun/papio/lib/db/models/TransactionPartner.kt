@@ -18,36 +18,72 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.db.models
 
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.NamedDbModel
+import net.namibsun.papio.lib.db.Table
+import net.namibsun.papio.lib.db.TransactionHolderModel
+import java.sql.ResultSet
 
 /**
  * Class that models a transaction partner in the database
  * @param id: The ID of the transaction partner
  * @param name: The name of the transaction partner
  */
-data class TransactionPartner(val id: Int, val name: String) {
+class TransactionPartner(id: Int, name: String) : TransactionHolderModel(Table.TRANSACTION_PARTNERS, id, name) {
 
     /**
-     * Deletes the Transaction Partner from the database
-     * @param dbHandler: The database handler to use
+     * Static Methods
      */
-    fun delete(dbHandler: DbHandler) {
-        dbHandler.deleteTransactionPartner(this.id)
-    }
+    companion object {
 
-    /**
-     * Retrieves all transactions with this transaction partner
-     * @param dbHandler: The Database Handler to use
-     * @return The list of transactions
-     */
-    fun getAllTransactions(dbHandler: DbHandler): List<Transaction> {
-        return dbHandler.getTransactionsByTransactionPartner(this.id)
-    }
+        /**
+         * Generates a TransactionPartner object from a TransactionPartner
+         * @param resultSet: The ResultSet to use to generate the Wallet object
+         * @return The generated TransactionPartner object
+         */
+        @JvmStatic
+        fun fromResultSet(resultSet: ResultSet): TransactionPartner {
+            return TransactionPartner(
+                    resultSet.getInt("id"),
+                    resultSet.getString("name")
+            )
+        }
 
-    /**
-     * Generates a String that represents the TransactionPartner object
-     * @return The String representation of the Transaction Partner
-     */
-    override fun toString(): String {
-        return "Transaction Partner; ID: ${this.id}; Name: ${this.name}"
+        /**
+         * Retrieves a Transaction Partner from the database by its ID
+         * @param dbHandler: The database handler to use
+         * @param id: The ID of the Transaction Partner
+         * @return The generated Transaction Partner object or null if no applicable partner was found
+         */
+        @JvmStatic
+        fun get(dbHandler: DbHandler, id: Int): TransactionPartner? {
+            return dbHandler.getModel(Table.TRANSACTION_PARTNERS, id) as TransactionPartner?
+        }
+
+        /**
+         * Retrieves a Transaction Partner from the database by its name or ID
+         * @param dbHandler: The database handler to use
+         * @param nameOrId: The name or ID of the Transaction Partner
+         * @return The generated Transaction Partner object or null if no applicable partner was found
+         */
+        @JvmStatic
+        fun get(dbHandler: DbHandler, nameOrId: String): TransactionPartner? {
+            return dbHandler.getModel(Table.TRANSACTION_PARTNERS, nameOrId) as TransactionPartner?
+        }
+
+        /**
+         * Creates a new Transaction Partner in the database and returns the corresponding TransactionPartner object.
+         * If a transaction partner with the same name already exists, no new partner will be created
+         * and the existing one will be returned instead
+         * @param dbHandler: The database handler to use for database calls
+         * @param name: The name of the Transaction Partner
+         * @return The TransactionPartner object
+         */
+        fun create(dbHandler: DbHandler, name: String) : TransactionPartner {
+            val stmt = dbHandler.connection.prepareStatement(
+                    "INSERT INTO ${Table.TRANSACTION_PARTNERS.tableName} (name) VALUES (?)"
+            )
+            stmt.setString(1, name)
+            return NamedDbModel.createHelper(dbHandler, Table.TRANSACTION_PARTNERS, name, stmt) as TransactionPartner
+        }
     }
 }

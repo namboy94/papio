@@ -19,6 +19,11 @@ package net.namibsun.papio.lib.db.models
 
 import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.DbModel
+import net.namibsun.papio.lib.db.Table
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.Value
+import java.sql.ResultSet
 
 /**
  * Models a transaction in the database
@@ -34,28 +39,20 @@ import net.namibsun.papio.lib.db.DbHandler
  * @param amount: The amount of money that makes up the transaction. Always the same currency as the wallet
  * @param date: The ISO-8601 date indicating when the transaction took place
  */
-data class Transaction(val id: Int,
-                       val wallet: Wallet,
-                       val category: Category,
-                       val partner: TransactionPartner,
-                       val description: String,
-                       private var amount: MoneyValue,
-                       val date: IsoDate) {
+class Transaction(id: Int,
+                  val wallet: Wallet,
+                  val category: Category,
+                  val partner: TransactionPartner,
+                  val description: String,
+                  private var amount: Value,
+                  val date: IsoDate) : DbModel(Table.TRANSACTIONS, id) {
 
     /**
      * Retrieves the amount of money in this transaction
      * @return The amount of money in this transaction
      */
-    fun getAmount(): MoneyValue {
+    fun getAmount(): Value {
         return this.amount
-    }
-
-    /**
-     * Deletes a transaction
-     * @param dbHandler: The Database Handler to use
-     */
-    fun delete(dbHandler: DbHandler) {
-        dbHandler.deleteTransaction(this.id)
     }
 
     /**
@@ -65,7 +62,12 @@ data class Transaction(val id: Int,
      */
     fun convertCurrency(dbHandler: DbHandler, currency: Currency) {
         this.amount = this.amount.convert(currency)
-        dbHandler.adjustTransactionAmount(this.id, this.amount.getValue())
+
+        val stmt = dbHandler.connection.prepareStatement("UPDATE transactions SET amount=? WHERE id=?")
+        stmt.setString(1, amount.serialize())
+        stmt.setInt(2, this.id)
+        stmt.execute()
+        stmt.close()
     }
 
     /**
@@ -73,8 +75,81 @@ data class Transaction(val id: Int,
      * @return The String representation of the transaction
      */
     override fun toString(): String {
-        return "Transaction; ID: ${this.id}; Wallet: ${this.wallet.name}; Category: ${this.category.name}; " +
+        return "${super.toString()}; Wallet: ${this.wallet.name}; Category: ${this.category.name}; " +
                 "Transaction Partner: ${this.partner.name}; Description: ${this.description}; " +
                 "Amount: ${this.amount}; Date: ${this.date}"
+    }
+
+    /**
+     * Static Methods
+     */
+    companion object {
+
+        /**
+         * Generates a Transaction object from a ResultSet
+         * @param resultSet: The ResultSet to use to generate the Transaction object
+         * @return The generated Transaction object
+         */
+        @JvmStatic
+        fun fromResultSet(resultSet: ResultSet, dbHandler: DbHandler): Transaction {
+            val wallet = dbHandler.getModel(Table.WALLETS, resultSet.getInt(Table.WALLETS.transactionClassifier)) as Wallet
+            val category = dbHandler.getModel(Table.CATEGORIES, resultSet.getInt(Table.CATEGORIES.transactionClassifier)) as Category
+            val partner = dbHandler.getModel(Table.TRANSACTION_PARTNERS, resultSet.getInt(Table.TRANSACTION_PARTNERS.transactionClassifier)) as TransactionPartner
+            return Transaction(
+                    resultSet.getInt("id"),
+                    wallet,
+                    category,
+                    partner,
+                    resultSet.getString("description"),
+                    Value.deserialize(resultSet.getString("amount")),
+                    IsoDate(resultSet.getString("date"))
+            )
+        }
+
+        /**
+         * Retrieves a Transaction from the database by its ID
+         * @param dbHandler: The database handler to use
+         * @param id: The ID of the Transaction
+         * @return The generated Transaction object or null if no applicable Transaction was found
+         */
+        @JvmStatic
+        fun get(dbHandler: DbHandler, id: Int): Transaction? {
+            return dbHandler.getModel(Table.TRANSACTIONS, id) as Transaction?
+        }
+
+        /**
+         * Creates a new Transaction in the database and returns the corresponding Transaction object.
+         * @param dbHandler: The database handler to use for database calls
+         * @return The Tranaction object
+         */
+        @JvmStatic
+        fun create(dbHandler: DbHandler, wallet: Wallet, category: Category, partner: TransactionPartner,
+                   description: String, amount: Value, date: IsoDate) : Transaction {
+
+            val stmt = dbHandler.connection.prepareStatement("" +
+                    "INSERT INTO ${Table.TRANSACTIONS.tableName} (" +
+                    "${Table.WALLETS.transactionClassifier}," +
+                    "${Table.CATEGORIES.transactionClassifier}," +
+                    "${Table.TRANSACTION_PARTNERS.transactionClassifier}," +
+                    "description, amount, date) VALUES (?, ?, ?, ?, ?, ?)"
+            )
+            stmt.setInt(1, wallet.id)
+            stmt.setInt(2, category.id)
+            stmt.setInt(3, partner.id)
+            stmt.setString(4, description)
+            stmt.setString(5, amount.serialize())
+            stmt.setString(6, date.toString())
+            stmt.execute()
+            stmt.close()
+
+            val idStatement = dbHandler.connection.prepareStatement("SELECT last_insert_rowid()")
+            idStatement.execute()
+            val results = idStatement.resultSet
+            val id = results.getInt(1)
+            idStatement.close()
+            results.close()
+
+            return Transaction.get(dbHandler, id)!!
+        }
     }
 }

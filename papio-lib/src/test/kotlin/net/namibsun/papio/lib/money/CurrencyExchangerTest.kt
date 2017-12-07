@@ -18,6 +18,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.money
 
 import org.junit.Test
+import java.math.BigDecimal
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -32,10 +33,11 @@ class CurrencyExchangerTest {
      */
     @Test
     fun testInitialization() {
-        val rates = CurrencyExchanger.getExchangeRates()
         for (currency in Currency.values()) {
-            assertTrue(currency in rates)
+            assertTrue(currency in CurrencyConverter.exchangeRates)
         }
-        assertEquals(1.0, rates[Currency.EUR])
+        assertEquals(BigDecimal("1.0"), CurrencyConverter.exchangeRates[Currency.EUR])
+        assertTrue(CurrencyConverter.exchangeRates[Currency.ZAR]!! < BigDecimal("1.0"))
+        assertTrue(CurrencyConverter.exchangeRates[Currency.BTC]!! > BigDecimal("1.0"))
     }
 }
