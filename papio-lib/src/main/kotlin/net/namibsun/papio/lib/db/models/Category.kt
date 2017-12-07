@@ -20,12 +20,26 @@ package net.namibsun.papio.lib.db.models
 import net.namibsun.papio.lib.db.*
 import java.sql.ResultSet
 
+@Suppress("EqualsOrHashCode")
 /**
  * Models a Category in the database
  * @param id: The ID of the category in the database
  * @param name: The name of the category
  */
 class Category(id: Int, name: String): TransactionHolderModel(Table.CATEGORIES, id, name) {
+
+    /**
+     * Checks for equality with another object
+     * @param other: The other object
+     * @return true if the objects are equal, false otherwise
+     */
+    override fun equals(other: Any?): Boolean {
+        return if (other is Category) {
+            other.id == this.id && other.name == this.name
+        } else {
+            false
+        }
+    }
 
     /**
      * Static Methods

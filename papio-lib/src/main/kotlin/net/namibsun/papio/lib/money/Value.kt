@@ -26,7 +26,7 @@ import java.math.BigDecimal
  * @param value: The value of the Value as a BigDecimal, which allows arbitrary precision without rounding errors
  * @param currency: The currency of the Value
  */
-class Value(val value: BigDecimal, val currency: Currency) {
+data class Value(val value: BigDecimal, val currency: Currency) {
 
     /**
      * Generates a Value object from a String and a currency.
@@ -82,7 +82,7 @@ class Value(val value: BigDecimal, val currency: Currency) {
         return if (currency == null || currency == this.currency) {
             Value(this.value, this.currency)
         } else {
-            Value(CurrencyConverter.convertValue(this.value, this.currency, currency), this.currency)
+            Value(CurrencyConverter.convertValue(this.value, this.currency, currency), currency)
         }
     }
 
@@ -90,13 +90,13 @@ class Value(val value: BigDecimal, val currency: Currency) {
      * Formats the value into a configurable human-readable String
      * @param useCurrencySymbol: Specifies if the currency's symbol (e.g. €) should be used or the currency's name (EUR)
      * @param decimalSymbol: The symbol to use as a decimal point. Defaults to a decimal point.
-     * @param currencySymbolPositionFront: Specifies if the currency symbol is displayed before or after the value
+     * @param currencySymbolPositionBack: Specifies if the currency symbol is displayed before or after the value
      * @param overrideAccuracy: Overrides the inherent accuracy of a currency
      */
     fun format(
             useCurrencySymbol: Boolean = false,
             decimalSymbol: String = ".",
-            currencySymbolPositionFront: Boolean = true,
+            currencySymbolPositionBack: Boolean = false,
             overrideAccuracy: Int? = null): String {
 
         val currencySymbol = if (useCurrencySymbol) {
@@ -105,13 +105,16 @@ class Value(val value: BigDecimal, val currency: Currency) {
             this.currency.name
         }
 
-        val accuracy = if (overrideAccuracy == null) { this.currency.displayAccuracy } else { overrideAccuracy }
-        val formatted = this.value.setScale(accuracy).toString().replace(".", decimalSymbol)
+        val accuracy = overrideAccuracy ?: this.currency.displayAccuracy
+        val formatted = this.value
+                .setScale(accuracy, BigDecimal.ROUND_HALF_UP)
+                .toString()
+                .replace(".", decimalSymbol)
 
-        return if (currencySymbolPositionFront) {
-            "$currencySymbol $formatted"
-        } else {
+        return if (currencySymbolPositionBack) {
             "$formatted $currencySymbol"
+        } else {
+            "$currencySymbol $formatted"
         }
     }
 
@@ -120,11 +123,7 @@ class Value(val value: BigDecimal, val currency: Currency) {
      * @return The String representation of the value
      */
     override fun toString(): String {
-        return this.format(
-                false,
-                ".",
-                true
-        )
+        return this.format()
     }
 
     /**

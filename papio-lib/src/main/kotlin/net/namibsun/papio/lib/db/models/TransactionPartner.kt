@@ -23,12 +23,26 @@ import net.namibsun.papio.lib.db.Table
 import net.namibsun.papio.lib.db.TransactionHolderModel
 import java.sql.ResultSet
 
+@Suppress("EqualsOrHashCode")
 /**
  * Class that models a transaction partner in the database
  * @param id: The ID of the transaction partner
  * @param name: The name of the transaction partner
  */
 class TransactionPartner(id: Int, name: String) : TransactionHolderModel(Table.TRANSACTION_PARTNERS, id, name) {
+
+    /**
+     * Checks for equality with another object
+     * @param other: The other object
+     * @return true if the objects are equal, false otherwise
+     */
+    override fun equals(other: Any?): Boolean {
+        return if (other is TransactionPartner) {
+            other.id == this.id && other.name == this.name
+        } else {
+            false
+        }
+    }
 
     /**
      * Static Methods

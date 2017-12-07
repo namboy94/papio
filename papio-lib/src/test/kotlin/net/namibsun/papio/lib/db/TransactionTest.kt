@@ -322,8 +322,8 @@ class TransactionTest {
                 "Desc", Value("500", Currency.EUR), IsoDate("2017-01-01")
         )
         assertEquals(
-                "Transaction; ID: 1; Wallet: Wallet; Category: Category; Transaction Partner: Partner; " +
-                "Description: Desc; Amount: EUR 5.00; Date: 2017-01-01",
+                "TRANSACTIONS; ID: 1; Wallet: Wallet; Category: Category; Transaction Partner: Partner; " +
+                "Description: Desc; Amount: EUR 500.00; Date: 2017-01-01",
                 transaction.toString()
         )
     }

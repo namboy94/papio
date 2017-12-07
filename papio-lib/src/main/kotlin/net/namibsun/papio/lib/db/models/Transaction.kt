@@ -25,6 +25,7 @@ import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.Value
 import java.sql.ResultSet
 
+@Suppress("EqualsOrHashCode")
 /**
  * Models a transaction in the database
  * A transaction always references a wallet, a category and a transaction partner
@@ -75,9 +76,28 @@ class Transaction(id: Int,
      * @return The String representation of the transaction
      */
     override fun toString(): String {
-        return "${super.toString()}; Wallet: ${this.wallet.name}; Category: ${this.category.name}; " +
+        return "${super.toString()} Wallet: ${this.wallet.name}; Category: ${this.category.name}; " +
                 "Transaction Partner: ${this.partner.name}; Description: ${this.description}; " +
                 "Amount: ${this.amount}; Date: ${this.date}"
+    }
+
+    /**
+     * Checks for equality with another object
+     * @param other: The other object
+     * @return true if the objects are equal, false otherwise
+     */
+    override fun equals(other: Any?): Boolean {
+        return if (other is Transaction) {
+            other.id == this.id
+                    && other.description == this.description
+                    && other.amount == this.amount
+                    && other.date == this.date
+                    && other.wallet == this.wallet
+                    && other.category == this.category
+                    && other.partner == this.partner
+        } else {
+            false
+        }
     }
 
     /**
@@ -146,7 +166,7 @@ class Transaction(id: Int,
             stmt.setInt(2, category.id)
             stmt.setInt(3, partner.id)
             stmt.setString(4, description)
-            stmt.setString(5, amount.serialize())
+            stmt.setString(5, amount.convert(wallet.getCurrency()).serialize())
             stmt.setString(6, date.toString())
             stmt.execute()
             stmt.close()

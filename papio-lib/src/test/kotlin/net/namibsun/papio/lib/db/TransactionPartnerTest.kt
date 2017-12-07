@@ -120,6 +120,6 @@ class TransactionPartnerTest {
     @Test
     fun testStringRepresentation() {
         val partner = TransactionPartner.create(this.handler!!, "A")
-        assertEquals("Transaction Partner; ID: 1; Name: A", partner.toString())
+        assertEquals("TRANSACTION_PARTNERS; ID: 1; Name: A;", partner.toString())
     }
 }

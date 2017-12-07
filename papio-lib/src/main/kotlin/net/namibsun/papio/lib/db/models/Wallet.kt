@@ -24,6 +24,7 @@ import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.Value
 import java.sql.ResultSet
 
+@Suppress("EqualsOrHashCode")
 /**
  * Models a Wallet in the database
  * @param id: The ID of the wallet in the database
@@ -88,6 +89,19 @@ class Wallet(id: Int, name: String, private var startingValue: Value) :
     }
 
     /**
+     * Checks for equality with another object
+     * @param other: The other object
+     * @return true if the objects are equal, false otherwise
+     */
+    override fun equals(other: Any?): Boolean {
+        return if (other is Wallet) {
+            other.id == this.id && other.name == this.name && other.startingValue == this.startingValue
+        } else {
+            false
+        }
+    }
+
+    /**
      * Static Methods
      */
     companion object {
@@ -147,7 +161,7 @@ class Wallet(id: Int, name: String, private var startingValue: Value) :
          */
         fun create(dbHandler: DbHandler, name: String, initialValue: Value) : Wallet {
             val stmt = dbHandler.connection.prepareStatement(
-                    "INSERT INTO ${Table.TRANSACTION_PARTNERS.tableName} (name, initial_value) VALUES (?, ?)"
+                    "INSERT INTO ${Table.WALLETS.tableName} (name, initial_value) VALUES (?, ?)"
             )
             stmt.setString(1, name)
             stmt.setString(2, initialValue.serialize())

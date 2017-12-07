@@ -178,16 +178,16 @@ class WalletTest {
      */
     @Test
     fun testStringRepresentation() {
-        val wallet = Wallet.create(this.handler!!, "A", Value("100", Currency.EUR))
+        val wallet = Wallet.create(this.handler!!, "A", Value("1", Currency.EUR))
         val category = Category.create(this.handler!!, "B")
         val partner = TransactionPartner.create(this.handler!!, "C")
         Transaction.create(this.handler!!, 
-                wallet, category, partner, "D", Value("500", Currency.EUR)
+                wallet, category, partner, "D", Value("5", Currency.EUR)
         )
 
-        assertEquals("Wallet; ID: 1; Name: A; Starting Value: EUR 1.00", wallet.toString())
+        assertEquals("WALLETS; ID: 1; Name: A; Starting Value: EUR 1.00;", wallet.toString())
         assertEquals(
-                "Wallet; ID: 1; Name: A; Balance: EUR 6.00; Starting Value: EUR 1.00",
+                "WALLETS; ID: 1; Name: A; Starting Value: EUR 1.00; Balance: EUR 6.00;",
                 wallet.toString(this.handler!!)
         )
     }

@@ -37,7 +37,7 @@ class CurrencyExchangerTest {
             assertTrue(currency in CurrencyConverter.exchangeRates)
         }
         assertEquals(BigDecimal("1.0"), CurrencyConverter.exchangeRates[Currency.EUR])
-        assertTrue(CurrencyConverter.exchangeRates[Currency.ZAR]!! < BigDecimal("1.0"))
-        assertTrue(CurrencyConverter.exchangeRates[Currency.BTC]!! > BigDecimal("1.0"))
+        assertTrue(CurrencyConverter.exchangeRates[Currency.ZAR]!! > BigDecimal("1.0"))
+        assertTrue(CurrencyConverter.exchangeRates[Currency.BTC]!! < BigDecimal("1.0"))
     }
 }

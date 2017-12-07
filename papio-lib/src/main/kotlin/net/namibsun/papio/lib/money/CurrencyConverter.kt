@@ -19,6 +19,7 @@ package net.namibsun.papio.lib.money
 
 import java.io.IOException
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.net.URL
 import java.util.Scanner
 import java.util.logging.Logger
@@ -154,6 +155,6 @@ object CurrencyConverter {
         val sourceEuroValue = this.exchangeRates[source]!! // Not null
         val destinationEuroValue = this.exchangeRates[destination]!! // Not null
 
-        return value.divide(sourceEuroValue).times(destinationEuroValue)
+        return value.divide(sourceEuroValue, 128, RoundingMode.HALF_UP).times(destinationEuroValue)
     }
 }

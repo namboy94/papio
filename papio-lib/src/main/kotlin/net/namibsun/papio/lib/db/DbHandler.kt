@@ -87,6 +87,8 @@ class DbHandler(val connection: Connection) {
             this.getModel(table, nameOrId.toInt()) as NamedDbModel
         } catch (e: IndexOutOfBoundsException) {
             null
+        } catch (e: NumberFormatException) {
+            null
         }
 
         if (model == null) {

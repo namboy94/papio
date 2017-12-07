@@ -122,6 +122,6 @@ class CategoryTest {
     @Test
     fun testStringRepresentation() {
         val category = Category.create(this.handler!!, "A")
-        assertEquals("Category; ID: 1; Name: A", category.toString())
+        assertEquals("CATEGORIES; ID: 1; Name: A;", category.toString())
     }
 }

@@ -60,7 +60,7 @@ abstract class NamedDbModel(table: Table, id: Int, val name: String) : DbModel(t
      * @return The model's String representation
      */
     override fun toString(): String {
-        return "${super.toString()} Name: ${this.name}"
+        return "${super.toString()} Name: ${this.name};"
     }
 
     /**
@@ -79,7 +79,7 @@ abstract class NamedDbModel(table: Table, id: Int, val name: String) : DbModel(t
          * @throws IllegalArgumentException If the name of the model is a valid Integer to avoid ID/name conflicts
          */
         @JvmStatic
-        protected fun createHelper(dbHandler: DbHandler, table: Table, name: String, stmt: PreparedStatement):
+        fun createHelper(dbHandler: DbHandler, table: Table, name: String, stmt: PreparedStatement):
                 NamedDbModel {
 
             val existing = dbHandler.getModel(table, name)
