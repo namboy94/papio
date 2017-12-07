@@ -17,7 +17,6 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
-
 /**
  * Enum that models the various tables in the database
  * @param tableName: The name of the table

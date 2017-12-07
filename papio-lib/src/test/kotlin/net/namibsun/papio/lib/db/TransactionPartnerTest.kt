@@ -17,16 +17,14 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
+import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import kotlin.test.*
 
 /**
  * Class that tests the TransactionPartner class and related DbHandler functions
@@ -121,5 +119,32 @@ class TransactionPartnerTest {
     fun testStringRepresentation() {
         val partner = TransactionPartner.create(this.handler!!, "A")
         assertEquals("TRANSACTION_PARTNERS; ID: 1; Name: A;", partner.toString())
+    }
+
+    /**
+     * Tests the equals() Method
+     */
+    @Test
+    fun testEquality() {
+        val partner = TransactionPartner(1, "A")
+        assertEquals(partner, TransactionPartner(1, "A"))
+        assertNotEquals(partner, TransactionPartner(2, "A"))
+        assertNotEquals(partner, TransactionPartner(1, "B"))
+        @Suppress("ReplaceCallWithComparison")
+        (assertFalse(partner.equals(Category(1, "A"))))
+    }
+
+    /**
+     * Tests fetching all TransactionPartners from the database
+     */
+    @Test
+    fun testGettingAllCategories() {
+        assertEquals(0, TransactionPartner.getAll(this.handler!!).size)
+        val one = TransactionPartner.create(this.handler!!, "A")
+        val two = TransactionPartner.create(this.handler!!, "B")
+        val partners = TransactionPartner.getAll(this.handler!!).sortedBy { it.id }
+        assertEquals(2, partners.size)
+        assertEquals(one, partners[0])
+        assertEquals(two, partners[1])
     }
 }

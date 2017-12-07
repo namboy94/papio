@@ -153,7 +153,7 @@ class Transaction(id: Int,
          */
         @JvmStatic
         fun create(dbHandler: DbHandler, wallet: Wallet, category: Category, partner: TransactionPartner,
-                   description: String, amount: Value, date: IsoDate = IsoDate()) : Transaction {
+                   description: String, amount: Value, date: IsoDate = IsoDate()): Transaction {
 
             val stmt = dbHandler.connection.prepareStatement("" +
                     "INSERT INTO ${Table.TRANSACTIONS.tableName} (" +

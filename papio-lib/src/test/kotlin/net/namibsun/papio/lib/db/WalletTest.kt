@@ -29,10 +29,7 @@ import org.junit.Test
 import java.io.File
 import java.math.BigDecimal
 import java.sql.DriverManager
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertNull
+import kotlin.test.*
 
 /**
  * Class that tests the Wallet class and related DbHandler functions
@@ -105,11 +102,11 @@ class WalletTest {
         val category = Category.create(this.handler!!, "Category")
         val partner = TransactionPartner.create(this.handler!!, "Partner")
 
-        val transactionOne = Transaction.create(this.handler!!, 
-                wallet, category, partner, "One", Value("1000", Currency.EUR)
+        val transactionOne = Transaction.create(
+                this.handler!!, wallet, category, partner, "One", Value("1000", Currency.EUR)
         )
-        val transactionTwo = Transaction.create(this.handler!!, 
-                wallet, category, partner, "Two", Value("-500", Currency.EUR)
+        val transactionTwo = Transaction.create(
+                this.handler!!, wallet, category, partner, "Two", Value("-500", Currency.EUR)
         )
 
         val oldBalance = wallet.getBalance(this.handler!!)
@@ -181,8 +178,8 @@ class WalletTest {
         val wallet = Wallet.create(this.handler!!, "A", Value("1", Currency.EUR))
         val category = Category.create(this.handler!!, "B")
         val partner = TransactionPartner.create(this.handler!!, "C")
-        Transaction.create(this.handler!!, 
-                wallet, category, partner, "D", Value("5", Currency.EUR)
+        Transaction.create(
+                this.handler!!, wallet, category, partner, "D", Value("5", Currency.EUR)
         )
 
         assertEquals("WALLETS; ID: 1; Name: A; Starting Value: EUR 1.00;", wallet.toString())
@@ -190,5 +187,34 @@ class WalletTest {
                 "WALLETS; ID: 1; Name: A; Starting Value: EUR 1.00; Balance: EUR 6.00;",
                 wallet.toString(this.handler!!)
         )
+    }
+
+    /**
+     * Tests the equals() method
+     */
+    @Test
+    fun testEquality() {
+        val wallet = Wallet(1, "A", Value("0", Currency.EUR))
+        assertEquals(wallet, Wallet(1, "A", Value("0", Currency.EUR)))
+        assertNotEquals(wallet, Wallet(2, "A", Value("0", Currency.EUR)))
+        assertNotEquals(wallet, Wallet(1, "B", Value("0", Currency.EUR)))
+        assertNotEquals(wallet, Wallet(1, "A", Value("1", Currency.EUR)))
+        assertNotEquals(wallet, Wallet(1, "A", Value("0", Currency.USD)))
+        @Suppress("ReplaceCallWithComparison")
+        assertFalse(wallet.equals(Category(1, "A")))
+    }
+
+    /**
+     * Tests fetching all Wallets from the database
+     */
+    @Test
+    fun testGettingAllWallets() {
+        assertEquals(0, Wallet.getAll(this.handler!!).size)
+        val one = Wallet.create(this.handler!!, "A", Value("5.0", Currency.EUR))
+        val two = Wallet.create(this.handler!!, "B", Value("10.0", Currency.USD))
+        val wallets = Wallet.getAll(this.handler!!).sortedBy { it.id }
+        assertEquals(2, wallets.size)
+        assertEquals(one, wallets[0])
+        assertEquals(two, wallets[1])
     }
 }

@@ -17,7 +17,10 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
-import net.namibsun.papio.lib.db.models.*
+import net.namibsun.papio.lib.db.models.Wallet
+import net.namibsun.papio.lib.db.models.TransactionPartner
+import net.namibsun.papio.lib.db.models.Transaction
+import net.namibsun.papio.lib.db.models.Category
 import java.sql.Connection
 
 /**
@@ -61,7 +64,7 @@ class DbHandler(val connection: Connection) {
 
         var model: DbModel? = null
         if (result.next()) {
-            model = when(table) {
+            model = when (table) {
                 Table.WALLETS -> Wallet.fromResultSet(result)
                 Table.TRANSACTIONS -> Transaction.fromResultSet(result, this)
                 Table.TRANSACTION_PARTNERS -> TransactionPartner.fromResultSet(result)
@@ -80,7 +83,7 @@ class DbHandler(val connection: Connection) {
      * @param nameOrId: The ID or name of the model to fetch
      * @return The retrieved model or null if none was found
      */
-    fun getModel(table: Table, nameOrId: String) : NamedDbModel? {
+    fun getModel(table: Table, nameOrId: String): NamedDbModel? {
 
         // Check for ID first, since otherwise some rows could become unreachable using a CLI
         var model = try {
@@ -98,7 +101,7 @@ class DbHandler(val connection: Connection) {
             val result = stmt.resultSet
 
             if (result.next()) {
-                model = when(table) {
+                model = when (table) {
                     Table.WALLETS -> Wallet.fromResultSet(result)
                     Table.TRANSACTION_PARTNERS -> TransactionPartner.fromResultSet(result)
                     Table.CATEGORIES -> Category.fromResultSet(result)

@@ -17,7 +17,10 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db.models
 
-import net.namibsun.papio.lib.db.*
+import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.TransactionHolderModel
+import net.namibsun.papio.lib.db.Table
+import net.namibsun.papio.lib.db.NamedDbModel
 import java.sql.ResultSet
 
 @Suppress("EqualsOrHashCode")
@@ -26,7 +29,7 @@ import java.sql.ResultSet
  * @param id: The ID of the category in the database
  * @param name: The name of the category
  */
-class Category(id: Int, name: String): TransactionHolderModel(Table.CATEGORIES, id, name) {
+class Category(id: Int, name: String) : TransactionHolderModel(Table.CATEGORIES, id, name) {
 
     /**
      * Checks for equality with another object
@@ -98,7 +101,7 @@ class Category(id: Int, name: String): TransactionHolderModel(Table.CATEGORIES, 
          * @param name: The name of the category
          * @return The Category object
          */
-        fun create(dbHandler: DbHandler, name: String) : Category {
+        fun create(dbHandler: DbHandler, name: String): Category {
             val stmt = dbHandler.connection.prepareStatement(
                     "INSERT INTO ${Table.CATEGORIES.tableName} (name) VALUES (?)"
             )

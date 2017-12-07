@@ -29,10 +29,7 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
-import kotlin.test.fail
+import kotlin.test.*
 
 /**
  * Class that tests Transaction-related actions
@@ -326,5 +323,63 @@ class TransactionTest {
                 "Description: Desc; Amount: EUR 500.00; Date: 2017-01-01",
                 transaction.toString()
         )
+    }
+
+    /**
+     * Tests if the equals() Method works as intended
+     */
+    @Test
+    fun testEquality() {
+        val altWallet = Wallet.create(this.handler!!, "AltWallet", Value("0", Currency.EUR))
+        val altCategory = Category.create(this.handler!!, "AltCategory")
+        val altPartner = TransactionPartner.create(this.handler!!, "AltPartner")
+
+        val transaction = Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "A", Value("1", Currency.EUR), IsoDate("2017-01-01"))
+        assertEquals(transaction.id, 1)
+        val ident = Transaction(1, this.wallet!!, this.category!!, this.partner!!,
+                "A", Value("1", Currency.EUR), IsoDate("2017-01-01"))
+
+        assertEquals(transaction, ident)
+
+        for (alternative in listOf(
+                Transaction(2, this.wallet!!, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate("2017-01-01")),
+                Transaction(1, altWallet, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate("2017-01-01")),
+                Transaction(1, this.wallet!!, altCategory, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate("2017-01-01")),
+                Transaction(1, this.wallet!!, this.category!!, altPartner,
+                        "A", Value("1", Currency.EUR), IsoDate("2017-01-01")),
+                Transaction(1, this.wallet!!, this.category!!, this.partner!!,
+                        "B", Value("1", Currency.EUR), IsoDate("2017-01-01")),
+                Transaction(1, this.wallet!!, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.USD), IsoDate("2017-01-01")),
+                Transaction(1, this.wallet!!, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate("2017-01-02")),
+                Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                        "A", Value("1", Currency.EUR), IsoDate("2017-01-01"))
+        )) {
+            assertNotEquals(transaction, alternative)
+        }
+
+        @Suppress("ReplaceCallWithComparison")
+        assertFalse(transaction.equals("Test"))
+    }
+
+    /**
+     * Tests fetching all TransactionPartners from the database
+     */
+    @Test
+    fun testGettingAllCategories() {
+        assertEquals(0, Transaction.getAll(this.handler!!).size)
+        val one = Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "A", Value("1.0", Currency.EUR))
+        val two = Transaction.create(this.handler!!, this.wallet!!, this.category!!, this.partner!!,
+                "B", Value("1.0", Currency.EUR))
+        val transactions = Transaction.getAll(this.handler!!).sortedBy { it.id }
+        assertEquals(2, transactions.size)
+        assertEquals(one, transactions[0])
+        assertEquals(two, transactions[1])
     }
 }

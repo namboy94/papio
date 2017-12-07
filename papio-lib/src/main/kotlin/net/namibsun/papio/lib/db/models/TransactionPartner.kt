@@ -101,7 +101,7 @@ class TransactionPartner(id: Int, name: String) : TransactionHolderModel(Table.T
          * @param name: The name of the Transaction Partner
          * @return The TransactionPartner object
          */
-        fun create(dbHandler: DbHandler, name: String) : TransactionPartner {
+        fun create(dbHandler: DbHandler, name: String): TransactionPartner {
             val stmt = dbHandler.connection.prepareStatement(
                     "INSERT INTO ${Table.TRANSACTION_PARTNERS.tableName} (name) VALUES (?)"
             )

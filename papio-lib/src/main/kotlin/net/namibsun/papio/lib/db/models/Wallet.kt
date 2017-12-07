@@ -85,7 +85,7 @@ class Wallet(id: Int, name: String, private var startingValue: Value) :
      * @return The wallet represented as a String
      */
     fun toString(dbHandler: DbHandler): String {
-        return "${this} Balance: ${this.getBalance(dbHandler)};"
+        return "$this Balance: ${this.getBalance(dbHandler)};"
     }
 
     /**
@@ -159,7 +159,7 @@ class Wallet(id: Int, name: String, private var startingValue: Value) :
          * @param name: The name of the Wallet
          * @return The Wallet object
          */
-        fun create(dbHandler: DbHandler, name: String, initialValue: Value) : Wallet {
+        fun create(dbHandler: DbHandler, name: String, initialValue: Value): Wallet {
             val stmt = dbHandler.connection.prepareStatement(
                     "INSERT INTO ${Table.WALLETS.tableName} (name, initial_value) VALUES (?, ?)"
             )
