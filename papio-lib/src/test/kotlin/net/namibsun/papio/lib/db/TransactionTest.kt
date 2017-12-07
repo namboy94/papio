@@ -29,7 +29,11 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+import kotlin.test.fail
 
 /**
  * Class that tests Transaction-related actions

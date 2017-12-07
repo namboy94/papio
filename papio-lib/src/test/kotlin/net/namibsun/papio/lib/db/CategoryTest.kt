@@ -24,7 +24,11 @@ import org.junit.Before
 import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 /**
  * Class that tests the Category class and related DbHandler functions

@@ -29,7 +29,11 @@ import org.junit.Test
 import java.io.File
 import java.math.BigDecimal
 import java.sql.DriverManager
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNull
+import kotlin.test.assertNotNull
+import kotlin.test.assertFalse
 
 /**
  * Class that tests the Wallet class and related DbHandler functions
