@@ -19,6 +19,12 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.models.Category
+import net.namibsun.papio.lib.db.models.Transaction
+import net.namibsun.papio.lib.db.models.TransactionPartner
+import net.namibsun.papio.lib.db.models.Wallet
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.Value
 import net.sourceforge.argparse4j.ArgumentParsers
 import net.sourceforge.argparse4j.impl.Arguments
 
@@ -92,10 +98,11 @@ open class TransactionExecutor : FullExecutor {
 
         if (wallet == null) {
             if (results.getBoolean("create_wallet")) {
-                wallet = dbHandler.createWallet(
+                wallet = Wallet.create(
+                        dbHandler,
                         results.getString("wallet"),
-                        MoneyValue(
-                                results.getInt("create_wallet_initial_value"),
+                        Value(
+                                results.getInt("create_wallet_initial_value").toString(),
                                 Currency.valueOf(results.getString("create_wallet_currency"))
                         )
                 )
@@ -107,7 +114,7 @@ open class TransactionExecutor : FullExecutor {
 
         if (category == null) {
             if (results.getBoolean("create_category")) {
-                category = dbHandler.createCategory(results.getString("category"))
+                category = Category.create(dbHandler, results.getString("category"))
             } else {
                 println("Category ${results.getString("category")} does not exist")
                 System.exit(1)
@@ -115,7 +122,7 @@ open class TransactionExecutor : FullExecutor {
         }
         if (partner == null) {
             if (results.getBoolean("create_transactionpartner")) {
-                partner = dbHandler.createTransactionPartner(results.getString("transactionpartner"))
+                partner = TransactionPartner.create(dbHandler, results.getString("transactionpartner"))
             } else {
                 println("Transaction Partner ${results.getString("transactionpartner")} does not exist")
                 System.exit(1)
@@ -127,10 +134,11 @@ open class TransactionExecutor : FullExecutor {
         } else {
             results.getInt("amount")
         }
-        val value = MoneyValue(amount, wallet!!.getCurrency())
+        val value = Value(amount.toString(), wallet!!.getCurrency())
 
         try {
-            val transaction = dbHandler.createTransaction(
+            val transaction = Transaction.create(
+                    dbHandler,
                     wallet,
                     category!!,
                     partner!!,
@@ -155,7 +163,7 @@ open class TransactionExecutor : FullExecutor {
         parser.addArgument("identifier").type(Int::class.java).help("The ID of the transaction")
         val result = this.handleParserError(parser, args)
 
-        val transaction = dbHandler.getTransaction(result.getInt("identifier"))
+        val transaction = Transaction.get(dbHandler, result.getInt("identifier"))
         if (transaction != null) {
             val confirm = this.getUserConfirmation("Delete transaction\n$transaction\n?")
             if (confirm) {
@@ -175,7 +183,7 @@ open class TransactionExecutor : FullExecutor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        for (transaction in dbHandler.getTransactions()) {
+        for (transaction in Transaction.getAll(dbHandler)) {
             println(transaction)
         }
     }
@@ -190,7 +198,7 @@ open class TransactionExecutor : FullExecutor {
         parser.addArgument("id").type(Int::class.java).help("The ID of the transaction")
         val result = this.handleParserError(parser, args)
 
-        val transaction = dbHandler.getTransaction(result.getInt("id"))
+        val transaction = Transaction.get(dbHandler, result.getInt("id"))
         if (transaction != null) {
             println(transaction)
         } else {

@@ -4,6 +4,10 @@ import net.namibsun.papio.cli.argparse.ActionMode
 import net.namibsun.papio.cli.argparse.HelpPrinter
 import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.models.Category
+import net.namibsun.papio.lib.db.models.Transaction
+import net.namibsun.papio.lib.db.models.TransactionPartner
+import net.namibsun.papio.lib.money.Value
 import net.sourceforge.argparse4j.ArgumentParsers
 
 /**
@@ -44,23 +48,23 @@ class TransferExecutor : BaseExecutor {
                 System.exit(1)
             }
             else -> {
-                val category = dbHandler.createCategory("Transfer")
-                val senderTransactionPartner = dbHandler.createTransactionPartner(sender.name)
-                val receiverTransactionPartner = dbHandler.createTransactionPartner(receiver.name)
+                val category = Category.create(dbHandler, "Transfer")
+                val senderTransactionPartner = TransactionPartner.create(dbHandler, sender.name)
+                val receiverTransactionPartner = TransactionPartner.create(dbHandler, receiver.name)
 
-                val amount = MoneyValue(result.getInt("amount"), sender.getCurrency())
+                val amount = Value(result.getInt("amount").toString(), sender.getCurrency())
                 val converted = amount.convert(receiver.getCurrency())
                 val date = IsoDate(result.getString("date"))
 
-                val senderTransaction = dbHandler.createTransaction(
-                        sender, category, receiverTransactionPartner,
+                val senderTransaction = Transaction.create(
+                        dbHandler, sender, category, receiverTransactionPartner,
                         "Transferred $amount to ${receiver.name}",
-                        MoneyValue(0, sender.getCurrency()) - amount, // *(-1)
+                        Value(0.toString(), sender.getCurrency()) - amount, // *(-1)
                         date
                 )
 
-                val receiverTransaction = dbHandler.createTransaction(
-                        receiver, category, senderTransactionPartner,
+                val receiverTransaction = Transaction.create(
+                        dbHandler, receiver, category, senderTransactionPartner,
                         "Transferred $converted from ${sender.name}",
                         converted, date
                 )

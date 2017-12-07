@@ -37,8 +37,8 @@ class TransactionPartnerExecutor : FullExecutor {
                 .build().defaultHelp(true)
         parser.addArgument("name").help("The name of the new transaction partner")
         val results = this.handleParserError(parser, args)
-        val original = dbHandler.getTransactionPartner(results.getString("name"))
-        val partner = dbHandler.createTransactionPartner(results.getString("name"))
+        val original = TransactionPartner.get(dbHandler, results.getString("name"))
+        val partner = TransactionPartner.create(dbHandler, results.getString("name"))
         if (original == null) {
             println("Category created:\n$partner")
         } else {
@@ -79,7 +79,7 @@ class TransactionPartnerExecutor : FullExecutor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        for (partner in dbHandler.getTransactionPartners()) {
+        for (partner in TransactionPartner.getAll(dbHandler)) {
             println(partner)
         }
     }
@@ -102,7 +102,7 @@ class TransactionPartnerExecutor : FullExecutor {
         if (partner != null) {
             println("$partner\n")
 
-            val transactions = partner.getAllTransactions(dbHandler)
+            val transactions = partner.getTransactions(dbHandler)
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -122,10 +122,10 @@ class TransactionPartnerExecutor : FullExecutor {
      * @return The retrieved transaction partner or null if none was found
      */
     fun getTransactionPartner(dbHandler: DbHandler, nameOrId: String): TransactionPartner? {
-        var partner = dbHandler.getTransactionPartner(nameOrId)
+        var partner = TransactionPartner.get(dbHandler, nameOrId)
         if (partner == null) {
             try {
-                partner = dbHandler.getTransactionPartner(nameOrId.toInt())
+                partner = TransactionPartner.get(dbHandler, nameOrId.toInt())
             } catch (e: NumberFormatException) {}
         }
         return partner

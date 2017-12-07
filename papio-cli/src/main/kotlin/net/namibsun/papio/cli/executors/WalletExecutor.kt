@@ -19,6 +19,8 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Wallet
+import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.Value
 import net.sourceforge.argparse4j.ArgumentParsers
 
 /**
@@ -46,13 +48,16 @@ class WalletExecutor : FullExecutor {
         val result = this.handleParserError(parser, args)
 
         val name = result.getString("name")
-        val value = MoneyValue(result.getInt("initial_value"), Currency.valueOf(result.getString("currency")))
-        val existing = dbHandler.getWallet(name)
+        val value = Value(
+                result.getInt("initial_value").toString(),
+                Currency.valueOf(result.getString("currency"))
+        )
+        val existing = Wallet.get(dbHandler, name)
 
         if (existing != null) {
             println("Wallet\n$existing\nexists!")
         } else {
-            val wallet = dbHandler.createWallet(name, value)
+            val wallet = Wallet.create(dbHandler, name, value)
             println("Wallet\n$wallet\nwas created successfully.")
         }
     }
@@ -89,8 +94,8 @@ class WalletExecutor : FullExecutor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        var total = MoneyValue(0, Currency.EUR)
-        for (wallet in dbHandler.getWallets()) {
+        var total = Value("0", Currency.EUR)
+        for (wallet in Wallet.getAll(dbHandler)) {
             println(wallet.toString(dbHandler))
             total += wallet.getBalance(dbHandler)
         }
@@ -115,7 +120,7 @@ class WalletExecutor : FullExecutor {
         if (wallet != null) {
             println("${wallet.toString(dbHandler)}\n")
 
-            val transactions = wallet.getAllTransactions(dbHandler)
+            val transactions = wallet.getTransactions(dbHandler)
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -135,10 +140,10 @@ class WalletExecutor : FullExecutor {
      * @return The retrieved wallet or null if none was found
      */
     fun getWallet(dbHandler: DbHandler, nameOrId: String): Wallet? {
-        var wallet = dbHandler.getWallet(nameOrId)
+        var wallet = Wallet.get(dbHandler, nameOrId)
         if (wallet == null) {
             try {
-                wallet = dbHandler.getWallet(nameOrId.toInt())
+                wallet = Wallet.get(dbHandler, nameOrId.toInt())
             } catch (e: NumberFormatException) {}
         }
         return wallet

@@ -36,8 +36,8 @@ class CategoryExecutor : FullExecutor {
         val parser = ArgumentParsers.newFor("papio-cli category create").build().defaultHelp(true)
         parser.addArgument("name").help("The name of the new category")
         val results = this.handleParserError(parser, args)
-        val original = dbHandler.getCategory(results.getString("name"))
-        val category = dbHandler.createCategory(results.getString("name"))
+        val original = Category.get(dbHandler, results.getString("name"))
+        val category = Category.create(dbHandler, results.getString("name"))
         if (original == null) {
             println("Category created:\n$category")
         } else {
@@ -75,7 +75,7 @@ class CategoryExecutor : FullExecutor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        for (category in dbHandler.getCategories()) {
+        for (category in Category.getAll(dbHandler)) {
             println(category)
         }
     }
@@ -97,7 +97,7 @@ class CategoryExecutor : FullExecutor {
         if (category != null) {
             println("$category\n")
 
-            val transactions = category.getAllTransactions(dbHandler)
+            val transactions = category.getTransactions(dbHandler)
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -117,10 +117,10 @@ class CategoryExecutor : FullExecutor {
      * @return The retrieved wallet or null if none was found
      */
     fun getCategory(dbHandler: DbHandler, nameOrId: String): Category? {
-        var category = dbHandler.getCategory(nameOrId)
+        var category = Category.get(dbHandler, nameOrId)
         if (category == null) {
             try {
-                category = dbHandler.getCategory(nameOrId.toInt())
+                category = Category.get(dbHandler, nameOrId.toInt())
             } catch (e: NumberFormatException) {}
         }
         return category
