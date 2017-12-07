@@ -17,8 +17,6 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
-import net.namibsun.papio.lib.money.Currency
-import net.namibsun.papio.lib.money.MoneyValue
 import net.namibsun.papio.lib.db.models.Wallet
 import org.junit.After
 import org.junit.Before

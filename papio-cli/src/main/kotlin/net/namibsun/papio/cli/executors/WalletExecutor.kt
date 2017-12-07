@@ -19,8 +19,6 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Wallet
-import net.namibsun.papio.lib.money.Currency
-import net.namibsun.papio.lib.money.MoneyValue
 import net.sourceforge.argparse4j.ArgumentParsers
 
 /**

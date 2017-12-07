@@ -4,7 +4,6 @@ import net.namibsun.papio.cli.argparse.ActionMode
 import net.namibsun.papio.cli.argparse.HelpPrinter
 import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
-import net.namibsun.papio.lib.money.MoneyValue
 import net.sourceforge.argparse4j.ArgumentParsers
 
 /**
