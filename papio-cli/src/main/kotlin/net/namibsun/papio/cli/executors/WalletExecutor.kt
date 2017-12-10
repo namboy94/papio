@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
@@ -41,17 +42,21 @@ class WalletExecutor : FullExecutor {
         parser.addArgument("--currency")
                 .choices(Currency.values().map { it.name }).setDefault("EUR")
                 .help("The currency of the wallet.")
-        parser.addArgument("--initial-value")
-                .type(Int::class.java).setDefault(0)
+        parser.addArgument("--initial-value").setDefault("0")
                 .help("The initial value of the wallet in cents.")
 
         val result = this.handleParserError(parser, args)
 
         val name = result.getString("name")
-        val value = Value(
-                result.getInt("initial_value").toString(),
-                Currency.valueOf(result.getString("currency"))
-        )
+
+        val value = try {
+            Value(result.getString("initial_value"), Currency.valueOf(result.getString("currency")))
+        } catch (e: NumberFormatException) {
+            println("${result.getString("amount")} is not a valid monetary amount")
+            System.exit(1)
+            null!! // Won't be reached
+        }
+
         val existing = Wallet.get(dbHandler, name)
 
         if (existing != null) {
@@ -72,7 +77,7 @@ class WalletExecutor : FullExecutor {
         parser.addArgument("identifier").help("The name or ID of the wallet")
         val result = this.handleParserError(parser, args)
 
-        val wallet = this.getWallet(dbHandler, result.getString("identifier"))
+        val wallet = Wallet.get(dbHandler, result.getString("identifier"))
         if (wallet != null) {
             val confirm = this.getUserConfirmation(
                     "Delete wallet\n$wallet\nand all transactions in it?"
@@ -116,11 +121,11 @@ class WalletExecutor : FullExecutor {
                 .help("Sets the amount of transactions to display. By default, all transactions are displayed")
         val result = this.handleParserError(parser, args)
 
-        val wallet = this.getWallet(dbHandler, result.getString("identifier"))
+        val wallet = Wallet.get(dbHandler, result.getString("identifier"))
         if (wallet != null) {
             println("${wallet.toString(dbHandler)}\n")
 
-            val transactions = wallet.getTransactions(dbHandler)
+            val transactions = wallet.getTransactions(dbHandler).sortedByDescending { it.date }
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -131,21 +136,5 @@ class WalletExecutor : FullExecutor {
         } else {
             println("Wallet not found")
         }
-    }
-
-    /**
-     * Tries to retrieve a wallet based on the wallet's name or ID, in that order.
-     * @param dbHandler: The Database handler to use
-     * @param nameOrId: The identifier to use to find the wallet
-     * @return The retrieved wallet or null if none was found
-     */
-    fun getWallet(dbHandler: DbHandler, nameOrId: String): Wallet? {
-        var wallet = Wallet.get(dbHandler, nameOrId)
-        if (wallet == null) {
-            try {
-                wallet = Wallet.get(dbHandler, nameOrId.toInt())
-            } catch (e: NumberFormatException) {}
-        }
-        return wallet
     }
 }

@@ -9,7 +9,7 @@ import java.time.format.DateTimeParseException
  * @param date: The ISO-8601 date string
  * @throws IllegalArgumentException If the provided date string is not valid ISO-8601
  */
-data class IsoDate(private var date: String = "today") {
+data class IsoDate(private var date: String = "today") : Comparable<IsoDate> {
 
     /**
      * Initializes date.
@@ -63,5 +63,26 @@ data class IsoDate(private var date: String = "today") {
      */
     fun getDay(): String {
         return this.date.split("-")[2]
+    }
+
+    /**
+     * Compares this IsoObject with another IsoDate object
+     * @param other: The IsoDate to which to compare to
+     * @return -1 if the argument is a later date than this one
+     *          0 if the dates are equal
+     *         +1 if the argument is an earlier date than this one
+     */
+    override fun compareTo(other: IsoDate): Int {
+        return if (this.date == other.date) {
+            0
+        } else {
+            val thisDateInt = "${this.getYear()}${this.getMonth()}${this.getDay()}"
+            val otherDateInt = "${other.getYear()}${other.getMonth()}${other.getDay()}"
+            if (thisDateInt < otherDateInt) {
+                -1
+            } else {
+                +1
+            }
+        }
     }
 }

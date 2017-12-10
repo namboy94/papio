@@ -19,6 +19,8 @@ package net.namibsun.papio.lib.date
 
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /**
@@ -107,5 +109,38 @@ class IsoDateTest {
         assertEquals(date.getDay(), "02")
         assertEquals(date.getMonth(), "01")
         assertEquals(date.getYear(), "2017")
+    }
+
+    /**
+     * Tests comparing IsoDates
+     */
+    @Test
+    fun testComparing() {
+        val one = IsoDate("2017-01-01")
+        val two = IsoDate("2017-01-02")
+        val three = IsoDate("1970-01-01")
+
+        assertEquals(-1, one.compareTo(two))
+        assertEquals(0, one.compareTo(one))
+        assertEquals(+1, one.compareTo(three))
+
+        assertTrue(one < two)
+        assertFalse(one > two)
+        assertTrue(one <= one)
+        assertTrue(one >= one)
+        assertTrue(one >= three)
+        assertFalse(one <= three)
+    }
+
+    /**
+     * Tests sorting a list of IsoDates
+     */
+    @Test
+    fun testSorting() {
+        val list = listOf(IsoDate("2017-01-01"), IsoDate("2000-01-01"), IsoDate("1970-01-01"))
+        assertEquals(
+                listOf(IsoDate("1970-01-01"), IsoDate("2000-01-01"), IsoDate("2017-01-01")),
+                list.sorted()
+        )
     }
 }

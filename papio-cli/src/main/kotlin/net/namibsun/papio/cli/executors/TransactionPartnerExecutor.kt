@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.sourceforge.argparse4j.ArgumentParsers
@@ -57,7 +58,7 @@ class TransactionPartnerExecutor : FullExecutor {
         parser.addArgument("identifier").help("The name or ID of the transaction partner")
         val result = this.handleParserError(parser, args)
 
-        val partner = this.getTransactionPartner(dbHandler, result.getString("identifier"))
+        val partner = TransactionPartner.get(dbHandler, result.getString("identifier"))
         if (partner != null) {
             val confirm = this.getUserConfirmation(
                     "Delete transaction partner\n$partner\nand all transactions using it?"
@@ -98,11 +99,11 @@ class TransactionPartnerExecutor : FullExecutor {
                 .help("Sets the amount of transactions to display. By default, all transactions are displayed")
         val result = this.handleParserError(parser, args)
 
-        val partner = this.getTransactionPartner(dbHandler, result.getString("identifier"))
+        val partner = TransactionPartner.get(dbHandler, result.getString("identifier"))
         if (partner != null) {
             println("$partner\n")
 
-            val transactions = partner.getTransactions(dbHandler)
+            val transactions = partner.getTransactions(dbHandler).sortedByDescending { it.date }
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -113,21 +114,5 @@ class TransactionPartnerExecutor : FullExecutor {
         } else {
             println("Transaction Partner not found")
         }
-    }
-
-    /**
-     * Tries to retrieve a transaction partner based on the transaction partner's name or ID, in that order.
-     * @param dbHandler: The Database handler to use
-     * @param nameOrId: The identifier to use to find the transaction partner
-     * @return The retrieved transaction partner or null if none was found
-     */
-    fun getTransactionPartner(dbHandler: DbHandler, nameOrId: String): TransactionPartner? {
-        var partner = TransactionPartner.get(dbHandler, nameOrId)
-        if (partner == null) {
-            try {
-                partner = TransactionPartner.get(dbHandler, nameOrId.toInt())
-            } catch (e: NumberFormatException) {}
-        }
-        return partner
     }
 }

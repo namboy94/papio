@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
@@ -71,7 +72,6 @@ open class TransactionExecutor : FullExecutor {
         parser.addArgument("description")
                 .help("A description of the transaction")
         parser.addArgument("amount")
-                .type(Int::class.java)
                 .help("The amount of money used in the $action in the same currency as the wallet.")
         parser.addArgument("-d", "--date")
                 .setDefault("today")
@@ -84,27 +84,33 @@ open class TransactionExecutor : FullExecutor {
                 .help("Creates the wallet if it doesn't exist yet. Defaults to an initial value of EUR 0.00. " +
                         "This may be changed with the --create-wallet-initial-value and " +
                         "--create-wallet-currency options")
-        parser.addArgument("--create-wallet-initial-value").type(Int::class.java).setDefault(0)
+        parser.addArgument("--create-wallet-initial-value").setDefault("0")
                 .help("Specifies the initial value of a newly created wallet")
         parser.addArgument("--create-wallet-currency")
                 .choices(Currency.values().map { it.name }).setDefault("EUR")
                 .help("Specifies the currency of a newly created wallet")
         val results = this.handleParserError(parser, args)
 
-        var wallet = WalletExecutor().getWallet(dbHandler, results.getString("wallet"))
-        var category = CategoryExecutor().getCategory(dbHandler, results.getString("category"))
-        var partner = TransactionPartnerExecutor()
-                .getTransactionPartner(dbHandler, results.getString("transactionpartner"))
+        var wallet = Wallet.get(dbHandler, results.getString("wallet"))
+        var category = Category.get(dbHandler, results.getString("category"))
+        var partner = TransactionPartner.get(dbHandler, results.getString("transactionpartner"))
 
         if (wallet == null) {
+
+            val walletValue = try {
+                Value(results.getString("create_wallet_initial_value"),
+                        Currency.valueOf(results.getString("create_wallet_currency")))
+            } catch (e: NumberFormatException) {
+                println("${results.getString("amount")} is not a valid monetary amount")
+                System.exit(1)
+                null!! // Won't be reached
+            }
+
             if (results.getBoolean("create_wallet")) {
                 wallet = Wallet.create(
                         dbHandler,
                         results.getString("wallet"),
-                        Value(
-                                results.getInt("create_wallet_initial_value").toString(),
-                                Currency.valueOf(results.getString("create_wallet_currency"))
-                        )
+                        walletValue
                 )
             } else {
                 println("Wallet ${results.getString("wallet")} does not exist")
@@ -129,12 +135,16 @@ open class TransactionExecutor : FullExecutor {
             }
         }
 
-        val amount = if (expense) {
-            results.getInt("amount") * -1
-        } else {
-            results.getInt("amount")
+        var value = try {
+            Value(results.getString("amount"), wallet!!.getCurrency())
+        } catch (e: NumberFormatException) {
+            println("${results.getString("amount")} is not a valid monetary amount")
+            System.exit(1)
+            null!! // Won't be reached
         }
-        val value = Value(amount.toString(), wallet!!.getCurrency())
+        if (expense) {
+            value = !value
+        }
 
         try {
             val transaction = Transaction.create(
@@ -183,7 +193,7 @@ open class TransactionExecutor : FullExecutor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        for (transaction in Transaction.getAll(dbHandler)) {
+        for (transaction in Transaction.getAll(dbHandler).sortedByDescending { it.date }) {
             println(transaction)
         }
     }

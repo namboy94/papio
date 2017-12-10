@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
 import net.sourceforge.argparse4j.ArgumentParsers
@@ -55,7 +56,7 @@ class CategoryExecutor : FullExecutor {
         parser.addArgument("identifier").help("The name or ID of the category")
         val result = this.handleParserError(parser, args)
 
-        val category = this.getCategory(dbHandler, result.getString("identifier"))
+        val category = Category.get(dbHandler, result.getString("identifier"))
         if (category != null) {
             val confirm = this.getUserConfirmation("Delete category\n$category\nand all transactions using it?")
             if (confirm) {
@@ -65,7 +66,7 @@ class CategoryExecutor : FullExecutor {
                 println("Deleting category cancelled")
             }
         } else {
-            println("Category not found.")
+            println("Category ${result.getString("identifier")} does not exist")
         }
     }
 
@@ -93,11 +94,11 @@ class CategoryExecutor : FullExecutor {
                 .help("Sets the amount of transactions to display. By default, all transactions are displayed")
         val result = this.handleParserError(parser, args)
 
-        val category = this.getCategory(dbHandler, result.getString("identifier"))
+        val category = Category.get(dbHandler, result.getString("identifier"))
         if (category != null) {
             println("$category\n")
 
-            val transactions = category.getTransactions(dbHandler)
+            val transactions = category.getTransactions(dbHandler).sortedByDescending { it.date }
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -106,23 +107,7 @@ class CategoryExecutor : FullExecutor {
                 println(transactions[i])
             }
         } else {
-            println("Category not found")
+            println("Category ${result.getString("identifier")} does not exist")
         }
-    }
-
-    /**
-     * Tries to retrieve a category based on the category's name or ID, in that order.
-     * @param dbHandler: The Database handler to use
-     * @param nameOrId: The identifier to use to find the category
-     * @return The retrieved wallet or null if none was found
-     */
-    fun getCategory(dbHandler: DbHandler, nameOrId: String): Category? {
-        var category = Category.get(dbHandler, nameOrId)
-        if (category == null) {
-            try {
-                category = Category.get(dbHandler, nameOrId.toInt())
-            } catch (e: NumberFormatException) {}
-        }
-        return category
     }
 }

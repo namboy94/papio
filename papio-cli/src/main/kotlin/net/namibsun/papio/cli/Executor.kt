@@ -15,10 +15,8 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.cli.executors
+package net.namibsun.papio.cli
 
-import net.namibsun.papio.cli.argparse.ActionMode
-import net.namibsun.papio.cli.argparse.HelpPrinter
 import net.namibsun.papio.lib.db.DbHandler
 import net.sourceforge.argparse4j.inf.ArgumentParser
 import net.sourceforge.argparse4j.inf.ArgumentParserException
@@ -55,17 +53,24 @@ interface BaseExecutor {
 
     /**
      * Prompts a yes/no question to the user
+     * Takes the cliConfirm flag in the Config into consideration.
      * @param message: The message to show the user
      * @return True if the user answered with 'y', false otherwise
+     *         Always returns true if the cliConfirm Config flag is set to false
      */
     fun getUserConfirmation(message: String): Boolean {
-        println("$message (y/n)")
-        var response = readLine()!!.toLowerCase()
-        while (response !in listOf("y", "n")) {
-            println("Please enter 'y' or 'n'")
-            response = readLine()!!.toLowerCase()
+
+        return if (Config.cliConfirm) {
+            println("$message (y/n)")
+            var response = readLine()!!.toLowerCase()
+            while (response !in listOf("y", "n")) {
+                println("Please enter 'y' or 'n'")
+                response = readLine()!!.toLowerCase()
+            }
+            response == "y"
+        } else {
+            true
         }
-        return response == "y"
     }
 }
 
@@ -79,6 +84,7 @@ interface FullExecutor : BaseExecutor {
      * @param args: The command line arguments to parse
      * @param dbHandler: The database handler to use
      * @param mode: The mode for which to execute
+     * @throws HelpException: If the user input is invalid and the root help message should be printed
      */
     override fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?) {
         when (mode) {
@@ -86,7 +92,7 @@ interface FullExecutor : BaseExecutor {
             ActionMode.DISPLAY -> this.executeDisplay(args, dbHandler)
             ActionMode.CREATE -> this.executeCreate(args, dbHandler)
             ActionMode.DELETE -> this.executeDelete(args, dbHandler)
-            null -> HelpPrinter().printAndExit()
+            null -> throw HelpException()
         }
     }
 

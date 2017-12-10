@@ -1,7 +1,9 @@
 package net.namibsun.papio.cli.executors
 
-import net.namibsun.papio.cli.argparse.ActionMode
-import net.namibsun.papio.cli.argparse.HelpPrinter
+import net.namibsun.papio.cli.ActionMode
+import net.namibsun.papio.cli.BaseExecutor
+import net.namibsun.papio.cli.Config
+import net.namibsun.papio.cli.HelpException
 import net.namibsun.papio.lib.db.DbHandler
 import java.io.File
 
@@ -15,16 +17,15 @@ class BackupExecutor : BaseExecutor {
      * @param args: The command line arguments to parse
      * @param dbHandler: The database handler to use
      * @param mode: The mode for which to execute
+     * @throws HelpException: If the user input is invalid and the root help message should be printed
      */
     override fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?) {
 
         if (mode != null || args.isNotEmpty()) {
-            HelpPrinter().printAndExit()
+            throw HelpException()
         } else {
-            val papioDir = File(System.getProperty("user.home"), ".papio")
-            val papioDb = File(papioDir.toString(), "data.db")
-            val dbBackup = File(papioDir.toString(), "backup-${System.currentTimeMillis().toInt()}.db")
-            papioDb.copyTo(dbBackup, true)
+            val dbBackup = File(Config.papioPath.toString(), "backup-${System.currentTimeMillis().toInt()}.db")
+            Config.dbPath.copyTo(dbBackup, true)
             println("Backup created: $dbBackup")
         }
     }

@@ -15,7 +15,7 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.cli.argparse
+package net.namibsun.papio.cli
 
 /**
  * Enum that models which part of the database are to be changed

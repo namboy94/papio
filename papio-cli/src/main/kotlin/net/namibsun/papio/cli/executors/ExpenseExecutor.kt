@@ -1,7 +1,7 @@
 package net.namibsun.papio.cli.executors
 
-import net.namibsun.papio.cli.argparse.ActionMode
-import net.namibsun.papio.cli.argparse.HelpPrinter
+import net.namibsun.papio.cli.ActionMode
+import net.namibsun.papio.cli.HelpException
 import net.namibsun.papio.lib.db.DbHandler
 
 /**
@@ -15,11 +15,12 @@ class ExpenseExecutor : TransactionExecutor() {
      * @param args: The command line arguments to parse
      * @param dbHandler: The database handler to use
      * @param mode: The mode for which to execute
+     * @throws HelpException: If the user input is invalid and the root help message should be printed
      */
     override fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?) {
         when (mode) {
             ActionMode.CREATE -> { this.executeCreateExpense(args, dbHandler) }
-            else -> { HelpPrinter().printAndExit() }
+            else -> { throw HelpException() }
         }
     }
 
