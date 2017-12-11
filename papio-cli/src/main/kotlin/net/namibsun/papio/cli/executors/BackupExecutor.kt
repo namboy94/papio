@@ -16,7 +16,7 @@ class BackupExecutor : BaseExecutor {
      * Starts the backup if no action mode was supplied and args is empty
      * @param args: The command line arguments to parse
      * @param dbHandler: The database handler to use
-     * @param mode: The mode for which to execute
+     * @param mode: The mode for which to execute (Should be null for this class)
      * @throws HelpException: If the user input is invalid and the root help message should be printed
      */
     override fun execute(args: Array<String>, dbHandler: DbHandler, mode: ActionMode?) {

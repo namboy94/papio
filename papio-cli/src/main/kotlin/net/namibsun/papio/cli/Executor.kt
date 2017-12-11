@@ -69,7 +69,7 @@ interface BaseExecutor {
             }
             response == "y"
         } else {
-            true
+            Config.autoResponse == "y"
         }
     }
 }

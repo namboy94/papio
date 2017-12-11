@@ -51,7 +51,7 @@ class CategoryTester {
     /**
      * Stream that replaces the stdout stream for printing
      */
-    private var out: ByteArrayOutputStream? = null
+    private var out = ByteArrayOutputStream()
 
     /**
      * Sets up the config file paths for testing and initializes the database handler
@@ -62,7 +62,6 @@ class CategoryTester {
         Config.dbPath = File("papio-testdir/data.db")
         Config.cliConfirm = false
         this.dbHandler = prepareDatabase()
-        this.out = ByteArrayOutputStream()
         System.setOut(PrintStream(this.out))
     }
 
@@ -86,7 +85,30 @@ class CategoryTester {
         val category = Category.get(this.dbHandler!!, "Test")
         assertNotNull(category)
 
-        assertEquals("Category created:\n$category\n", this.out!!.toString())
+        assertEquals("Category created:\n$category\n", this.out.toString())
+    }
+
+    /**
+     * Tests creating a category that already exists
+     */
+    @Test
+    fun testCreatingCategoryAgain() {
+
+        assertNull(Category.get(this.dbHandler!!, "Test"))
+
+        execute(arrayOf("category", "create", "Test"))
+        val categoryOne = Category.get(this.dbHandler!!, "Test")
+        assertNotNull(categoryOne)
+
+        this.out = ByteArrayOutputStream()
+        System.setOut(PrintStream(this.out))
+
+        execute(arrayOf("category", "create", "Test"))
+        val categoryTwo = Category.get(this.dbHandler!!, "Test")
+        assertNotNull(categoryTwo)
+
+        assertEquals(categoryOne, categoryTwo)
+        assertEquals("Category already exists:\n$categoryOne\n", this.out.toString())
     }
 
     /**
@@ -98,7 +120,7 @@ class CategoryTester {
         val two = Category.create(this.dbHandler!!, "Two")
         val three = Category.create(this.dbHandler!!, "Three")
         execute(arrayOf("category", "list"))
-        assertEquals("$one\n$two\n$three\n", this.out!!.toString())
+        assertEquals("$one\n$two\n$three\n", this.out.toString())
     }
 
     /**
@@ -106,25 +128,47 @@ class CategoryTester {
      */
     @Test
     fun testDisplayingCategory() {
-        val category = Category.create(this.dbHandler!!, "One")
 
-        val wallet = Wallet.create(this.dbHandler!!, "Wallet", Value("0", Currency.EUR))
-        val partner = TransactionPartner.create(this.dbHandler!!, "Partner")
-        val transactionOne = Transaction.create(
-                this.dbHandler!!, wallet, category, partner,
-                "Desc1", Value("1", Currency.EUR), IsoDate("2000-01-01")
-        )
-        val transactionTwo = Transaction.create(
-                this.dbHandler!!, wallet, category, partner,
-                "Desc2", Value("2", Currency.USD), IsoDate("2017-01-01")
-        )
-        execute(arrayOf("category", "display", "1"))
+        val categoryData = this.initializeDisplayableCategories()
+        val category = categoryData.first
+        val transactionOne = categoryData.second
+        val transactionTwo = categoryData.third
+
+        execute(arrayOf("category", "display", category.name))
         print("SPLIT")
-        execute(arrayOf("category", "display", "One"))
+        execute(arrayOf("category", "display", category.id.toString()))
 
-        for (result in this.out!!.toString().split("SPLIT")) {
+        for (result in this.out.toString().split("SPLIT")) {
             assertEquals("$category\n\n$transactionTwo\n$transactionOne\n", result)
         }
+    }
+
+    /**
+     * Tests limiting the amount of transactions to display
+     */
+    @Test
+    fun testDisplayingCategoryWithLimitedTransactions() {
+        val categoryData = this.initializeDisplayableCategories()
+        val category = categoryData.first
+        val transactionOne = categoryData.second
+        val transactionTwo = categoryData.third
+
+        execute(arrayOf("category", "display", category.name, "-t", "500"))
+        print("SPLIT")
+        execute(arrayOf("category", "display", category.name, "-t", "2"))
+        print("SPLIT")
+        execute(arrayOf("category", "display", category.name, "-t", "1"))
+        print("SPLIT")
+        execute(arrayOf("category", "display", category.name, "-t", "-1"))
+        print("SPLIT")
+        execute(arrayOf("category", "display", category.name, "-t", "-1000"))
+
+        val outData = this.out.toString().split("SPLIT")
+        assertEquals("$category\n\n$transactionTwo\n$transactionOne\n", outData[0])
+        assertEquals("$category\n\n$transactionTwo\n$transactionOne\n", outData[1])
+        assertEquals("$category\n\n$transactionTwo\n", outData[2])
+        assertEquals("$category\n\n$transactionTwo\n$transactionOne\n", outData[3])
+        assertEquals("$category\n\n", outData[4])
     }
 
     /**
@@ -133,7 +177,7 @@ class CategoryTester {
     @Test
     fun testDisplayingCategoryIfCategoryDoesNotExist() {
         execute(arrayOf("category", "display", "One"))
-        assertEquals("Category One does not exist\n", this.out!!.toString())
+        assertEquals("Category One does not exist\n", this.out.toString())
     }
 
     /**
@@ -157,11 +201,46 @@ class CategoryTester {
     }
 
     /**
+     * Tests cancelling a delete operation
+     */
+    @Test
+    fun testCancellingDeletingCategory() {
+        val category = Category.create(this.dbHandler!!, "One")
+        Config.autoResponse = "n"
+
+        assertNotNull(Category.get(this.dbHandler!!, category.id))
+        execute(arrayOf("category", "delete", "One"))
+        assertNotNull(Category.get(this.dbHandler!!, category.id))
+
+        Config.autoResponse = "y"
+    }
+
+    /**
      * Tests seleting a category that does not exist
      */
     @Test
     fun testDeletingCategoryThatDoesNotExist() {
         execute(arrayOf("category", "delete", "One"))
-        assertEquals("Category One does not exist\n", this.out!!.toString())
+        assertEquals("Category One does not exist\n", this.out.toString())
+    }
+
+    /**
+     * Initializes a category with two transactions
+     * @return A triple of the category and its transactions
+     */
+    private fun initializeDisplayableCategories(): Triple<Category, Transaction, Transaction> {
+        val category = Category.create(this.dbHandler!!, "One")
+
+        val wallet = Wallet.create(this.dbHandler!!, "Wallet", Value("0", Currency.EUR))
+        val partner = TransactionPartner.create(this.dbHandler!!, "Partner")
+        val transactionOne = Transaction.create(
+                this.dbHandler!!, wallet, category, partner,
+                "Desc1", Value("1", Currency.EUR), IsoDate("2000-01-01")
+        )
+        val transactionTwo = Transaction.create(
+                this.dbHandler!!, wallet, category, partner,
+                "Desc2", Value("2", Currency.USD), IsoDate("2017-01-01")
+        )
+        return Triple(category, transactionOne, transactionTwo)
     }
 }

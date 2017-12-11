@@ -38,4 +38,9 @@ object Config {
      * If set to true, certain CLI actions will require a manual (y/n) prompt to continue-
      */
     var cliConfirm = true
+
+    /**
+     * The default response to CLI (y/n) prompts in case the cliConfirm variable is set to false
+     */
+    var autoResponse = "y"
 }

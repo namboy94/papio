@@ -41,9 +41,9 @@ class TransactionPartnerExecutor : FullExecutor {
         val original = TransactionPartner.get(dbHandler, results.getString("name"))
         val partner = TransactionPartner.create(dbHandler, results.getString("name"))
         if (original == null) {
-            println("Category created:\n$partner")
+            println("Transaction Partner created:\n$partner")
         } else {
-            println("Category already exists:\n$partner")
+            println("Transaction Partner already exists:\n$partner")
         }
     }
 
@@ -70,7 +70,7 @@ class TransactionPartnerExecutor : FullExecutor {
                 println("Deleting transaction partner cancelled")
             }
         } else {
-            println("Transaction Partner not found.")
+            println("Transaction Partner ${result.getString("identifier")} does not exist")
         }
     }
 
@@ -112,7 +112,7 @@ class TransactionPartnerExecutor : FullExecutor {
                 println(transactions[i])
             }
         } else {
-            println("Transaction Partner not found")
+            println("Transaction Partner ${result.getString("identifier")} does not exist")
         }
     }
 }
