@@ -38,6 +38,9 @@ fun main(args: Array<String>) {
         execute(args)
     } catch (e: HelpException) {
         e.printHelpAndExit()
+    } catch (e: AbortException) {
+        println(e.message)
+        System.exit(1)
     }
 }
 

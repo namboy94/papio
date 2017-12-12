@@ -26,6 +26,7 @@ import java.math.BigDecimal
  * @param value: The value of the Value as a BigDecimal, which allows arbitrary precision without rounding errors
  * @param currency: The currency of the Value
  */
+@Suppress("EqualsOrHashCode")
 data class Value(val value: BigDecimal, val currency: Currency) {
 
     /**
@@ -71,6 +72,20 @@ data class Value(val value: BigDecimal, val currency: Currency) {
      */
     operator fun not(): Value {
         return this * -1
+    }
+
+    /**
+     * Overrides the data class equals method to use the compareTo instead of equals method of the BigDecimal
+     * class. This ensures that 0.00 and 0.0 are treated the same.
+     * @param other: The object to compare to
+     * @return true if the objects are equal, false otherwise
+     */
+    override fun equals(other: Any?): Boolean {
+        return if (other is Value) {
+            this.currency == other.currency && this.value.compareTo(other.value) == 0
+        } else {
+            false
+        }
     }
 
     /**

@@ -46,8 +46,7 @@ interface BaseExecutor {
             parser.parseArgs(args)
         } catch (e: ArgumentParserException) {
             parser.handleError(e)
-            System.exit(1)
-            null!! // Can't be reached
+            throw AbortException("")
         }
     }
 

@@ -17,72 +17,38 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.Config
 import net.namibsun.papio.cli.execute
-import net.namibsun.papio.cli.prepareDatabase
 import net.namibsun.papio.lib.date.IsoDate
-import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.Value
-import org.junit.After
-import org.junit.Before
 import org.junit.Test
-import java.io.File
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import java.io.PrintStream
 import java.io.ByteArrayOutputStream
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 /**
  * Class that tests the category root action
  */
-class CategoryTester {
-
-    /**
-     * A database handler connection
-     */
-    private var dbHandler: DbHandler? = null
-
-    /**
-     * Stream that replaces the stdout stream for printing
-     */
-    private var out = ByteArrayOutputStream()
-
-    /**
-     * Sets up the config file paths for testing and initializes the database handler
-     */
-    @Before
-    fun setUp() {
-        Config.papioPath = File("papio-testdir")
-        Config.dbPath = File("papio-testdir/data.db")
-        Config.cliConfirm = false
-        this.dbHandler = prepareDatabase()
-        System.setOut(PrintStream(this.out))
-    }
-
-    /**
-     * Deletes the temporary config files
-     */
-    @After
-    fun deleteConfig() {
-        this.dbHandler!!.close()
-        Config.papioPath.deleteRecursively()
-    }
+class CategoryTester : TestHelper() {
 
     /**
      * Tests creating a category
      */
     @Test
     fun testCreatingCategory() {
-        assertNull(Category.get(this.dbHandler!!, "Test"))
+        assertNull(Category.get(this.dbHandler, "Test"))
         execute(arrayOf("category", "create", "Test"))
 
-        val category = Category.get(this.dbHandler!!, "Test")
+        val category = Category.get(this.dbHandler, "Test")
         assertNotNull(category)
 
         assertEquals("Category created:\n$category\n", this.out.toString())
@@ -94,21 +60,24 @@ class CategoryTester {
     @Test
     fun testCreatingCategoryAgain() {
 
-        assertNull(Category.get(this.dbHandler!!, "Test"))
+        assertNull(Category.get(this.dbHandler, "Test"))
 
         execute(arrayOf("category", "create", "Test"))
-        val categoryOne = Category.get(this.dbHandler!!, "Test")
+        val categoryOne = Category.get(this.dbHandler, "Test")
         assertNotNull(categoryOne)
 
         this.out = ByteArrayOutputStream()
         System.setOut(PrintStream(this.out))
 
-        execute(arrayOf("category", "create", "Test"))
-        val categoryTwo = Category.get(this.dbHandler!!, "Test")
-        assertNotNull(categoryTwo)
-
-        assertEquals(categoryOne, categoryTwo)
-        assertEquals("Category already exists:\n$categoryOne\n", this.out.toString())
+        try {
+            execute(arrayOf("category", "create", "Test"))
+            fail()
+        } catch (e: AbortException) {
+            val categoryTwo = Category.get(this.dbHandler, "Test")
+            assertEquals(categoryOne, categoryTwo)
+            assertNotNull(categoryTwo)
+            assertEquals("Category already exists:\n$categoryOne", e.message)
+        }
     }
 
     /**
@@ -116,9 +85,9 @@ class CategoryTester {
      */
     @Test
     fun testListingCategories() {
-        val one = Category.create(this.dbHandler!!, "One")
-        val two = Category.create(this.dbHandler!!, "Two")
-        val three = Category.create(this.dbHandler!!, "Three")
+        val one = Category.create(this.dbHandler, "One")
+        val two = Category.create(this.dbHandler, "Two")
+        val three = Category.create(this.dbHandler, "Three")
         execute(arrayOf("category", "list"))
         assertEquals("$one\n$two\n$three\n", this.out.toString())
     }
@@ -176,8 +145,12 @@ class CategoryTester {
      */
     @Test
     fun testDisplayingCategoryIfCategoryDoesNotExist() {
-        execute(arrayOf("category", "display", "One"))
-        assertEquals("Category One does not exist\n", this.out.toString())
+        try {
+            execute(arrayOf("category", "display", "One"))
+            fail()
+        } catch (e: AbortException) {
+            assertEquals("Category One does not exist", e.message)
+        }
     }
 
     /**
@@ -185,19 +158,19 @@ class CategoryTester {
      */
     @Test
     fun testDeletingCategory() {
-        val one = Category.create(this.dbHandler!!, "One")
-        val two = Category.create(this.dbHandler!!, "Two")
+        val one = Category.create(this.dbHandler, "One")
+        val two = Category.create(this.dbHandler, "Two")
 
-        assertNotNull(Category.get(this.dbHandler!!, one.id))
-        assertNotNull(Category.get(this.dbHandler!!, two.id))
+        assertNotNull(Category.get(this.dbHandler, one.id))
+        assertNotNull(Category.get(this.dbHandler, two.id))
 
         execute(arrayOf("category", "delete", "One"))
-        assertNull(Category.get(this.dbHandler!!, one.id))
-        assertNotNull(Category.get(this.dbHandler!!, two.id))
+        assertNull(Category.get(this.dbHandler, one.id))
+        assertNotNull(Category.get(this.dbHandler, two.id))
 
         execute(arrayOf("category", "delete", "2"))
-        assertNull(Category.get(this.dbHandler!!, one.id))
-        assertNull(Category.get(this.dbHandler!!, two.id))
+        assertNull(Category.get(this.dbHandler, one.id))
+        assertNull(Category.get(this.dbHandler, two.id))
     }
 
     /**
@@ -205,12 +178,12 @@ class CategoryTester {
      */
     @Test
     fun testCancellingDeletingCategory() {
-        val category = Category.create(this.dbHandler!!, "One")
+        val category = Category.create(this.dbHandler, "One")
         Config.autoResponse = "n"
 
-        assertNotNull(Category.get(this.dbHandler!!, category.id))
+        assertNotNull(Category.get(this.dbHandler, category.id))
         execute(arrayOf("category", "delete", "One"))
-        assertNotNull(Category.get(this.dbHandler!!, category.id))
+        assertNotNull(Category.get(this.dbHandler, category.id))
 
         Config.autoResponse = "y"
     }
@@ -220,8 +193,12 @@ class CategoryTester {
      */
     @Test
     fun testDeletingCategoryThatDoesNotExist() {
-        execute(arrayOf("category", "delete", "One"))
-        assertEquals("Category One does not exist\n", this.out.toString())
+        try {
+            execute(arrayOf("category", "delete", "One"))
+            fail()
+        } catch (e: AbortException) {
+            assertEquals("Category One does not exist", e.message)
+        }
     }
 
     /**
@@ -229,16 +206,16 @@ class CategoryTester {
      * @return A triple of the category and its transactions
      */
     private fun initializeDisplayableCategories(): Triple<Category, Transaction, Transaction> {
-        val category = Category.create(this.dbHandler!!, "One")
+        val category = Category.create(this.dbHandler, "One")
 
-        val wallet = Wallet.create(this.dbHandler!!, "Wallet", Value("0", Currency.EUR))
-        val partner = TransactionPartner.create(this.dbHandler!!, "Partner")
+        val wallet = Wallet.create(this.dbHandler, "Wallet", Value("0", Currency.EUR))
+        val partner = TransactionPartner.create(this.dbHandler, "Partner")
         val transactionOne = Transaction.create(
-                this.dbHandler!!, wallet, category, partner,
+                this.dbHandler, wallet, category, partner,
                 "Desc1", Value("1", Currency.EUR), IsoDate("2000-01-01")
         )
         val transactionTwo = Transaction.create(
-                this.dbHandler!!, wallet, category, partner,
+                this.dbHandler, wallet, category, partner,
                 "Desc2", Value("2", Currency.USD), IsoDate("2017-01-01")
         )
         return Triple(category, transactionOne, transactionTwo)

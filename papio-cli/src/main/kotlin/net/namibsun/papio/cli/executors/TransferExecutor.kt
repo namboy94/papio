@@ -1,5 +1,6 @@
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.ActionMode
 import net.namibsun.papio.cli.BaseExecutor
 import net.namibsun.papio.cli.HelpException
@@ -34,7 +35,7 @@ class TransferExecutor : BaseExecutor {
         parser.addArgument("source").help("The sender name|ID of the transferred amount")
         parser.addArgument("dest").help("The recipient name|ID of the transferred amount")
         parser.addArgument("amount").help("The amount to transfer")
-        parser.addArgument("--date").setDefault("today")
+        parser.addArgument("-d", "--date").setDefault("today")
                 .help("Specifies the date on which the transfer takes place.")
         val result = this.handleParserError(parser, args)
 
@@ -43,12 +44,10 @@ class TransferExecutor : BaseExecutor {
 
         when {
             sender == null -> {
-                println("Wallet ${result.getString("source")} does not exist")
-                System.exit(1)
+                throw AbortException("Wallet ${result.getString("source")} does not exist")
             }
             receiver == null -> {
-                println("Wallet ${result.getString("dest")} does not exist")
-                System.exit(1)
+                throw AbortException("Wallet ${result.getString("dest")} does not exist")
             }
             else -> {
                 val category = Category.create(dbHandler, "Transfer")
@@ -58,9 +57,7 @@ class TransferExecutor : BaseExecutor {
                 val amount = try {
                     Value(result.getString("amount"), sender.getCurrency())
                 } catch (e: NumberFormatException) {
-                    println("${result.getString("amount")} is not a valid monetary amount")
-                    System.exit(1)
-                    null!! // Won't be reached
+                    throw AbortException("${result.getString("amount")} is not a valid monetary value")
                 }
                 val converted = amount.convert(receiver.getCurrency())
                 val date = IsoDate(result.getString("date"))

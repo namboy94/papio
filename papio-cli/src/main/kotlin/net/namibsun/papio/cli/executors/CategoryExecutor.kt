@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
@@ -42,7 +43,7 @@ class CategoryExecutor : FullExecutor {
         if (original == null) {
             println("Category created:\n$category")
         } else {
-            println("Category already exists:\n$category")
+            throw AbortException("Category already exists:\n$category")
         }
     }
 
@@ -66,7 +67,7 @@ class CategoryExecutor : FullExecutor {
                 println("Deleting category cancelled")
             }
         } else {
-            println("Category ${result.getString("identifier")} does not exist")
+            throw AbortException("Category ${result.getString("identifier")} does not exist")
         }
     }
 
@@ -107,7 +108,7 @@ class CategoryExecutor : FullExecutor {
                 println(transactions[i])
             }
         } else {
-            println("Category ${result.getString("identifier")} does not exist")
+            throw AbortException("Category ${result.getString("identifier")} does not exist")
         }
     }
 }

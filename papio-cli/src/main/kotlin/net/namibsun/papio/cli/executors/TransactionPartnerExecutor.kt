@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.TransactionPartner
@@ -43,7 +44,7 @@ class TransactionPartnerExecutor : FullExecutor {
         if (original == null) {
             println("Transaction Partner created:\n$partner")
         } else {
-            println("Transaction Partner already exists:\n$partner")
+            throw AbortException("Transaction Partner already exists:\n$partner")
         }
     }
 
@@ -70,7 +71,7 @@ class TransactionPartnerExecutor : FullExecutor {
                 println("Deleting transaction partner cancelled")
             }
         } else {
-            println("Transaction Partner ${result.getString("identifier")} does not exist")
+            throw AbortException("Transaction Partner ${result.getString("identifier")} does not exist")
         }
     }
 
@@ -112,7 +113,7 @@ class TransactionPartnerExecutor : FullExecutor {
                 println(transactions[i])
             }
         } else {
-            println("Transaction Partner ${result.getString("identifier")} does not exist")
+            throw AbortException("Transaction Partner ${result.getString("identifier")} does not exist")
         }
     }
 }

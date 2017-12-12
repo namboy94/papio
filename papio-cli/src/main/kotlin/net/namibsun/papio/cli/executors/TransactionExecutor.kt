@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.date.IsoDate
 import net.namibsun.papio.lib.db.DbHandler
@@ -101,9 +102,7 @@ open class TransactionExecutor : FullExecutor {
                 Value(results.getString("create_wallet_initial_value"),
                         Currency.valueOf(results.getString("create_wallet_currency")))
             } catch (e: NumberFormatException) {
-                println("${results.getString("amount")} is not a valid monetary amount")
-                System.exit(1)
-                null!! // Won't be reached
+                throw AbortException("${results.getString("amount")} is not a valid monetary amount")
             }
 
             if (results.getBoolean("create_wallet")) {
@@ -113,8 +112,7 @@ open class TransactionExecutor : FullExecutor {
                         walletValue
                 )
             } else {
-                println("Wallet ${results.getString("wallet")} does not exist")
-                System.exit(1)
+                throw AbortException("Wallet ${results.getString("wallet")} does not exist")
             }
         }
 
@@ -122,25 +120,21 @@ open class TransactionExecutor : FullExecutor {
             if (results.getBoolean("create_category")) {
                 category = Category.create(dbHandler, results.getString("category"))
             } else {
-                println("Category ${results.getString("category")} does not exist")
-                System.exit(1)
+                throw AbortException("Category ${results.getString("category")} does not exist")
             }
         }
         if (partner == null) {
             if (results.getBoolean("create_transactionpartner")) {
                 partner = TransactionPartner.create(dbHandler, results.getString("transactionpartner"))
             } else {
-                println("Transaction Partner ${results.getString("transactionpartner")} does not exist")
-                System.exit(1)
+                throw AbortException("Transaction Partner ${results.getString("transactionpartner")} does not exist")
             }
         }
 
         var value = try {
-            Value(results.getString("amount"), wallet!!.getCurrency())
+            Value(results.getString("amount"), wallet.getCurrency())
         } catch (e: NumberFormatException) {
-            println("${results.getString("amount")} is not a valid monetary amount")
-            System.exit(1)
-            null!! // Won't be reached
+            throw AbortException("${results.getString("amount")} is not a valid monetary amount")
         }
         if (expense) {
             value = !value
@@ -150,8 +144,8 @@ open class TransactionExecutor : FullExecutor {
             val transaction = Transaction.create(
                     dbHandler,
                     wallet,
-                    category!!,
-                    partner!!,
+                    category,
+                    partner,
                     results.getString("description"),
                     value,
                     IsoDate(results.getString("date"))
@@ -159,7 +153,7 @@ open class TransactionExecutor : FullExecutor {
 
             println("Transaction Created:\n$transaction")
         } catch (e: IllegalArgumentException) {
-            println("Date value '${results.getString("date")} is invalid")
+            throw AbortException("Date value '${results.getString("date")} is invalid")
         }
     }
 
@@ -180,10 +174,10 @@ open class TransactionExecutor : FullExecutor {
                 transaction.delete(dbHandler)
                 println("Transaction has been deleted")
             } else {
-                println("Transaction wallet cancelled")
+                println("Transaction deletion cancelled")
             }
         } else {
-            println("Transaction not found.")
+            throw AbortException("Transaction ${result.getInt("identifier")} does not exist")
         }
     }
 
@@ -212,7 +206,7 @@ open class TransactionExecutor : FullExecutor {
         if (transaction != null) {
             println(transaction)
         } else {
-            println("Transaction not found")
+            throw AbortException("Transaction ${result.getInt("id")} does not exist")
         }
     }
 }

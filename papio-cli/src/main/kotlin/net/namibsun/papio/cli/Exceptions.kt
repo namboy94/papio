@@ -35,3 +35,8 @@ class HelpException : Exception() {
         System.exit(1)
     }
 }
+
+/**
+ * Exception that gets thrown whenever the program should abort
+ */
+class AbortException(message: String) : Exception(message)

@@ -1,10 +1,9 @@
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.Config
 import net.namibsun.papio.cli.execute
-import net.namibsun.papio.cli.prepareDatabase
 import net.namibsun.papio.lib.date.IsoDate
-import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
@@ -12,48 +11,25 @@ import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
 import net.namibsun.papio.lib.money.Value
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.PrintStream
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.fail
 
 /**
  * Class that tests the TransactionPartnerExecutor class
  */
-class TransactionPartnerTester {
-
-    /**
-     * A database handler connection
-     */
-    private var dbHandler: DbHandler? = null
-
-    /**
-     * Stream that replaces the stdout stream for printing
-     */
-    private var out = ByteArrayOutputStream()
-
-    /**
-     * Sets up the config file paths for testing and initializes the database handler
-     */
-    @Before
-    fun setUp() {
-        Config.papioPath = File("papio-testdir")
-        Config.dbPath = File("papio-testdir/data.db")
-        Config.cliConfirm = false
-        this.dbHandler = prepareDatabase()
-        System.setOut(PrintStream(this.out))
-    }
+class TransactionPartnerTester : TestHelper() {
 
     /**
      * Deletes the temporary config files
      */
     @After
     fun deleteConfig() {
-        this.dbHandler!!.close()
+        this.dbHandler.close()
         Config.papioPath.deleteRecursively()
     }
 
@@ -62,10 +38,10 @@ class TransactionPartnerTester {
      */
     @Test
     fun testCreatingTransactionPartner() {
-        assertNull(TransactionPartner.get(this.dbHandler!!, "Test"))
+        assertNull(TransactionPartner.get(this.dbHandler, "Test"))
         execute(arrayOf("transactionpartner", "create", "Test"))
 
-        val partner = TransactionPartner.get(this.dbHandler!!, "Test")
+        val partner = TransactionPartner.get(this.dbHandler, "Test")
         assertNotNull(partner)
 
         assertEquals("Transaction Partner created:\n$partner\n", this.out.toString())
@@ -77,21 +53,24 @@ class TransactionPartnerTester {
     @Test
     fun testCreatingTransactionPartnerAgain() {
 
-        assertNull(TransactionPartner.get(this.dbHandler!!, "Test"))
+        assertNull(TransactionPartner.get(this.dbHandler, "Test"))
 
         execute(arrayOf("transactionpartner", "create", "Test"))
-        val partnerOne = TransactionPartner.get(this.dbHandler!!, "Test")
+        val partnerOne = TransactionPartner.get(this.dbHandler, "Test")
         assertNotNull(partnerOne)
 
         this.out = ByteArrayOutputStream()
         System.setOut(PrintStream(this.out))
 
-        execute(arrayOf("transactionpartner", "create", "Test"))
-        val partnerTwo = TransactionPartner.get(this.dbHandler!!, "Test")
-        assertNotNull(partnerTwo)
-
-        assertEquals(partnerOne, partnerTwo)
-        assertEquals("Transaction Partner already exists:\n$partnerOne\n", this.out.toString())
+        try {
+            execute(arrayOf("transactionpartner", "create", "Test"))
+            fail()
+        } catch (e: AbortException) {
+            val partnerTwo = TransactionPartner.get(this.dbHandler, "Test")
+            assertNotNull(partnerTwo)
+            assertEquals(partnerOne, partnerTwo)
+            assertEquals("Transaction Partner already exists:\n$partnerOne", e.message)
+        }
     }
 
     /**
@@ -99,9 +78,9 @@ class TransactionPartnerTester {
      */
     @Test
     fun testListingCategories() {
-        val one = TransactionPartner.create(this.dbHandler!!, "One")
-        val two = TransactionPartner.create(this.dbHandler!!, "Two")
-        val three = TransactionPartner.create(this.dbHandler!!, "Three")
+        val one = TransactionPartner.create(this.dbHandler, "One")
+        val two = TransactionPartner.create(this.dbHandler, "Two")
+        val three = TransactionPartner.create(this.dbHandler, "Three")
         execute(arrayOf("transactionpartner", "list"))
         assertEquals("$one\n$two\n$three\n", this.out.toString())
     }
@@ -159,8 +138,12 @@ class TransactionPartnerTester {
      */
     @Test
     fun testDisplayingTransactionPartnerIfTransactionPartnerDoesNotExist() {
-        execute(arrayOf("transactionpartner", "display", "One"))
-        assertEquals("Transaction Partner One does not exist\n", this.out.toString())
+        try {
+            execute(arrayOf("transactionpartner", "display", "One"))
+            fail()
+        } catch (e: AbortException) {
+            assertEquals("Transaction Partner One does not exist", e.message)
+        }
     }
 
     /**
@@ -168,19 +151,19 @@ class TransactionPartnerTester {
      */
     @Test
     fun testDeletingTransactionPartner() {
-        val one = TransactionPartner.create(this.dbHandler!!, "One")
-        val two = TransactionPartner.create(this.dbHandler!!, "Two")
+        val one = TransactionPartner.create(this.dbHandler, "One")
+        val two = TransactionPartner.create(this.dbHandler, "Two")
 
-        assertNotNull(TransactionPartner.get(this.dbHandler!!, one.id))
-        assertNotNull(TransactionPartner.get(this.dbHandler!!, two.id))
+        assertNotNull(TransactionPartner.get(this.dbHandler, one.id))
+        assertNotNull(TransactionPartner.get(this.dbHandler, two.id))
 
         execute(arrayOf("transactionpartner", "delete", "One"))
-        assertNull(TransactionPartner.get(this.dbHandler!!, one.id))
-        assertNotNull(TransactionPartner.get(this.dbHandler!!, two.id))
+        assertNull(TransactionPartner.get(this.dbHandler, one.id))
+        assertNotNull(TransactionPartner.get(this.dbHandler, two.id))
 
         execute(arrayOf("transactionpartner", "delete", "2"))
-        assertNull(TransactionPartner.get(this.dbHandler!!, one.id))
-        assertNull(TransactionPartner.get(this.dbHandler!!, two.id))
+        assertNull(TransactionPartner.get(this.dbHandler, one.id))
+        assertNull(TransactionPartner.get(this.dbHandler, two.id))
     }
 
     /**
@@ -188,12 +171,12 @@ class TransactionPartnerTester {
      */
     @Test
     fun testCancellingDeletingTransactionPartner() {
-        val partner = TransactionPartner.create(this.dbHandler!!, "One")
+        val partner = TransactionPartner.create(this.dbHandler, "One")
         Config.autoResponse = "n"
 
-        assertNotNull(TransactionPartner.get(this.dbHandler!!, partner.id))
+        assertNotNull(TransactionPartner.get(this.dbHandler, partner.id))
         execute(arrayOf("transactionpartner", "delete", "One"))
-        assertNotNull(TransactionPartner.get(this.dbHandler!!, partner.id))
+        assertNotNull(TransactionPartner.get(this.dbHandler, partner.id))
 
         Config.autoResponse = "y"
     }
@@ -203,8 +186,12 @@ class TransactionPartnerTester {
      */
     @Test
     fun testDeletingTransactionPartnerThatDoesNotExist() {
-        execute(arrayOf("transactionpartner", "delete", "One"))
-        assertEquals("Transaction Partner One does not exist\n", this.out.toString())
+        try {
+            execute(arrayOf("transactionpartner", "delete", "One"))
+            fail()
+        } catch (e: AbortException) {
+            assertEquals("Transaction Partner One does not exist", e.message)
+        }
     }
 
     /**
@@ -212,19 +199,18 @@ class TransactionPartnerTester {
      * @return A triple of the partner and its transactions
      */
     private fun initializeDisplayableTransactionPartner(): Triple<TransactionPartner, Transaction, Transaction> {
-        val partner = TransactionPartner.create(this.dbHandler!!, "One")
+        val partner = TransactionPartner.create(this.dbHandler, "One")
 
-        val wallet = Wallet.create(this.dbHandler!!, "Wallet", Value("0", Currency.EUR))
-        val category = Category.create(this.dbHandler!!, "Category")
+        val wallet = Wallet.create(this.dbHandler, "Wallet", Value("0", Currency.EUR))
+        val category = Category.create(this.dbHandler, "Category")
         val transactionOne = Transaction.create(
-                this.dbHandler!!, wallet, category, partner,
+                this.dbHandler, wallet, category, partner,
                 "Desc1", Value("1", Currency.EUR), IsoDate("2000-01-01")
         )
         val transactionTwo = Transaction.create(
-                this.dbHandler!!, wallet, category, partner,
+                this.dbHandler, wallet, category, partner,
                 "Desc2", Value("2", Currency.USD), IsoDate("2017-01-01")
         )
         return Triple(partner, transactionOne, transactionTwo)
     }
-    
 }

@@ -78,15 +78,12 @@ class ValueTest {
      */
     @Test
     fun testEquality() {
-        val valueOne = Value("100", Currency.EUR)
-        val valueTwo = Value("100", Currency.EUR)
-        val valueThree = Value("200", Currency.EUR)
-        val valueFour = Value("100", Currency.USD)
-
-        assertEquals(valueOne, valueOne)
-        assertEquals(valueOne, valueTwo)
-        assertNotEquals(valueOne, valueThree)
-        assertNotEquals(valueOne, valueFour)
+        val value = Value("100", Currency.EUR)
+        assertEquals(value, value)
+        assertEquals(value, Value("100", Currency.EUR))
+        assertEquals(value, Value("100.00", Currency.EUR))
+        assertNotEquals(value, Value("200", Currency.EUR))
+        assertNotEquals(value, Value("100", Currency.USD))
     }
 
     /**
