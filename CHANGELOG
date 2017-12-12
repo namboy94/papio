@@ -1,3 +1,9 @@
+V 1.0.0:
+  - Completed working CLI
+  - Created unit tests for CLI
+  - Redid a lot of the back-end
+  - Any pre-1.0.0 database files will no longer work
+  - Integrated support for crypto currencies
 V 0.2.0:
   - Created papio CLI tool
   - Changed timestamp of transactions to ISO-8061 date strings
