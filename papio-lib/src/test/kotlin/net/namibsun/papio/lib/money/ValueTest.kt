@@ -113,7 +113,7 @@ class ValueTest {
 
         // Test method options
         assertEquals("EUR 100.00", Value("100", Currency.EUR).format(false, ".", false, null))
-        assertEquals("$ 0.00", Value("0", Currency.USD).format(true, ".", false, null))
+        assertEquals("US$ 0.00", Value("0", Currency.USD).format(true, ".", false, null))
         assertEquals("ZAR -100,00", Value("-100", Currency.ZAR).format(false, ",", false, null))
         assertEquals("1.23 NAD", Value("1.2345", Currency.NAD).format(false, ".", true, null))
         assertEquals("EUR 1.23450", Value("1.234501234", Currency.EUR).format(false, ".", false, 5))

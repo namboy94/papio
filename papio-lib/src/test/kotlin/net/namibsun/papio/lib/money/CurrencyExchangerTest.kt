@@ -34,6 +34,10 @@ class CurrencyExchangerTest {
      */
     @Test
     fun testInitialization() {
+        assertTrue(CurrencyConverter.isValid())
+        CurrencyConverter.update()
+        assertTrue(CurrencyConverter.isValid())
+
         for (currency in Currency.values()) {
             assertTrue(currency in CurrencyConverter.exchangeRates)
         }

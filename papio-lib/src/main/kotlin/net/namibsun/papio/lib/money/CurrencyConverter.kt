@@ -45,10 +45,28 @@ object CurrencyConverter {
     private var updated: Long = 0
 
     /**
+     * Flag that is set to true while updating
+     */
+    private var updating: Boolean = true
+
+    /**
+     * Flag that is set to true once an update has completed
+     */
+    private var valid: Boolean = false
+
+    /**
      * Initializes the singleton by updating the exchange rate data
      */
     init {
         this.update()
+    }
+
+    /**
+     * Checks if the values are currently valid
+     * @return true if the values are valid. Else, return false.
+     */
+    fun isValid(): Boolean {
+        return this.valid && !this.updating
     }
 
     /**
@@ -57,6 +75,8 @@ object CurrencyConverter {
      * @param force: Forces an update if set to true
      */
     fun update(force: Boolean = false) {
+        this.updating = true
+        this.valid = true
         if (force or ((System.currentTimeMillis() - this.updated) > 60000)) {
             this.updated = System.currentTimeMillis()
             this.updateFiatCurrencyExchangeRates()
@@ -64,6 +84,7 @@ object CurrencyConverter {
         } else {
             this.logger.fine("Skipping exchange rate update")
         }
+        this.updating = false
     }
 
     /**
@@ -90,10 +111,12 @@ object CurrencyConverter {
             } catch (e: IndexOutOfBoundsException) {
                 if (currency != Currency.EUR) {
                     this.logger.warning("Currency $currency not found in XML data.")
+                    this.valid = false
                     this.exchangeRates[currency] = BigDecimal("1.0") // If currency not found, set to 1.0
                 }
             } catch (e: NumberFormatException) {
                 this.logger.warning("Invalid exchange rate value for $currency in XML data.")
+                this.valid = false
                 this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
             }
         }
@@ -105,18 +128,26 @@ object CurrencyConverter {
      */
     private fun updateCryptoCurrencyExchangeRates() {
 
+        val one = BigDecimal("1.0")
+
+        val url = "https://api.coinmarketcap.com/v1/ticker/?convert=EUR"
+        val melonUrl = "https://api.coinmarketcap.com/v1/ticker/melon/?convert=EUR" // Add Melon through own url
+        val exchangeRateData = this.getUrlData(url) + this.getUrlData(melonUrl)
         for (currency in Currency.getAllCryptoCurrencies()) {
-            val url = "https://api.cryptonator.com/api/ticker/EUR-" + currency.name
-            val exchangeRateData = this.getUrlData(url)
+
             try {
-                val price = exchangeRateData.split("\"price\":\"")[1].split("\"")[0]
+                var price = exchangeRateData.split("\"symbol\": \"${currency.name}\"")[1]
+                price = price.split("\"price_eur\": \"")[1].split("\"")[0]
                 try {
-                    this.exchangeRates[currency] = BigDecimal(price)
+                    this.exchangeRates[currency] = one.divide(BigDecimal(price), 128, RoundingMode.HALF_UP)
                 } catch (e: NumberFormatException) {
                     this.logger.warning("Invalid exchange rate value for $currency in JSON data.")
+                    this.valid = false
                     this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
                 }
             } catch (e: IndexOutOfBoundsException) {
+                this.logger.warning("Currency $currency missing.")
+                this.valid = false
                 this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
             }
         }
@@ -151,6 +182,10 @@ object CurrencyConverter {
      * @return The converted value as a BigDecimal
      */
     fun convertValue(value: BigDecimal, source: Currency, destination: Currency): BigDecimal {
+
+        if (!this.isValid()) {
+            this.logger.warning("Converting while values are invalid!")
+        }
 
         if (source == destination) {
             return value
