@@ -18,36 +18,95 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.db.models
 
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.db.TransactionHolderModel
+import net.namibsun.papio.lib.db.Table
+import net.namibsun.papio.lib.db.NamedDbModel
+import java.sql.ResultSet
 
+@Suppress("EqualsOrHashCode")
 /**
  * Models a Category in the database
  * @param id: The ID of the category in the database
  * @param name: The name of the category
  */
-data class Category(val id: Int, val name: String) {
+class Category(id: Int, name: String) : TransactionHolderModel(Table.CATEGORIES, id, name) {
 
     /**
-     * Deletes the category
-     * @param dbHandler: The Database Handler to use
+     * Checks for equality with another object
+     * @param other: The other object
+     * @return true if the objects are equal, false otherwise
      */
-    fun delete(dbHandler: DbHandler) {
-        dbHandler.deleteCategory(this.id)
+    override fun equals(other: Any?): Boolean {
+        return if (other is Category) {
+            other.id == this.id && other.name == this.name
+        } else {
+            false
+        }
     }
 
     /**
-     * Retrieves all transactions with this category
-     * @param dbHandler: The Database Handler to use
-     * @return The list of transactions
+     * Static Methods
      */
-    fun getAllTransactions(dbHandler: DbHandler): List<Transaction> {
-        return dbHandler.getTransactionsByCategory(this.id)
-    }
+    companion object {
 
-    /**
-     * Generates a String that represents the Category object
-     * @return The String representation of the category
-     */
-    override fun toString(): String {
-        return "Category; ID: ${this.id}; Name: ${this.name}"
+        /**
+         * Generates a Category object from a ResultSet
+         * @param resultSet: The ResultSet to use to generate the Category object
+         * @return The generated Category object
+         */
+        @JvmStatic
+        fun fromResultSet(resultSet: ResultSet): Category {
+            return Category(
+                    resultSet.getInt("id"),
+                    resultSet.getString("name")
+            )
+        }
+
+        /**
+         * Retrieves a Category from the database by its ID
+         * @param dbHandler: The database handler to use
+         * @param id: The ID of the category
+         * @return The generated Category object or null if no applicable category was found
+         */
+        @JvmStatic
+        fun get(dbHandler: DbHandler, id: Int): Category? {
+            return dbHandler.getModel(Table.CATEGORIES, id) as Category?
+        }
+
+        /**
+         * Retrieves a Category from the database by its name or ID
+         * @param dbHandler: The database handler to use
+         * @param nameOrId: The name or ID of the category
+         * @return The generated Category object or null if no applicable category was found
+         */
+        @JvmStatic
+        fun get(dbHandler: DbHandler, nameOrId: String): Category? {
+            return dbHandler.getModel(Table.CATEGORIES, nameOrId) as Category?
+        }
+
+        /**
+         * Retrieves a list of all Category objects in the database
+         * @param dbHandler: The database handler to use
+         * @return The list of Category objects
+         */
+        fun getAll(dbHandler: DbHandler): List<Category> {
+            return dbHandler.getModels(Table.CATEGORIES).map { it as Category }
+        }
+
+        /**
+         * Creates a new Category in the database and returns the corresponding Category object.
+         * If a category with the same name already exists, no new category will be created
+         * and the existing one will be returned instead
+         * @param dbHandler: The database handler to use for database calls
+         * @param name: The name of the category
+         * @return The Category object
+         */
+        fun create(dbHandler: DbHandler, name: String): Category {
+            val stmt = dbHandler.connection.prepareStatement(
+                    "INSERT INTO ${Table.CATEGORIES.tableName} (name) VALUES (?)"
+            )
+            stmt.setString(1, name)
+            return NamedDbModel.createHelper(dbHandler, Table.CATEGORIES, name, stmt) as Category
+        }
     }
 }

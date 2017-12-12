@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.db
 
+import net.namibsun.papio.lib.db.models.Category
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import org.junit.After
 import org.junit.Before
@@ -24,9 +25,10 @@ import org.junit.Test
 import java.io.File
 import java.sql.DriverManager
 import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertNotNull
+import kotlin.test.assertNotEquals
+import kotlin.test.assertFalse
 
 /**
  * Class that tests the TransactionPartner class and related DbHandler functions
@@ -61,10 +63,10 @@ class TransactionPartnerTest {
      */
     @Test
     fun testCreatingAndGettingTransactionPartner() {
-        val partner = this.handler!!.createTransactionPartner("Partner")
+        val partner = TransactionPartner.create(this.handler!!, "Partner")
         assertEquals(partner, TransactionPartner(1, "Partner"))
-        assertEquals(partner, this.handler!!.getTransactionPartner("Partner"))
-        assertEquals(partner, this.handler!!.getTransactionPartner(1))
+        assertEquals(partner, TransactionPartner.get(this.handler!!, "Partner"))
+        assertEquals(partner, TransactionPartner.get(this.handler!!, 1))
     }
     /**
      * Tests creating a category of the same name as an existing category.
@@ -72,8 +74,8 @@ class TransactionPartnerTest {
      */
     @Test
     fun testCreatingDuplicateTransactionPartner() {
-        val original = this.handler!!.createTransactionPartner("Partner")
-        val new = this.handler!!.createTransactionPartner("Partner")
+        val original = TransactionPartner.create(this.handler!!, "Partner")
+        val new = TransactionPartner.create(this.handler!!, "Partner")
         assertEquals(original, new)
         assertEquals(original, TransactionPartner(1, "Partner"))
     }
@@ -83,10 +85,10 @@ class TransactionPartnerTest {
      */
     @Test
     fun testDeletingTransactionPartner() {
-        val original = this.handler!!.createTransactionPartner("Partner")
-        assertNotNull(this.handler!!.getTransactionPartner("Partner"))
+        val original = TransactionPartner.create(this.handler!!, "Partner")
+        assertNotNull(TransactionPartner.get(this.handler!!, "Partner"))
         original.delete(this.handler!!)
-        assertNull(this.handler!!.getTransactionPartner("Partner"))
+        assertNull(TransactionPartner.get(this.handler!!, "Partner"))
     }
 
     /**
@@ -96,12 +98,12 @@ class TransactionPartnerTest {
     fun testGettingTransactionPartners() {
 
         val originals = listOf(
-                this.handler!!.createTransactionPartner("A"),
-                this.handler!!.createTransactionPartner("B"),
-                this.handler!!.createTransactionPartner("C")
+                TransactionPartner.create(this.handler!!, "A"),
+                TransactionPartner.create(this.handler!!, "B"),
+                TransactionPartner.create(this.handler!!, "C")
         )
 
-        val dbPartners = this.handler!!.getTransactionPartners()
+        val dbPartners = TransactionPartner.getAll(this.handler!!)
         assertEquals(3, dbPartners.size)
         for (partner in dbPartners) {
             for (original in originals) {
@@ -119,7 +121,34 @@ class TransactionPartnerTest {
      */
     @Test
     fun testStringRepresentation() {
-        val partner = this.handler!!.createTransactionPartner("A")
-        assertEquals("Transaction Partner; ID: 1; Name: A", partner.toString())
+        val partner = TransactionPartner.create(this.handler!!, "A")
+        assertEquals("TRANSACTION_PARTNERS; ID: 1; Name: A;", partner.toString())
+    }
+
+    /**
+     * Tests the equals() Method
+     */
+    @Test
+    fun testEquality() {
+        val partner = TransactionPartner(1, "A")
+        assertEquals(partner, TransactionPartner(1, "A"))
+        assertNotEquals(partner, TransactionPartner(2, "A"))
+        assertNotEquals(partner, TransactionPartner(1, "B"))
+        @Suppress("ReplaceCallWithComparison")
+        (assertFalse(partner.equals(Category(1, "A"))))
+    }
+
+    /**
+     * Tests fetching all TransactionPartners from the database
+     */
+    @Test
+    fun testGettingAllCategories() {
+        assertEquals(0, TransactionPartner.getAll(this.handler!!).size)
+        val one = TransactionPartner.create(this.handler!!, "A")
+        val two = TransactionPartner.create(this.handler!!, "B")
+        val partners = TransactionPartner.getAll(this.handler!!).sortedBy { it.id }
+        assertEquals(2, partners.size)
+        assertEquals(one, partners[0])
+        assertEquals(two, partners[1])
     }
 }

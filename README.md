@@ -6,6 +6,16 @@
 
 Papio is a personal finance manager program written in Kotlin and backed by gradle.
 
+# Installation
+
+To install the CLI, you need to have a JRE as well as fradle installed.
+Just run 
+
+    ./install.sh
+
+to build and install the program. If the `~/.local/bin` directory is is your
+`PATH`, you can then run `papio-cli`.
+
 ## Further Information
 
 * [Changelog](https://gitlab.namibsun.net/namboy94/papio/raw/master/CHANGELOG)

@@ -18,6 +18,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.db
 
 import net.namibsun.papio.lib.db.models.Category
+import net.namibsun.papio.lib.db.models.TransactionPartner
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -25,6 +26,7 @@ import java.io.File
 import java.sql.DriverManager
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -61,10 +63,11 @@ class CategoryTest {
      */
     @Test
     fun testCreatingAndGettingCategory() {
-        val category = this.handler!!.createCategory("Category")
+        val category = Category.create(this.handler!!, "Category")
         assertEquals(category, Category(1, "Category"))
-        assertEquals(category, this.handler!!.getCategory("Category"))
-        assertEquals(category, this.handler!!.getCategory(1))
+        assertEquals(category, Category.get(this.handler!!, "Category"))
+        Category.get(this.handler!!, "1")
+        assertEquals(category, Category.get(this.handler!!, 1))
     }
 
     /**
@@ -73,8 +76,8 @@ class CategoryTest {
      */
     @Test
     fun testCreatingDuplicateCategory() {
-        val original = this.handler!!.createCategory("Category")
-        val new = this.handler!!.createCategory("Category")
+        val original = Category.create(this.handler!!, "Category")
+        val new = Category.create(this.handler!!, "Category")
         assertEquals(original, new)
         assertEquals(original, Category(1, "Category"))
     }
@@ -84,10 +87,10 @@ class CategoryTest {
      */
     @Test
     fun testDeletingCategory() {
-        val original = this.handler!!.createCategory("Category")
-        assertNotNull(this.handler!!.getCategory("Category"))
+        val original = Category.create(this.handler!!, "Category")
+        assertNotNull(Category.get(this.handler!!, "Category"))
         original.delete(this.handler!!)
-        assertNull(this.handler!!.getWallet("Category"))
+        assertNull(Category.get(this.handler!!, "Category"))
     }
 
     /**
@@ -97,12 +100,12 @@ class CategoryTest {
     fun testGettingCategories() {
 
         val categories = listOf(
-                this.handler!!.createCategory("A"),
-                this.handler!!.createCategory("B"),
-                this.handler!!.createCategory("C")
+                Category.create(this.handler!!, "A"),
+                Category.create(this.handler!!, "B"),
+                Category.create(this.handler!!, "C")
         )
 
-        val dbCategories = this.handler!!.getCategories()
+        val dbCategories = Category.getAll(this.handler!!)
         assertEquals(3, dbCategories.size)
         for (category in dbCategories) {
             for (original in categories) {
@@ -120,7 +123,34 @@ class CategoryTest {
      */
     @Test
     fun testStringRepresentation() {
-        val category = this.handler!!.createCategory("A")
-        assertEquals("Category; ID: 1; Name: A", category.toString())
+        val category = Category.create(this.handler!!, "A")
+        assertEquals("CATEGORIES; ID: 1; Name: A;", category.toString())
+    }
+
+    /**
+     * Tests the equals() Method
+     */
+    @Test
+    fun testEquality() {
+        val category = Category(1, "A")
+        assertEquals(category, Category(1, "A"))
+        assertNotEquals(category, Category(2, "A"))
+        assertNotEquals(category, Category(1, "B"))
+        @Suppress("ReplaceCallWithComparison")
+        assertFalse(category.equals(TransactionPartner(1, "A")))
+    }
+
+    /**
+     * Tests fetching all Categories from the database
+     */
+    @Test
+    fun testGettingAllCategories() {
+        assertEquals(0, Category.getAll(this.handler!!).size)
+        val one = Category.create(this.handler!!, "A")
+        val two = Category.create(this.handler!!, "B")
+        val categories = Category.getAll(this.handler!!).sortedBy { it.id }
+        assertEquals(2, categories.size)
+        assertEquals(one, categories[0])
+        assertEquals(two, categories[1])
     }
 }

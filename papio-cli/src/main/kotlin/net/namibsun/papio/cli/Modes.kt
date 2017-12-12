@@ -15,7 +15,20 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.cli.argparse
+package net.namibsun.papio.cli
+
+/**
+ * Enum that models which part of the database are to be changed
+ */
+enum class RootMode {
+    WALLET,
+    CATEGORY,
+    TRANSACTIONPARTNER,
+    TRANSACTION,
+    BACKUP,
+    TRANSFER,
+    EXPENSE
+}
 
 /**
  * Enum that models the actions that are applicable on a root category
@@ -23,3 +36,16 @@ package net.namibsun.papio.cli.argparse
 enum class ActionMode {
     LIST, DISPLAY, CREATE, DELETE
 }
+
+/**
+ * Hashmap that maps which action modes each root mode is able to use.
+ */
+val modeMap: Map<RootMode, List<ActionMode>> = mapOf(
+        RootMode.WALLET to ActionMode.values().toList(),
+        RootMode.CATEGORY to ActionMode.values().toList(),
+        RootMode.TRANSACTIONPARTNER to ActionMode.values().toList(),
+        RootMode.TRANSACTION to ActionMode.values().toList(),
+        RootMode.BACKUP to listOf(),
+        RootMode.TRANSFER to listOf(),
+        RootMode.EXPENSE to listOf(ActionMode.CREATE)
+)

@@ -17,6 +17,8 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
+import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Category
 import net.sourceforge.argparse4j.ArgumentParsers
@@ -25,7 +27,7 @@ import net.sourceforge.argparse4j.ArgumentParsers
  * Executor for the Category Root action
  * Manages categories in the database
  */
-class CategoryExecutor : Executor {
+class CategoryExecutor : FullExecutor {
 
     /**
      * Executes the 'create' option
@@ -36,12 +38,12 @@ class CategoryExecutor : Executor {
         val parser = ArgumentParsers.newFor("papio-cli category create").build().defaultHelp(true)
         parser.addArgument("name").help("The name of the new category")
         val results = this.handleParserError(parser, args)
-        val original = dbHandler.getCategory(results.getString("name"))
-        val category = dbHandler.createCategory(results.getString("name"))
+        val original = Category.get(dbHandler, results.getString("name"))
+        val category = Category.create(dbHandler, results.getString("name"))
         if (original == null) {
             println("Category created:\n$category")
         } else {
-            println("Category already exists:\n$category")
+            throw AbortException("Category already exists:\n$category")
         }
     }
 
@@ -55,7 +57,7 @@ class CategoryExecutor : Executor {
         parser.addArgument("identifier").help("The name or ID of the category")
         val result = this.handleParserError(parser, args)
 
-        val category = this.getCategory(dbHandler, result.getString("identifier"))
+        val category = Category.get(dbHandler, result.getString("identifier"))
         if (category != null) {
             val confirm = this.getUserConfirmation("Delete category\n$category\nand all transactions using it?")
             if (confirm) {
@@ -65,7 +67,7 @@ class CategoryExecutor : Executor {
                 println("Deleting category cancelled")
             }
         } else {
-            println("Category not found.")
+            throw AbortException("Category ${result.getString("identifier")} does not exist")
         }
     }
 
@@ -75,7 +77,7 @@ class CategoryExecutor : Executor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
-        for (category in dbHandler.getCategories()) {
+        for (category in Category.getAll(dbHandler)) {
             println(category)
         }
     }
@@ -93,11 +95,11 @@ class CategoryExecutor : Executor {
                 .help("Sets the amount of transactions to display. By default, all transactions are displayed")
         val result = this.handleParserError(parser, args)
 
-        val category = this.getCategory(dbHandler, result.getString("identifier"))
+        val category = Category.get(dbHandler, result.getString("identifier"))
         if (category != null) {
             println("$category\n")
 
-            val transactions = category.getAllTransactions(dbHandler)
+            val transactions = category.getTransactions(dbHandler).sortedByDescending { it.date }
             var limit = result.getInt("transactions")
             if (limit == -1 || limit > transactions.size) {
                 limit = transactions.size
@@ -106,23 +108,7 @@ class CategoryExecutor : Executor {
                 println(transactions[i])
             }
         } else {
-            println("Category not found")
+            throw AbortException("Category ${result.getString("identifier")} does not exist")
         }
-    }
-
-    /**
-     * Tries to retrieve a category based on the category's name or ID, in that order.
-     * @param dbHandler: The Database handler to use
-     * @param nameOrId: The identifier to use to find the category
-     * @return The retrieved wallet or null if none was found
-     */
-    fun getCategory(dbHandler: DbHandler, nameOrId: String): Category? {
-        var category = dbHandler.getCategory(nameOrId)
-        if (category == null) {
-            try {
-                category = dbHandler.getCategory(nameOrId.toInt())
-            } catch (e: NumberFormatException) {}
-        }
-        return category
     }
 }

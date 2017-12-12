@@ -17,62 +17,109 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli
 
-import net.namibsun.papio.cli.argparse.ActionMode
-import net.namibsun.papio.cli.argparse.ModeParser
-import net.namibsun.papio.cli.argparse.OtherMode
-import net.namibsun.papio.cli.argparse.RootMode
+import net.namibsun.papio.cli.executors.BackupExecutor
 import net.namibsun.papio.cli.executors.CategoryExecutor
+import net.namibsun.papio.cli.executors.ExpenseExecutor
 import net.namibsun.papio.cli.executors.TransactionExecutor
 import net.namibsun.papio.cli.executors.TransactionPartnerExecutor
 import net.namibsun.papio.cli.executors.WalletExecutor
+import net.namibsun.papio.cli.executors.TransferExecutor
 import net.namibsun.papio.lib.db.DbHandler
-import java.io.File
 import java.sql.DriverManager
 
 /**
- * The main entry point of the program
+ * The main entry point of the program.
+ * Calls the execute method and wraps it in a try/catch block
+ * @param args: The command line arguments passed to this program
  */
 fun main(args: Array<String>) {
 
-    val papioDir = File(System.getProperty("user.home"), ".papio")
-    val papioDb = File(papioDir.toString(), "data.db")
+    try {
+        execute(args)
+    } catch (e: HelpException) {
+        e.printHelpAndExit()
+    } catch (e: AbortException) {
+        println(e.message)
+        System.exit(1)
+    }
+}
 
-    if (!papioDir.isDirectory && !papioDir.exists()) {
-        papioDir.mkdirs()
-    } else if (papioDir.exists() && !papioDir.isDirectory) {
+/**
+ * Executes the CLI program
+ * @param args: The command line arguments passed to this program
+ */
+fun execute(args: Array<String>) {
+
+    val dbHandler = prepareDatabase()
+
+    val parsed = parseModes(args)
+    val trimmedArgs = parsed.first
+    val rootMode = parsed.second
+    val actionMode = parsed.third
+
+    val executor = when (rootMode) {
+        RootMode.WALLET -> WalletExecutor()
+        RootMode.CATEGORY -> CategoryExecutor()
+        RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
+        RootMode.TRANSACTION -> TransactionExecutor()
+        RootMode.BACKUP -> BackupExecutor()
+        RootMode.TRANSFER -> TransferExecutor()
+        RootMode.EXPENSE -> ExpenseExecutor()
+    }
+    executor.execute(trimmedArgs, dbHandler, actionMode)
+}
+
+/**
+ * Initializes the local .papio directory and database file.
+ * @return The database handler connected to the SQLite database file
+ */
+fun prepareDatabase(): DbHandler {
+
+    if (!Config.papioPath.isDirectory && !Config.papioPath.exists()) {
+        Config.papioPath.mkdirs()
+    } else if (Config.papioPath.exists() && !Config.papioPath.isDirectory) {
         println("Could not create .papio directory. File exists.")
         System.exit(1)
     }
-    val connection = DriverManager.getConnection("jdbc:sqlite:$papioDb")
-    val dbHandler = DbHandler(connection)
+    val connection = DriverManager.getConnection("jdbc:sqlite:${Config.dbPath}")
+    return DbHandler(connection)
+}
 
-    val modeParser = ModeParser(args)
+/**
+ * Parses the command line arguments for their modes.
+ * Should the parsing encounter an invalid argument combination, a help message is printed and the
+ * program exits.
+ * @return The command line arguments without the mode arguments, the root mode, the action mode
+ * @throws HelpException: If the user input is invalid and the root help message should be printed
+ */
+fun parseModes(args: Array<String>): Triple<Array<String>, RootMode, ActionMode?> {
 
-    val trimmedArgs = modeParser.parse()
+    val argsList = args.toMutableList()
 
-    when (modeParser.otherMode) {
-        OtherMode.BACKUP -> {
-            val dbBackup = File(papioDir.toString(), "backup-${System.currentTimeMillis().toInt()}.db")
-            papioDb.copyTo(dbBackup, true)
-            println("Backup created: $dbBackup")
-        }
-        null -> {
-            val rootMode = modeParser.rootMode!!
-            val actionMode = modeParser.actionMode!!
+    val first: RootMode
+    var second: ActionMode? = null
 
-            val executor = when (rootMode) {
-                RootMode.WALLET -> WalletExecutor()
-                RootMode.CATEGORY -> CategoryExecutor()
-                RootMode.TRANSACTIONPARTNER -> TransactionPartnerExecutor()
-                RootMode.TRANSACTION -> TransactionExecutor()
-            }
+    try {
+        first = RootMode.valueOf(argsList[0].toUpperCase())
+        argsList.removeAt(0)
+    } catch (e: IndexOutOfBoundsException) {
+        throw HelpException()
+    } catch (e: IllegalArgumentException) {
+        throw HelpException()
+    }
 
-            when (actionMode) {
-                ActionMode.LIST -> executor.executeList(trimmedArgs, dbHandler)
-                ActionMode.DISPLAY -> executor.executeDisplay(trimmedArgs, dbHandler)
-                ActionMode.CREATE -> executor.executeCreate(trimmedArgs, dbHandler)
-                ActionMode.DELETE -> executor.executeDelete(trimmedArgs, dbHandler)
-            }
+    try {
+        second = ActionMode.valueOf(argsList[0].toUpperCase())
+        argsList.removeAt(0)
+    } catch (e: IndexOutOfBoundsException) {
+    } catch (e: IllegalArgumentException) {
+    }
+
+    if (second != null) {
+        if (second !in modeMap[first]!!) {
+            throw HelpException()
         }
     }
+
+    return Triple(argsList.toTypedArray(), first, second)
 }

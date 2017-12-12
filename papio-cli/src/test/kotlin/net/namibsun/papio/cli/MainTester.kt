@@ -15,11 +15,30 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.cli.argparse
+package net.namibsun.papio.cli
+
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 
 /**
- * Enum that models which part of the database are to be changed
+ * Class that tests the functions in the Main module of the CLI
  */
-enum class RootMode {
-    WALLET, CATEGORY, TRANSACTIONPARTNER, TRANSACTION
+class MainTester {
+
+    /**
+     * Tests some edge cases of the mode parser
+     */
+    @Test
+    fun testParser() {
+        try {
+            parseModes(arrayOf())
+            fail()
+        } catch (e: HelpException) {}
+        try {
+            parseModes(arrayOf("blargh"))
+            fail()
+        } catch (e: HelpException) {}
+        assertEquals(null, parseModes(arrayOf("wallet")).third)
+    }
 }
