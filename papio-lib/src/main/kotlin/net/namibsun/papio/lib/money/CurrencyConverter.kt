@@ -108,11 +108,15 @@ object CurrencyConverter {
         for (currency in Currency.getAllCryptoCurrencies()) {
             val url = "https://api.cryptonator.com/api/ticker/EUR-" + currency.name
             val exchangeRateData = this.getUrlData(url)
-            val price = exchangeRateData.split("\"price\":\"")[1].split("\"")[0]
             try {
-                this.exchangeRates[currency] = BigDecimal(price)
-            } catch (e: NumberFormatException) {
-                this.logger.warning("Invalid exchange rate value for $currency in JSON data.")
+                val price = exchangeRateData.split("\"price\":\"")[1].split("\"")[0]
+                try {
+                    this.exchangeRates[currency] = BigDecimal(price)
+                } catch (e: NumberFormatException) {
+                    this.logger.warning("Invalid exchange rate value for $currency in JSON data.")
+                    this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
+                }
+            } catch (e: IndexOutOfBoundsException) {
                 this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
             }
         }
