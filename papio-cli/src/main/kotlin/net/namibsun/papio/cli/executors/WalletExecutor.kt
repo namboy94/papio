@@ -17,6 +17,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.cli.executors
 
+import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.FullExecutor
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Wallet
@@ -52,15 +53,13 @@ class WalletExecutor : FullExecutor {
         val value = try {
             Value(result.getString("initial_value"), Currency.valueOf(result.getString("currency")))
         } catch (e: NumberFormatException) {
-            println("${result.getString("amount")} is not a valid monetary amount")
-            System.exit(1)
-            null!! // Won't be reached
+            throw AbortException("${result.getString("initial_value")} is not a valid monetary value")
         }
 
         val existing = Wallet.get(dbHandler, name)
 
         if (existing != null) {
-            println("Wallet\n$existing\nexists!")
+            throw AbortException("Wallet\n$existing\nalready exists")
         } else {
             val wallet = Wallet.create(dbHandler, name, value)
             println("Wallet\n$wallet\nwas created successfully.")
@@ -89,7 +88,7 @@ class WalletExecutor : FullExecutor {
                 println("Deleting wallet cancelled")
             }
         } else {
-            println("Wallet not found.")
+            throw AbortException("Wallet ${result.getString("identifier")} does not exist")
         }
     }
 
@@ -134,7 +133,7 @@ class WalletExecutor : FullExecutor {
                 println(transactions[i])
             }
         } else {
-            println("Wallet not found")
+            throw AbortException("Wallet ${result.getString("identifier")} does not exist")
         }
     }
 }
