@@ -35,6 +35,12 @@ object CurrencyConverter {
     private val logger = Logger.getLogger(CurrencyConverter::class.java.name)
 
     /**
+     * Can be set to true to disable any network operations.
+     * Originally added to enable testing the caching functionality.
+     */
+    var networkDisabled = false
+
+    /**
      * The current exchange rates with Euro as the base currency
      */
     val exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
@@ -192,6 +198,11 @@ object CurrencyConverter {
      * @return The response body of the GET request
      */
     private fun getUrlData(url: String): String {
+
+        if (this.networkDisabled) {
+            return ""
+        }
+
         return try {
             val connection = URL(url).openConnection()
             val inputStream = connection.getInputStream()

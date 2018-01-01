@@ -20,7 +20,6 @@ package net.namibsun.papio.lib.money
 import org.junit.Test
 import java.math.BigDecimal
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
@@ -71,7 +70,6 @@ class CurrencyExchangerTest {
     fun testConvertingBitcoin() {
         val converted = CurrencyConverter.convertValue(BigDecimal("0.1"), Currency.BTC, Currency.EUR)
         assertTrue(converted > BigDecimal(10)) // Assumes BTC is worth more than 100 €
-        println(converted)
     }
 
     /**
@@ -79,17 +77,19 @@ class CurrencyExchangerTest {
      */
     @Test
     fun testUsingCache() {
-        // Disable Network
 
-        assertFalse(Currency.BTC in CurrencyConverter.exchangeRates)
+        CurrencyConverter.networkDisabled = true
+
+        assertNotEquals(CurrencyConverter.exchangeRates[Currency.BTC], BigDecimal("100"))
+
         CurrencyConverter.setCache(mutableMapOf(Currency.BTC to BigDecimal("100")))
         CurrencyConverter.update(true)
         assertTrue(Currency.BTC in CurrencyConverter.exchangeRates)
         assertEquals(CurrencyConverter.exchangeRates[Currency.BTC], BigDecimal("100"))
 
-        // Enable Network
+        CurrencyConverter.networkDisabled = false
 
-        CurrencyConverter.update()
+        CurrencyConverter.update(true)
         assertNotEquals(CurrencyConverter.exchangeRates[Currency.BTC], BigDecimal("100"))
 
         assertEquals(CurrencyConverter.generateCache(), CurrencyConverter.exchangeRates)
