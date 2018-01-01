@@ -64,12 +64,11 @@ enum class Currency(val currencyType: CurrencyType, val displayAccuracy: Int, va
     BCH(CurrencyType.CRYPTO, 8, "BCH"), // Bitcoin Cash
     BCN(CurrencyType.CRYPTO, 8, "BCN"), // Bytecoin
     DASH(CurrencyType.CRYPTO, 8, "DASH"), // Dash
-    DOGE(CurrencyType.CRYPTO, 8, "DOGE"), // Doge
+    DOGE(CurrencyType.CRYPTO, 8, "DOGE"), // Dogecoin
     ETH(CurrencyType.CRYPTO, 8, "ETH"), // Ethereum
     ETC(CurrencyType.CRYPTO, 8, "ETC"), // Ethereum Classic
     LTC(CurrencyType.CRYPTO, 8, "LTC"), // Litecoin
     XMR(CurrencyType.CRYPTO, 8, "XMR"), // Monero
-    PPC(CurrencyType.CRYPTO, 8, "PPC"), // Peercoin
     XRP(CurrencyType.CRYPTO, 8, "XRP"), // Ripple
     MLN(CurrencyType.CRYPTO, 8, "MLN"), // Meloncoin
     EOS(CurrencyType.CRYPTO, 8, "EOS"), // EOS

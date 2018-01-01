@@ -15,7 +15,16 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-rootProject.name = 'papio'
-include ':papio-lib'
-include ':papio-cli'
-include ':papio-gui'
+package net.namibsun.papio.gui
+
+fun main(args: Array<String>) {
+    println("Hello World")
+
+    val x = mutableListOf(1, 2)
+    val y = mutableListOf(2)
+    println(x.zip(y))
+    x.distinct().toMutableList()
+
+    val z = mutableMapOf(1 to listOf(1))
+    z.filter { it.value.isEmpty() }
+}
