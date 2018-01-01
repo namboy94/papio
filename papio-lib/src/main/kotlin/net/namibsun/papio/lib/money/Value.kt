@@ -43,7 +43,7 @@ data class Value(val value: BigDecimal, val currency: Currency) {
      * @return The sum of the two values
      */
     operator fun plus(value: Value): Value {
-        val converted = CurrencyConverter.convertValue(value.value, this.currency, value.currency)
+        val converted = CurrencyConverter.convertValue(value.value, value.currency, this.currency)
         val sum = this.value.add(converted)
         return Value(sum, this.currency)
     }
