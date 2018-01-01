@@ -62,4 +62,14 @@ class CurrencyExchangerTest {
             }
         }
     }
+
+    /**
+     * Tests converting a bitcoin value to euro
+     */
+    @Test
+    fun testConvertingBitcoin() {
+        val converted = CurrencyConverter.convertValue(BigDecimal("0.1"), Currency.BTC, Currency.EUR)
+        assertTrue(converted > BigDecimal(10)) // Assumes BTC is worth more than 100 €
+        println(converted)
+    }
 }
