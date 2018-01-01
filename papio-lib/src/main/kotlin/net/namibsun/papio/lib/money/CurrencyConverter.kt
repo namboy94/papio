@@ -40,6 +40,15 @@ object CurrencyConverter {
     val exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
 
     /**
+     * A cache storing exchange rate data. Can be set by using the setCache() method.
+     * Will only be used as fallback in case a currency exchange rate could not be found.
+     * Useful for offline modes.
+     * The generateCache() method overwrites this variable with the current value represented
+     * in the exchangeRates variable.
+     */
+    private var cache = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
+
+    /**
      * A UNIX timestamp that keeps track of when the exchange rates were updated last
      */
     private var updated: Long = 0
@@ -59,6 +68,23 @@ object CurrencyConverter {
      */
     init {
         this.update()
+    }
+
+    /**
+     * Sets the cache variable as a fallback for currency exchange rates that could not be found
+     * @param cache: The cache to set
+     */
+    fun setCache(cache: MutableMap<Currency, BigDecimal>) {
+        this.cache = cache
+    }
+
+    /**
+     * Sets the cache to the current exchange rates and return that value.
+     * @return The new cache value
+     */
+    fun generateCache(): Map<Currency, BigDecimal> {
+        this.cache = this.exchangeRates
+        return this.cache
     }
 
     /**
@@ -109,15 +135,9 @@ object CurrencyConverter {
                 rate = rate.split("'")[0]
                 this.exchangeRates[currency] = BigDecimal(rate)
             } catch (e: IndexOutOfBoundsException) {
-                if (currency != Currency.EUR) {
-                    this.logger.warning("Currency $currency not found in XML data.")
-                    this.valid = false
-                    this.exchangeRates[currency] = BigDecimal("1.0") // If currency not found, set to 1.0
-                }
+                this.handleMissingExchangeRateData(currency)
             } catch (e: NumberFormatException) {
-                this.logger.warning("Invalid exchange rate value for $currency in XML data.")
-                this.valid = false
-                this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
+                this.handleMissingExchangeRateData(currency)
             }
         }
         this.exchangeRates[Currency.EUR] = BigDecimal("1.0") // Make sure Euro is set to 1.0
@@ -138,17 +158,30 @@ object CurrencyConverter {
             try {
                 var price = exchangeRateData.split("\"symbol\": \"${currency.name}\"")[1]
                 price = price.split("\"price_eur\": \"")[1].split("\"")[0]
-                try {
-                    this.exchangeRates[currency] = one.divide(BigDecimal(price), 128, RoundingMode.HALF_UP)
-                } catch (e: NumberFormatException) {
-                    this.logger.warning("Invalid exchange rate value for $currency in JSON data.")
-                    this.valid = false
-                    this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
-                }
+                this.exchangeRates[currency] = one.divide(BigDecimal(price), 128, RoundingMode.HALF_UP)
             } catch (e: IndexOutOfBoundsException) {
-                this.logger.warning("Currency $currency missing.")
-                this.valid = false
-                this.exchangeRates[currency] = BigDecimal("1.0") // If currency rate not valid, set to 1.0
+                this.handleMissingExchangeRateData(currency)
+            } catch (e: NumberFormatException) {
+                this.handleMissingExchangeRateData(currency)
+            }
+        }
+    }
+
+    /**
+     * Handles supplying exchange rate data if fetching them from the internet did not work
+     * @param currency: The currency for which to use the cached value
+     */
+    private fun handleMissingExchangeRateData(currency: Currency) {
+
+        when (currency) {
+            Currency.EUR -> { }
+            in this.cache -> {
+                this.logger.info("Using cached value for $currency.")
+                this.exchangeRates[currency] = this.cache[currency]!!
+            }
+            else -> {
+                this.logger.warning("No valid exchange rate data for $currency.")
+                this.exchangeRates[currency] = BigDecimal("1.0")
             }
         }
     }
