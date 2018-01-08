@@ -50,7 +50,7 @@ class CurrencyExchangerTest {
      * Tests all currencies
      */
     @Test
-    fun testAllCurrencies() {
+    fun testAllCurrencies() { 
         val value = Value("100.00", Currency.EUR)
         for (currency in Currency.values()) {
             val converted = value.convert(currency)
