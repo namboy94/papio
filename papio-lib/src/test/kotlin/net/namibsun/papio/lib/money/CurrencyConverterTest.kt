@@ -111,6 +111,7 @@ class CurrencyConverterTest {
         @Suppress("UNCHECKED_CAST")
         val cached = objIS.readObject() as MutableMap<Currency, BigDecimal>
         assertEquals(cached, rates)
+        CurrencyConverter.setCacheFile(null)
         File("cache").delete()
     }
 }

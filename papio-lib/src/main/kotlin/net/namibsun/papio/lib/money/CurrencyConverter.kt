@@ -119,7 +119,7 @@ object CurrencyConverter {
      * Sets the cache file. This file will be used to store cached exchange rates
      * @param cacheFile: The file in which to store the cached data
      */
-    fun setCacheFile(cacheFile: File) {
+    fun setCacheFile(cacheFile: File?) {
         this.cacheFile = cacheFile
         this.loadCache()
     }
