@@ -22,6 +22,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.CurrencyConverter
 import net.namibsun.papio.lib.money.Value
 import org.junit.After
 import org.junit.Before
@@ -102,6 +103,9 @@ class WalletTest {
      */
     @Test
     fun testChangingCurrency() {
+
+        CurrencyConverter.update()
+
         val wallet = Wallet.create(this.handler!!, "Wallet", Value("100", Currency.EUR))
         val category = Category.create(this.handler!!, "Category")
         val partner = TransactionPartner.create(this.handler!!, "Partner")

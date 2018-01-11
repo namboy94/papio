@@ -26,6 +26,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.CurrencyConverter
 import net.namibsun.papio.lib.money.Value
 import org.junit.Test
 import kotlin.test.assertNotNull
@@ -98,6 +99,8 @@ class CategoryTester : TestHelper() {
     @Test
     fun testDisplayingCategory() {
 
+        CurrencyConverter.update()
+
         val categoryData = this.initializeDisplayableCategories()
         val category = categoryData.first
         val transactionOne = categoryData.second
@@ -117,6 +120,9 @@ class CategoryTester : TestHelper() {
      */
     @Test
     fun testDisplayingCategoryWithLimitedTransactions() {
+
+        CurrencyConverter.update()
+
         val categoryData = this.initializeDisplayableCategories()
         val category = categoryData.first
         val transactionOne = categoryData.second

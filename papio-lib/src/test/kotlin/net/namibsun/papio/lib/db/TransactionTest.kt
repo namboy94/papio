@@ -23,6 +23,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.CurrencyConverter
 import net.namibsun.papio.lib.money.Value
 import org.junit.After
 import org.junit.Before
@@ -106,6 +107,9 @@ class TransactionTest {
      */
     @Test
     fun testCreatingTransactionWithWrongCurrency() {
+
+        CurrencyConverter.update()
+
         val value = Value("100", Currency.USD)
         val transaction = Transaction.create(
                 this.handler!!, this.wallet!!, this.category!!, this.partner!!, "Description", value

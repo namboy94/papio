@@ -18,6 +18,9 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 package net.namibsun.papio.lib.money
 
 import org.junit.Test
+import java.io.File
+import java.io.FileInputStream
+import java.io.ObjectInputStream
 import java.math.BigDecimal
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
@@ -26,7 +29,7 @@ import kotlin.test.assertTrue
 /**
  * Tests the CurrencyExchanger singleton
  */
-class CurrencyExchangerTest {
+class CurrencyConverterTest {
 
     /**
      * Checks that the CurrencyExchanger object provides exchange rates for all currently supported
@@ -39,18 +42,18 @@ class CurrencyExchangerTest {
         assertTrue(CurrencyConverter.isValid())
 
         for (currency in Currency.values()) {
-            assertTrue(currency in CurrencyConverter.exchangeRates)
+            assertTrue(currency in CurrencyConverter.getExchangeRateData())
         }
-        assertEquals(BigDecimal("1.0"), CurrencyConverter.exchangeRates[Currency.EUR])
-        assertTrue(CurrencyConverter.exchangeRates[Currency.ZAR]!! > BigDecimal("1.0"))
-        assertTrue(CurrencyConverter.exchangeRates[Currency.BTC]!! < BigDecimal("1.0"))
+        assertEquals(BigDecimal("1.0"), CurrencyConverter.getExchangeRateData()[Currency.EUR])
+        assertTrue(CurrencyConverter.getExchangeRateData()[Currency.ZAR]!! > BigDecimal("1.0"))
+        assertTrue(CurrencyConverter.getExchangeRateData()[Currency.BTC]!! < BigDecimal("1.0"))
     }
 
     /**
      * Tests all currencies
      */
     @Test
-    fun testAllCurrencies() { 
+    fun testAllCurrencies() {
         val value = Value("100.00", Currency.EUR)
         for (currency in Currency.values()) {
             val converted = value.convert(currency)
@@ -80,18 +83,34 @@ class CurrencyExchangerTest {
 
         CurrencyConverter.networkDisabled = true
 
-        assertNotEquals(CurrencyConverter.exchangeRates[Currency.BTC], BigDecimal("100"))
+        assertNotEquals(CurrencyConverter.getExchangeRateData()[Currency.BTC], BigDecimal("100"))
 
         CurrencyConverter.setCache(mutableMapOf(Currency.BTC to BigDecimal("100")))
         CurrencyConverter.update(true)
-        assertTrue(Currency.BTC in CurrencyConverter.exchangeRates)
-        assertEquals(CurrencyConverter.exchangeRates[Currency.BTC], BigDecimal("100"))
+        assertTrue(Currency.BTC in CurrencyConverter.getExchangeRateData())
+        assertEquals(CurrencyConverter.getExchangeRateData()[Currency.BTC], BigDecimal("100"))
 
         CurrencyConverter.networkDisabled = false
 
         CurrencyConverter.update(true)
-        assertNotEquals(CurrencyConverter.exchangeRates[Currency.BTC], BigDecimal("100"))
+        assertNotEquals(CurrencyConverter.getExchangeRateData()[Currency.BTC], BigDecimal("100"))
 
-        assertEquals(CurrencyConverter.generateCache(), CurrencyConverter.exchangeRates)
+        assertEquals(CurrencyConverter.generateCache(), CurrencyConverter.getExchangeRateData())
+    }
+
+    /**
+     * Tests making use of the cache file
+     */
+    @Test
+    fun testUsingCacheFile() {
+        CurrencyConverter.setCacheFile(File("cache"))
+        CurrencyConverter.update(true)
+        val rates = CurrencyConverter.getExchangeRateData()
+        val fileIS = FileInputStream("cache")
+        val objIS = ObjectInputStream(fileIS)
+        @Suppress("UNCHECKED_CAST")
+        val cached = objIS.readObject() as MutableMap<Currency, BigDecimal>
+        assertEquals(cached, rates)
+        File("cache").delete()
     }
 }

@@ -17,7 +17,13 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.money
 
+import net.namibsun.papio.lib.CurrencyConversionError
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.io.IOException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.net.URL
@@ -43,7 +49,12 @@ object CurrencyConverter {
     /**
      * The current exchange rates with Euro as the base currency
      */
-    val exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
+    private var exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
+
+    /**
+     * A file that can be used to store cached exchange rate values
+     */
+    private var cacheFile: File? = null
 
     /**
      * A cache storing exchange rate data. Can be set by using the setCache() method.
@@ -70,10 +81,47 @@ object CurrencyConverter {
     private var valid: Boolean = false
 
     /**
-     * Initializes the singleton by updating the exchange rate data
+     * @return The internal exchange rate data map
      */
-    init {
-        this.update()
+    fun getExchangeRateData(): MutableMap<Currency, BigDecimal> {
+        return this.exchangeRates
+    }
+
+    /**
+     * Loads the cache data from the cache file
+     */
+    private fun loadCache() {
+        if (this.cacheFile != null && this.cacheFile!!.exists()) {
+            val file = FileInputStream(this.cacheFile)
+            val obj = ObjectInputStream(file)
+            @Suppress("UNCHECKED_CAST")
+            this.cache = obj.readObject() as MutableMap<Currency, BigDecimal>
+        } else {
+            this.cache = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
+        }
+    }
+
+    /**
+     * Store the current cache data in the cache file
+     */
+    private fun storeCache() {
+
+        if (this.cacheFile != null) {
+            val file = FileOutputStream(this.cacheFile)
+            val obj = ObjectOutputStream(file)
+            obj.writeObject(this.cache)
+            file.close()
+            obj.close()
+        }
+    }
+
+    /**
+     * Sets the cache file. This file will be used to store cached exchange rates
+     * @param cacheFile: The file in which to store the cached data
+     */
+    fun setCacheFile(cacheFile: File) {
+        this.cacheFile = cacheFile
+        this.loadCache()
     }
 
     /**
@@ -98,17 +146,25 @@ object CurrencyConverter {
      * @return true if the values are valid. Else, return false.
      */
     fun isValid(): Boolean {
-        return this.valid && !this.updating
+        // First, Check if all currencies are in the exchange rate data
+        // The make sure that no update is running currently and the update() method deemed the stat valid
+        return if (Currency.values().any { it !in this.exchangeRates }) false else this.valid && !this.updating
     }
 
     /**
      * Updates the exchange rate data. Will only update if more than a minute has passed since
      * the last update or if the force variable is set to true.
      * @param force: Forces an update if set to true
+     * @param reset: Resets the internal exchange rate data before updating
      */
-    fun update(force: Boolean = false) {
+    fun update(force: Boolean = false, reset: Boolean = false) {
         this.updating = true
-        this.valid = true
+        this.valid = true // Might be set to false by the individual update* methods
+
+        if (reset) {
+            this.exchangeRates = mutableMapOf(Currency.EUR to BigDecimal("1.0"))
+        }
+
         if (force or ((System.currentTimeMillis() - this.updated) > 60000)) {
             this.updated = System.currentTimeMillis()
             this.updateFiatCurrencyExchangeRates()
@@ -116,6 +172,8 @@ object CurrencyConverter {
         } else {
             this.logger.fine("Skipping exchange rate update")
         }
+        this.cache = this.exchangeRates
+        this.storeCache()
         this.updating = false
     }
 
@@ -187,7 +245,6 @@ object CurrencyConverter {
             }
             else -> {
                 this.logger.warning("No valid exchange rate data for $currency.")
-                this.exchangeRates[currency] = BigDecimal("1.0")
             }
         }
     }
@@ -227,6 +284,8 @@ object CurrencyConverter {
      */
     fun convertValue(value: BigDecimal, source: Currency, destination: Currency): BigDecimal {
 
+        this.update()
+
         if (!this.isValid()) {
             this.logger.warning("Converting while values are invalid!")
         }
@@ -235,9 +294,12 @@ object CurrencyConverter {
             return value
         }
 
-        val sourceEuroValue = this.exchangeRates[source]!! // Not null
-        val destinationEuroValue = this.exchangeRates[destination]!! // Not null
-
-        return value.divide(sourceEuroValue, 128, RoundingMode.HALF_UP).times(destinationEuroValue)
+        try {
+            val sourceEuroValue = this.exchangeRates[source]!! // Not null
+            val destinationEuroValue = this.exchangeRates[destination]!! // Not null
+            return value.divide(sourceEuroValue, 128, RoundingMode.HALF_UP).times(destinationEuroValue)
+        } catch (e: NullPointerException) {
+            throw CurrencyConversionError(source, destination)
+        }
     }
 }

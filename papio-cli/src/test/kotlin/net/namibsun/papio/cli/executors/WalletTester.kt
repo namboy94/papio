@@ -151,6 +151,9 @@ class WalletTester : TestHelper() {
      */
     @Test
     fun testListingWallets() {
+
+        CurrencyConverter.update()
+
         val one = Wallet.create(this.dbHandler, "Test1", Value("0", Currency.EUR))
         val two = Wallet.create(this.dbHandler, "Test2", Value("0.12345", Currency.BTC))
         val three = Wallet.create(this.dbHandler, "Test3", Value("11111", Currency.USD))
@@ -267,16 +270,18 @@ class WalletTester : TestHelper() {
     @Test
     fun testListingWalletsOffline() {
 
+        CurrencyConverter.networkDisabled = true
+        CurrencyConverter.update(true, true)
+
         val one = Wallet.create(this.dbHandler, "Test1", Value("0", Currency.EUR))
         val two = Wallet.create(this.dbHandler, "Test2", Value("0.12345", Currency.BTC))
 
-        CurrencyConverter.networkDisabled = true
         execute(arrayOf("wallet", "list"))
 
         assertEquals(
                 "${one.toString(this.dbHandler)}\n${two.toString(this.dbHandler)}" +
                         "\n-------------------------\n" +
-                        "Total: $?\n",
+                        "Total: ${one.getBalance(this.dbHandler) + two.getBalance(this.dbHandler)}\n",
                 this.out.toString()
         )
 
