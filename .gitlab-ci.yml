@@ -44,8 +44,7 @@ build_jar:
     - mv papio-lib/build/libs/papio-lib.jar artifacts/
     - mv papio-cli/build/libs/papio-cli.jar artifacts/
   artifacts:
-    only:
-      - master
+    expire_in: 1 week
     paths:
       - artifacts/
 
