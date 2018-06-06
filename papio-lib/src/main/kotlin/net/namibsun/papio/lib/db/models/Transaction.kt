@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -40,13 +42,15 @@ import java.sql.ResultSet
  * @param amount: The amount of money that makes up the transaction. Always the same currency as the wallet
  * @param date: The ISO-8601 date indicating when the transaction took place
  */
-class Transaction(id: Int,
-                  val wallet: Wallet,
-                  val category: Category,
-                  val partner: TransactionPartner,
-                  val description: String,
-                  private var amount: Value,
-                  val date: IsoDate) : DbModel(Table.TRANSACTIONS, id) {
+class Transaction(
+    id: Int,
+    val wallet: Wallet,
+    val category: Category,
+    val partner: TransactionPartner,
+    val description: String,
+    private var amount: Value,
+    val date: IsoDate
+) : DbModel(Table.TRANSACTIONS, id) {
 
     /**
      * Retrieves the amount of money in this transaction
@@ -88,13 +92,13 @@ class Transaction(id: Int,
      */
     override fun equals(other: Any?): Boolean {
         return if (other is Transaction) {
-            other.id == this.id
-                    && other.description == this.description
-                    && other.amount == this.amount
-                    && other.date == this.date
-                    && other.wallet == this.wallet
-                    && other.category == this.category
-                    && other.partner == this.partner
+            other.id == this.id &&
+                    other.description == this.description &&
+                    other.amount == this.amount &&
+                    other.date == this.date &&
+                    other.wallet == this.wallet &&
+                    other.category == this.category &&
+                    other.partner == this.partner
         } else {
             false
         }
@@ -152,8 +156,15 @@ class Transaction(id: Int,
          * @return The Tranaction object
          */
         @JvmStatic
-        fun create(dbHandler: DbHandler, wallet: Wallet, category: Category, partner: TransactionPartner,
-                   description: String, amount: Value, date: IsoDate = IsoDate()): Transaction {
+        fun create(
+            dbHandler: DbHandler,
+            wallet: Wallet,
+            category: Category,
+            partner: TransactionPartner,
+            description: String,
+            amount: Value,
+            date: IsoDate = IsoDate()
+        ): Transaction {
 
             val stmt = dbHandler.connection.prepareStatement("" +
                     "INSERT INTO ${Table.TRANSACTIONS.tableName} (" +

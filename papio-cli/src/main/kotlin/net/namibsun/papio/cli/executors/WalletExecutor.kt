@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -19,7 +21,7 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.FullExecutor
-import net.namibsun.papio.lib.CurrencyConversionError
+import net.namibsun.papio.lib.exceptions.CurrencyConversionError
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency

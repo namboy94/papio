@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -15,16 +17,11 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.gui
-
-fun main(args: Array<String>) {
-    println("Hello World")
-
-    val x = mutableListOf(1, 2)
-    val y = mutableListOf(2)
-    println(x.zip(y))
-    x.distinct().toMutableList()
-
-    val z = mutableMapOf(1 to listOf(1))
-    z.filter { it.value.isEmpty() }
+task version(type: VersionTask)
+class VersionTask extends DefaultTask {
+    @SuppressWarnings("GroovyUnusedDeclaration")
+    @TaskAction
+    def version() {
+        println project.ext.version
+    }
 }

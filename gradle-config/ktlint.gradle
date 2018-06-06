@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -15,14 +17,17 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.lib
+configurations {
+    ktlint
+}
 
-import net.namibsun.papio.lib.money.Currency
+dependencies {
+    ktlint 'com.github.shyiko:ktlint:0.23.1'
+}
 
-/**
- * Exception that is thrown whenever a currency is converted when the corresponding
- * exchange rate data is not present.
- * @param one: One of the two currencies used in the conversion process
- * @param two: One of the two currencies used in the conversion process
- */
-class CurrencyConversionError(one: Currency, two: Currency) : Exception("$one + $two")
+task ktlint(type: JavaExec) {
+    main = "com.github.shyiko.ktlint.Main"
+    classpath = configurations.ktlint
+    args "src/**/*.kt"
+}
+check.dependsOn ktlint

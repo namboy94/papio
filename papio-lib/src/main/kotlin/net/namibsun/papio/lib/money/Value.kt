@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -109,10 +111,11 @@ data class Value(val value: BigDecimal, val currency: Currency) {
      * @param overrideAccuracy: Overrides the inherent accuracy of a currency
      */
     fun format(
-            useCurrencySymbol: Boolean = false,
-            decimalSymbol: String = ".",
-            currencySymbolPositionBack: Boolean = false,
-            overrideAccuracy: Int? = null): String {
+        useCurrencySymbol: Boolean = false,
+        decimalSymbol: String = ".",
+        currencySymbolPositionBack: Boolean = false,
+        overrideAccuracy: Int? = null
+    ): String {
 
         val currencySymbol = if (useCurrencySymbol) {
             this.currency.symbol

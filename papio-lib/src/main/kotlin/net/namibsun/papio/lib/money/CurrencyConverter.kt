@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -17,7 +19,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 package net.namibsun.papio.lib.money
 
-import net.namibsun.papio.lib.CurrencyConversionError
+import net.namibsun.papio.lib.exceptions.CurrencyConversionError
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
