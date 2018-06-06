@@ -1,4 +1,4 @@
-# Papio [![pipeline status](https://gitlab.namibsun.net/namibsun/kotlin/papio/badges/master/pipeline.svg)](https://gitlab.namibsun.net/namibsun/kotlin/papio/commits/master)
+# Papio
 
 |master|develop|
 |:----:|:-----:|
