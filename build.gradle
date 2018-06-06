@@ -18,7 +18,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 ext {
-    version = "1.0.0"
+    version = new File("$rootDir/version").text
 }
 
 buildscript {
