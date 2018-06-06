@@ -25,7 +25,11 @@ import net.namibsun.papio.cli.executors.TransactionPartnerExecutor
 import net.namibsun.papio.cli.executors.WalletExecutor
 import net.namibsun.papio.cli.executors.TransferExecutor
 import net.namibsun.papio.lib.db.DbHandler
+import net.namibsun.papio.lib.money.CurrencyConverter
+import java.io.File
 import java.sql.DriverManager
+import java.util.logging.Level
+import java.util.logging.LogManager
 
 /**
  * The main entry point of the program.
@@ -33,6 +37,14 @@ import java.sql.DriverManager
  * @param args: The command line arguments passed to this program
  */
 fun main(args: Array<String>) {
+
+    CurrencyConverter.setCacheFile(File(Config.papioPath, "rates"))
+
+    val rootLogger = LogManager.getLogManager().getLogger("")
+    rootLogger.level = Level.INFO
+    for (h in rootLogger.handlers) {
+        h.level = Level.SEVERE
+    }
 
     try {
         execute(args)

@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
-gradle build
+gradle build -x test -x ktlint
 rm -f ~/.local/bin/papio-cli.jar
 mv papio-cli/build/libs/papio-cli.jar ~/.local/bin/papio-cli.jar
 

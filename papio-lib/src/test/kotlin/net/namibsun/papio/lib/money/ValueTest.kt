@@ -21,6 +21,7 @@ import java.lang.NumberFormatException
 import java.math.BigDecimal
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 /**
@@ -135,5 +136,17 @@ class ValueTest {
         val serialized = value.serialize()
         val deSerialized = Value.deserialize(serialized)
         assertEquals(value, deSerialized)
+    }
+
+    /**
+     * Tests adding values with two differing values
+     */
+    @Test
+    fun testAddingValuesInDifferingCurrencies() {
+        val euro = Value("0", Currency.EUR)
+        val bitcoin = Value("1", Currency.BTC)
+        val sum = euro + bitcoin
+        assertTrue(sum.value > BigDecimal(100)) // Assumes a BTC value above 100€
+        assertEquals(sum.currency, Currency.EUR)
     }
 }

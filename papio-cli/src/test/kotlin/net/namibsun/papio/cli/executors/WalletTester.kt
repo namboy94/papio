@@ -27,6 +27,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.CurrencyConverter
 import net.namibsun.papio.lib.money.Value
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -150,6 +151,9 @@ class WalletTester : TestHelper() {
      */
     @Test
     fun testListingWallets() {
+
+        CurrencyConverter.update()
+
         val one = Wallet.create(this.dbHandler, "Test1", Value("0", Currency.EUR))
         val two = Wallet.create(this.dbHandler, "Test2", Value("0.12345", Currency.BTC))
         val three = Wallet.create(this.dbHandler, "Test3", Value("11111", Currency.USD))
@@ -258,5 +262,29 @@ class WalletTester : TestHelper() {
             WalletExecutor().execute(arrayOf(), this.dbHandler, null)
             fail()
         } catch (e: HelpException) {}
+    }
+
+    /**
+     * Tests listing the stored wallets while offline
+     */
+    @Test
+    fun testListingWalletsOffline() {
+
+        CurrencyConverter.networkDisabled = true
+        CurrencyConverter.update(true, true)
+
+        val one = Wallet.create(this.dbHandler, "Test1", Value("0", Currency.EUR))
+        val two = Wallet.create(this.dbHandler, "Test2", Value("0.12345", Currency.BTC))
+
+        execute(arrayOf("wallet", "list"))
+
+        assertEquals(
+                "${one.toString(this.dbHandler)}\n${two.toString(this.dbHandler)}" +
+                        "\n-------------------------\n" +
+                        "Total: ${one.getBalance(this.dbHandler) + two.getBalance(this.dbHandler)}\n",
+                this.out.toString()
+        )
+
+        CurrencyConverter.networkDisabled = false
     }
 }
