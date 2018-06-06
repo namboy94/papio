@@ -17,32 +17,17 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.cli
-
-import java.io.File
-
-/**
- * Config Singleton that stores paths to the database and the papio directory
- */
-object Config {
-
-    /**
-     * The path to the .papio directory
-     */
-    var papioPath = File(System.getProperty("user.home"), ".papio")
-
-    /**
-     * The path to the SQLite database
-     */
-    var dbPath = File(this.papioPath.toString(), "data.db")
-
-    /**
-     * If set to true, certain CLI actions will require a manual (y/n) prompt to continue-
-     */
-    var cliConfirm = true
-
-    /**
-     * The default response to CLI (y/n) prompts in case the cliConfirm variable is set to false
-     */
-    var autoResponse = "y"
+configurations {
+    ktlint
 }
+
+dependencies {
+    ktlint 'com.github.shyiko:ktlint:0.23.1'
+}
+
+task ktlint(type: JavaExec) {
+    main = "com.github.shyiko.ktlint.Main"
+    classpath = configurations.ktlint
+    args "src/**/*.kt"
+}
+check.dependsOn ktlint

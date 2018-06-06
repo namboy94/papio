@@ -17,32 +17,14 @@ You should have received a copy of the GNU General Public License
 along with papio.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.namibsun.papio.cli
+package net.namibsun.papio.lib.exceptions
 
-import java.io.File
+import net.namibsun.papio.lib.money.Currency
 
 /**
- * Config Singleton that stores paths to the database and the papio directory
+ * Exception that is thrown whenever a currency is converted when the corresponding
+ * exchange rate data is not present.
+ * @param one: One of the two currencies used in the conversion process
+ * @param two: One of the two currencies used in the conversion process
  */
-object Config {
-
-    /**
-     * The path to the .papio directory
-     */
-    var papioPath = File(System.getProperty("user.home"), ".papio")
-
-    /**
-     * The path to the SQLite database
-     */
-    var dbPath = File(this.papioPath.toString(), "data.db")
-
-    /**
-     * If set to true, certain CLI actions will require a manual (y/n) prompt to continue-
-     */
-    var cliConfirm = true
-
-    /**
-     * The default response to CLI (y/n) prompts in case the cliConfirm variable is set to false
-     */
-    var autoResponse = "y"
-}
+class CurrencyConversionError(one: Currency, two: Currency) : Exception("$one + $two")

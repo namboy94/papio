@@ -1,76 +1,71 @@
 stages:
-  - mirror
   - test
-  - build
+  - stats
   - release
-
-github_mirror:
-  stage: mirror
-  tags:
-    - github_namboy94_push
-  script:
-    - git checkout master
-    - git pull
-    - git push git@github.com:namboy94/papio.git master -f
-    - git checkout develop
-    - git pull
-    - git push git@github.com:namboy94/papio.git develop -f
-
-unittest:
-  stage: test
-  tags:
-    - gradle
-  script:
-    - gradle test jacocoTestReport
-    - rsync -av --delete-after papio-lib/build/reports/coverage/ /var/www/coverage.namibsun.net/public_html/papio-lib
 
 lint:
   stage: test
   tags:
-    - gradle
+    - openjdk-8
+    - python3
   script:
-    - gradle ktlint -q
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - gradle-ktlint
+
+unittest:
+  stage: test
+  tags:
+    - openjdk-8
+    - python3
+  script:
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - gradle-jacoco papio-cli
+    - gradle-jacoco papio-lib
+
+gitstats:
+  stage: stats
+  tags:
+    - python3
+    - gitstats
+    - progstats
+  script:
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - gitstats-gen
+
+docgen:
+  stage: stats
+  tags:
+    - openjdk-8
+    - python3
+  script:
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - gradle-dokka papio-cli
+    - gradle-dokka papio-lib
 
 build_jar:
-  stage: build
+  stage: test
   only:
     - master
     - develop
   tags:
-    - gradle
+    - openjdk-8
+    - python3
   script:
-    - mkdir -p artifacts
-    - gradle build
-    - mv papio-lib/build/libs/papio-lib.jar artifacts/
-    - mv papio-cli/build/libs/papio-cli.jar artifacts/
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - gradle-build-jar papio-lib
+    - gradle-build-jar papio-cli
   artifacts:
+    expire_in: 1 week
     paths:
       - artifacts/
 
-upload_release_to_github:
+release_upload:
   stage: release
   only:
     - master
   tags:
-    - python
-    - gradle
+    - python3
   script:
-    - mkdir -p artifacts
-    - git clone https://gitlab.namibsun.net/namboy94/ci-scripts.git
-    - python ci-scripts/src/changelog-reader/changelog-reader.py -c CHANGELOG -d current_changelog
-    - python ci-scripts/src/github-release-uploader/github-release-uploader.py namboy94 papio $GITHUB_ACCESS_TOKEN
-      $(gradle version -q) current_changelog artifacts -b master
-
-upload_release_to_gitlab:
-  stage: release
-  only:
-    - master
-  tags:
-    - python
-    - gradle
-  script:
-    - mkdir -p artifacts
-    - git clone https://gitlab.namibsun.net/namboy94/ci-scripts.git
-    - python ci-scripts/src/changelog-reader/changelog-reader.py -c CHANGELOG -d  current_changelog
-    - python ci-scripts/src/gitlab-release-uploader/gitlab-release-uploader.py namboy94 papio $GITLAB_ACCESS_TOKEN
-      $(gradle version -q) current_changelog artifacts -b master -u https://gitlab.namibsun.net
+    - python3 -m venv virtual && source virtual/bin/activate && pip install ci-scripts
+    - github-release-upload $(cat version) "$(changelog-reader)"
+    - gitlab-release-upload $(cat version) "$(changelog-reader)"

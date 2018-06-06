@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -19,6 +21,7 @@ package net.namibsun.papio.cli.executors
 
 import net.namibsun.papio.cli.AbortException
 import net.namibsun.papio.cli.FullExecutor
+import net.namibsun.papio.lib.exceptions.CurrencyConversionError
 import net.namibsun.papio.lib.db.DbHandler
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
@@ -98,13 +101,24 @@ class WalletExecutor : FullExecutor {
      * @param dbHandler: The database handler to use
      */
     override fun executeList(args: Array<String>, dbHandler: DbHandler) {
+
         var total = Value("0", Currency.EUR)
+        var conversionError = false
+
         for (wallet in Wallet.getAll(dbHandler)) {
             println(wallet.toString(dbHandler))
-            total += wallet.getBalance(dbHandler)
+            try {
+                total += wallet.getBalance(dbHandler)
+            } catch (e: CurrencyConversionError) {
+                conversionError = true
+            }
         }
         println("-------------------------")
-        println("Total: $total")
+        if (conversionError) {
+            println("Total: ?")
+        } else {
+            println("Total: $total")
+        }
     }
 
     /**

@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -26,6 +28,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.CurrencyConverter
 import net.namibsun.papio.lib.money.Value
 import org.junit.After
 import org.junit.Test
@@ -108,6 +111,8 @@ class TransactionPartnerTester : TestHelper() {
     @Test
     fun testDisplayingTransactionPartner() {
 
+        CurrencyConverter.update()
+
         val partnerData = this.initializeDisplayableTransactionPartner()
         val partner = partnerData.first
         val transactionOne = partnerData.second
@@ -127,6 +132,9 @@ class TransactionPartnerTester : TestHelper() {
      */
     @Test
     fun testDisplayingTransactionPartnerWithLimitedTransactions() {
+
+        CurrencyConverter.update()
+
         val partnerData = this.initializeDisplayableTransactionPartner()
         val partner = partnerData.first
         val transactionOne = partnerData.second

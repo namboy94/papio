@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -28,6 +30,7 @@ import net.namibsun.papio.lib.db.models.Transaction
 import net.namibsun.papio.lib.db.models.TransactionPartner
 import net.namibsun.papio.lib.db.models.Wallet
 import net.namibsun.papio.lib.money.Currency
+import net.namibsun.papio.lib.money.CurrencyConverter
 import net.namibsun.papio.lib.money.Value
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -275,6 +278,9 @@ class TransactionTester : TestHelper() {
      */
     @Test
     fun testTransferringBalanceFromOneWalletToAnother() {
+
+        CurrencyConverter.update()
+
         val secondWallet = Wallet.create(this.dbHandler, "Second", Value("100", Currency.USD))
         assertEquals(Value("0", Currency.EUR), this.wallet.getBalance(this.dbHandler))
         assertEquals(Value("100", Currency.USD), secondWallet.getBalance(this.dbHandler))

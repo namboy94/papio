@@ -1,4 +1,6 @@
 /*
+Copyright 2016 Hermann Krumrey <hermann@krumreyh.com>
+
 This file is part of papio.
 
 papio is free software: you can redistribute it and/or modify
@@ -17,68 +19,36 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 ext {
     version = "1.0.0"
-    versionCode = 100000
 }
 
-// Define class paths
 buildscript {
     repositories {
         jcenter()
         mavenCentral()
     }
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:+"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.41"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:0.9.17"
     }
 }
 
-// Shared operations for subprojectsls
 subprojects {
 
-    // Define Repositories for submodules
     repositories {
         jcenter()
         mavenCentral()
     }
 
     apply plugin: "kotlin"
-    apply plugin: "jacoco"
 
-    configurations {
-        ktlint
-    }
-
-    // Define common submodule dependencies
     dependencies {
-        ktlint 'com.github.shyiko:ktlint:+'
         compile "org.jetbrains.kotlin:kotlin-stdlib:+"
-        testCompile "org.jetbrains.kotlin:kotlin-test-junit:+"
     }
 
-    // Jacoco Test coverage generation. Name must stay jacocoTestReport
-    jacocoTestReport {
-        group = "Reporting"
-        reports {
-            xml.setEnabled(true)
-            csv.setEnabled(false)
-            html.setDestination(new File("${buildDir}/reports/coverage"))
-        }
-    }
-
-    // Define ktlint task
-    task ktlint(type: JavaExec) {
-        main = "com.github.shyiko.ktlint.Main"
-        classpath = configurations.ktlint
-        args "src/**/*.kt"
-    }
-    check.dependsOn ktlint
+    apply from: "$rootDir/gradle-config/jacoco.gradle"
+    apply from: "$rootDir/gradle-config/dokka.gradle"
+    apply from: "$rootDir/gradle-config/ktlint.gradle"
 
 }
 
-// Print version
-task version(type: VersionTask)
-class VersionTask extends DefaultTask {
-    @TaskAction
-    def version() {
-        println project.ext.version
-    }
-}
+apply from: "$rootDir/gradle-config/version.gradle"
