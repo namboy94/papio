@@ -19,7 +19,7 @@ along with papio.  If not, see <http://www.gnu.org/licenses/>.
 
 // Submodule dependencies
 dependencies {
-    testCompile "org.xerial:sqlite-jdbc:+"
+    testCompile "org.xerial:sqlite-jdbc:3.23.1"
 }
 
 jar {
